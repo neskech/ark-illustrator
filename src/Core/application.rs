@@ -1,99 +1,108 @@
+use std::cell::RefCell;
 
-use glutin::{event_loop::ControlFlow, event::{Event, WindowEvent, VirtualKeyCode, KeyboardInput}, dpi::PhysicalSize, Api};
+use super::window::Window;
+use egui_glfw_gl as egui_backend;
 
 
+
+pub static mut SCREEN_WIDTH: u32 = 800;
+pub static mut SCREEN_HEIGHT: u32 = 800;
 
 pub struct App{
-    eventLoop: glutin::event_loop::EventLoop<()>,
-    windowContext: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
-    eguiState: egui_winit::State,
+    window: RefCell<Window>,
     state: super::state::AppState,
 
 }
 
 impl App{
-    pub fn new(defaultSize: (i32, i32)) -> Self {
-        let el = glutin::event_loop::EventLoop::new();
-        let wb = glutin::window::WindowBuilder::new().with_title("A fantastic window!")
-        .with_inner_size(PhysicalSize::new(defaultSize.0, defaultSize.1))
-        .with_resizable(true)
-        .with_visible(true);
-    
-        let windowContext = glutin::ContextBuilder::new().with_vsync(true)
-        .with_gl(glutin::GlRequest::Specific(Api::OpenGl, (4, 1))).build_windowed(wb, &el).unwrap();
-    
-        let windowContext = unsafe { windowContext.make_current().unwrap() };
-        gl::load_with(|s| windowContext.get_proc_address(s) as *const _);
-
-        let eguiState = egui_winit::State::new(gl::MAX_TEXTURE_SIZE as usize,  windowContext.window());
-
+    pub fn new(defaultSize: (u32, u32)) -> Self {
+ 
         Self {
-            eventLoop: el,
-            windowContext: windowContext,
-            eguiState: eguiState,
+            window: RefCell::new(Window::new(defaultSize)),
             state: super::state::AppState::new()
         }
     }
 
    
-    pub fn run(self){
+    pub fn run(&mut self){
 
         
-        let App {eventLoop, windowContext, mut eguiState, mut state} = self;
-        let eguiCtx = egui_winit::egui::Context::default();
-
-        eventLoop.run(move |event, _, control_flow| {
-            //println!("{:?}", event);
-            *control_flow = ControlFlow::Wait;
-
-            match event {
-                Event::LoopDestroyed => (),
-                Event::WindowEvent { event, .. } => match event {
-                    WindowEvent::Resized(physical_size) => windowContext.resize(physical_size),
-                    WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                    WindowEvent::KeyboardInput { input: KeyboardInput {virtual_keycode: Some(key), ..}, ..} => {
-                        if VirtualKeyCode::Escape == key {
-                            *control_flow = ControlFlow::Exit;
-                        }
-                    },
-                    _ => {
-                        eguiState.on_event(&eguiCtx, &event);
-                    },
-            
-                },
-                Event::RedrawRequested(_) => {
-                   
-                    unsafe {
-                         gl::ClearColor(0.6f32, 0.1f32, 0.75f32, 1f32);
-                         gl::Clear(gl::COLOR_BUFFER_BIT);
-                    }
-
-                    let raw = eguiState.take_egui_input(windowContext.window());
-                    eguiCtx.begin_frame(raw);
-            
-
+        let mut eguiCtx = egui::CtxRef::default();
+        let size = self.window.borrow().size;
+        let mut painter = egui_backend::Painter::new(&mut self.window.borrow_mut().glfwWindow, size.0, size.1);
         
-                    state.renderGUI(&eguiCtx);
+        let mut then = 0f32;
+        let mut now: f32;
+        let mut delta: f32;
 
-                    let out = eguiCtx.end_frame();
-                    eguiState.handle_platform_output(windowContext.window(), &eguiCtx, out.platform_output);
+        let (width, height) = self.window.borrow().glfwWindow.get_framebuffer_size();
+        let native_pixels_per_point = self.window.borrow().glfwWindow.get_content_scale().0;
+        let mut egui_input_state = egui_backend::EguiInputState::new(egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::Pos2::new(0f32, 0f32),
+                egui::vec2(width as f32, height as f32) / native_pixels_per_point,
+            )),
+            pixels_per_point: Some(native_pixels_per_point),
+            ..Default::default()
+        });
+ 
+        let start_time = std::time::Instant::now();
 
-                    windowContext.swap_buffers().unwrap();
+        while !self.window.borrow().shouldClose() {
+            now = self.window.borrow().getTime() as f32;
+            delta = now - then;
+            then = self.window.borrow().getTime() as f32;
 
-                },
-                Event::MainEventsCleared => {
-                    windowContext.window().request_redraw();
-                },
-                _ => (),
+
+            unsafe {
+                gl::ClearColor(0.6f32, 0.1f32, 0.75f32, 1f32);
+                gl::Clear(gl::COLOR_BUFFER_BIT);
             }
-        })
+
+   
+            eguiCtx.begin_frame(egui_input_state.input.take());
+            egui_input_state.input.pixels_per_point = Some(native_pixels_per_point);
+            egui_input_state.input.time = Some(start_time.elapsed().as_secs_f64());
+
+            self.state.renderGUI(&eguiCtx);
+
+            let (egui_output, paint_cmds) = eguiCtx.end_frame();
+            //Handle cut, copy text from egui
+            if !egui_output.copied_text.is_empty() {
+                egui_backend::copy_to_clipboard(&mut egui_input_state, egui_output.copied_text);
+            }
+
+
+            let paint_jobs = eguiCtx.tessellate(paint_cmds);
+            painter.paint_jobs(
+                None,
+                paint_jobs,
+                &eguiCtx.texture(),
+                native_pixels_per_point,
+            );
+
+            self.window.borrow_mut().glfw.poll_events();
+            for (_, event) in self.window.borrow().getEvents() {
+                match event {
+                    glfw::WindowEvent::Close => self.window.borrow_mut().glfwWindow.set_should_close(true),
+                    _ => { egui_backend::handle_event(event, &mut egui_input_state); }
+                }
+            }
+
+            self.window.borrow_mut().swapBuffers();
+            self.window.borrow_mut().glfw.poll_events();
+        }
+
+        
+
+    
+             
+
 
     
     }
 
-    pub fn handleEvents(&self){
-      
-    }
+
 
 
 

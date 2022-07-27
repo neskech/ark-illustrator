@@ -12,7 +12,8 @@ mod GUI;
 
 
 fn main() {
-    let app = App::new((800, 800));
+    std::env::set_var("RUST_BACKTRACE", "1");
+    let mut app = App::new((800, 800));
     app.run();
 
 }

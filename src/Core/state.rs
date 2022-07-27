@@ -31,7 +31,7 @@ impl AppState {
         }
     }
 
-    pub fn renderGUI(&mut self, eguiCtx: &egui_winit::egui::Context){
+    pub fn renderGUI(&mut self, eguiCtx: &egui::CtxRef){
         self.gui.render(&mut self.data, eguiCtx);
     }
 

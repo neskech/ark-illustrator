@@ -1,4 +1,6 @@
-use egui_winit::{self, egui::Context};
+
+use egui::Context;
+
 use crate::Core::state::AppData;
 use super::panel::{Panel, createToolPanel};
 
@@ -15,7 +17,7 @@ impl Gui{
         }
     }
     
-    pub fn render(&mut self, data: &mut AppData, eguiCtx: &Context){
+    pub fn render(&mut self, data: &mut AppData, eguiCtx: &egui::CtxRef){
         
         for panel in &mut self.panels {
             let close = (panel.renderFunction)(data, eguiCtx);

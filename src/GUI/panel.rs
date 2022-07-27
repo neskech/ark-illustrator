@@ -1,6 +1,6 @@
-use egui_winit::egui::{Context, Color32};
+use egui::{Context, CtxRef};
+
 use crate::Core::state::AppData;
-use egui_winit::egui;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +13,7 @@ use egui_winit::egui;
 pub struct Panel{
     pos: (f32, f32),
     pub enabled: bool,
-    pub renderFunction: fn(&mut AppData, eguiCtx: &Context) -> bool 
+    pub renderFunction: fn(&mut AppData, eguiCtx: &CtxRef) -> bool 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,13 +23,13 @@ pub struct Panel{
 /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub fn createToolPanel() -> Panel{
-    fn renderFunc(data: &mut AppData, eguiCtx: &Context) -> bool {
+    fn renderFunc(data: &mut AppData, eguiCtx: &CtxRef) -> bool {
 
         egui::SidePanel::left("my_side_panel").show(eguiCtx, |ui| {
             if ui
                 .add(egui::Button::new(
                     "hello!",
-                ).fill(Color32::from_rgb(100, 100, 100)))
+                ).fill(egui::Color32::from_rgb(100, 100, 100)))
                 .clicked()
             {
 
@@ -52,7 +52,7 @@ pub fn createToolPanel() -> Panel{
 /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn createSettingsPanel() -> Panel{
-    fn renderFunc(data: &mut AppData, eguiCtx: &Context) -> bool {
+    fn renderFunc(data: &mut AppData, eguiCtx: &CtxRef) -> bool {
         true
     }
 
