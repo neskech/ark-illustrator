@@ -1,5 +1,5 @@
 
-use std::ffi::CString;
+use std::{ffi::CString, f32::consts::PI};
 
 use crate::OpenGL::{buffer::{VertexBuffer, IndexBuffer}, shader::Shader, texture::Texture, frameBuffer::FrameBuffer, vao::VAO};
 
@@ -43,10 +43,10 @@ pub struct Renderer{
 
 impl Renderer{
     pub fn new() -> Self {
-        const CANVAS_SIZE: (f32, f32) = (100f32, 50f32);
+        const CANVAS_SIZE: (f32, f32) = (300f32, 300f32);
         let aspect = CANVAS_SIZE.0 / CANVAS_SIZE.1;
 
-        let eye = na::Point3::new(0f32, 0f32, 3f32);
+        let eye = na::Point3::new(0f32, 0f32, 10f32);
         let target = na::Point3::new(0f32, 0f32, 0f32);
 
 
@@ -118,7 +118,7 @@ impl Renderer{
           println!("before alloc"); glCheckError();
           self.canvas.vertexBuffer.AllocateData::<f32>(4 * MAX_QUADS_PER_DRAW_CALL, gl::DYNAMIC_DRAW);
           println!("after alloc"); glCheckError();
-          self.canvas.vertexBuffer.BufferSubData(&verts.to_vec(), 0, verts.len());
+          //self.canvas.vertexBuffer.BufferSubData(&verts.to_vec(), 0, verts.len());
           println!("after buff"); glCheckError();
     
           self.canvas.indexBuffer.Bind();
@@ -130,16 +130,17 @@ impl Renderer{
           self.canvas.vao.UnBind();
           self.canvas.indexBuffer.UnBind();
 
-let scale = 0.2f32;
+let scale = 1f32;
+let aspect = 1f32;
           let vertices = [
             // positions   // texCoords
-            -0.5f32 * scale,  0.5f32 * scale,  0f32, 1f32,
-            -0.5f32 * scale, -0.5f32 * scale,  0f32, 0f32,
-            0.5f32 * scale, -0.5f32 * scale,  1f32, 0f32,
+            -aspect * scale,  1f32 * scale,  0f32, 1f32,
+            -aspect * scale, -1f32 * scale,  0f32, 0f32,
+            aspect * scale, -1f32 * scale,  1f32, 0f32,
 
-            -0.5f32 * scale,  0.5f32 * scale,  0f32, 1f32,
-            0.5f32 * scale, -0.51f32 * scale,  1f32, 0f32,
-            0.5f32 * scale,  0.5f32 * scale,  1f32, 1f32,
+            -aspect * scale,  1f32 * scale,  0f32, 1f32,
+            aspect * scale, -1f32 * scale,  1f32, 0f32,
+            aspect * scale,  1f32 * scale,  1f32, 1f32,
          ];
 
          self.vao.Bind();
@@ -219,35 +220,56 @@ let scale = 0.2f32;
                 println!("Here!!!");
             }
             gl::Viewport(0, 0, 600, 600);
-            // gl::Enable(gl::BLEND);  
-            // gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);  
+            gl::Enable(gl::BLEND);  
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);  
             // gl::Enable(gl::DEPTH_TEST);
             // gl::DepthFunc(gl::LEQUAL);
             self.canvas.vao.Bind();
-            //gl::DrawArrays(gl::TRIANGLES, 0, 3); 
+            gl::DrawArrays(gl::TRIANGLES, 0, 6); 
             //println!("Num quads {}", self.numQuadsInBuffer);
-            gl::DrawElements(gl::TRIANGLES,  6 * self.numQuadsInBuffer as i32, gl::UNSIGNED_INT, std::ptr::null());
+           // gl::DrawElements(gl::TRIANGLES,  6 * self.numQuadsInBuffer as i32, gl::UNSIGNED_INT, std::ptr::null());
             self.canvas.vao.UnBind();
-            self.numQuadsInBuffer = 0;
+            self.numQuadsInBuffer = 1;
 
             self.canvas.shader.DeActivate();
         }
     }
 
-    pub fn addQuad(&mut self, pos: (f32, f32), size: f32, texture: Option<&Texture>){
-        let scale = 0.2f32;
+    pub fn addQuad(&mut self, pos: (f32, f32), size: f32, camera: &Camera, texture: Option<&Texture>){
+        let w = (camera.Position.z - camera.ZNear) * f32::tan(camera.Fov / 2f32);
+        let norm: (f32, f32) = (pos.0 / 800f32, 1f32 - (pos.1 / 800f32));
+        //let norm = (camera.CameraRight.x * norm.0 + camera.CameraUp.x * norm.1, camera.CameraRight.y * norm.0 + camera.CameraUp.y * norm.1);
+        let world: (f32, f32) = (norm.0 * w * 2f32 + camera.Position.x - w, norm.1 * 1f32 * 2f32 * w + camera.Position.y - w);
+        let world = (world.0 - camera.Position.x, world.1 - camera.Position.y); //subtract the center of roation
+        
+
+
+        let world = (camera.CameraRight.x * world.0 + camera.CameraUp.x * world.1, camera.CameraRight.y * world.0 + camera.CameraUp.y * world.1);
+        let world = (world.0 + camera.Position.x, world.1 + camera.Position.y); //add it back
+        let world = ((world.0 - 1f32) / 2f32, (world.1 - 1f32) / 2f32); //=1 to 0 range
+        println!("World {:?} w {} z {} norm {:?} cam x {} y {}", world, w, camera.Position.z, norm, camera.Position.x, camera.Position.y);
+
+        let scale = 0.02f32;
         let data = vec![
-            -0.5f32 * scale + pos.0,  -0.5f32 * scale + pos.1, 
-            0.5f32 * scale + pos.0, -0.5f32 * scale + pos.1, 
-            -0.5f32 * scale + pos.0, 0.5f32 * scale + pos.1, 
-           -0.5f32 * scale + pos.0,  0.5f32 * scale + pos.1, 
+        //     -0.5f32 * scale + world.0,  -0.5f32 * scale + world.1, 
+        //     0.5f32 * scale + world.0, -0.5f32 * scale + world.1, 
+        //     -0.5f32 * scale + world.0, 0.5f32 * scale + world.1, 
+        //    -0.5f32 * scale + world.0,  0.5f32 * scale + world.1, 
+
+            -0.5f32 * scale + world.0,  0.5f32 * scale + world.1, 
+            -0.5f32 * scale + world.0, -0.5f32 * scale + world.1,  
+            0.5f32 * scale + world.0, -0.5f32 * scale + world.1, 
+            -0.5f32 * scale + world.0,  0.5f32 * scale + world.1,
+            0.5f32 * scale + world.0, -0.5f32 * scale + world.1,  
+            0.5f32 * scale + world.0,  0.5f32 * scale + world.1,  
         ];
+       // println!("{:?}", data);
     //    println!("Num quads {}", self.numQuadsInBuffer);
-    //   println!("Before"); glCheckError();
-    //   self.canvas.vertexBuffer.Bind();
-    //      self.canvas.vertexBuffer.BufferSubData::<f32>(&data, self.numQuadsInBuffer, data.len());
-    //      self.vertexBuffer.UnBind();
-    //      println!("After"); glCheckError();
+      //println!("Before"); glCheckError();
+      self.canvas.vertexBuffer.Bind();
+         self.canvas.vertexBuffer.BufferSubData::<f32>(&data, 0, data.len());
+         self.canvas.vertexBuffer.UnBind();
+         //println!("After"); glCheckError();
     //      self.numQuadsInBuffer += 1;
          
     }

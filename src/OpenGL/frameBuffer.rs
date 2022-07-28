@@ -32,8 +32,8 @@ impl FrameBuffer{
             .SetTextureParams(TextureParams{
                 WrapX: gl::CLAMP_TO_EDGE as i32,
                 WrapY: gl::CLAMP_TO_EDGE as i32,
-                MinFilter: gl::LINEAR as i32,
-                MagFilter: gl::LINEAR as i32,
+                MinFilter: gl::NEAREST as i32,
+                MagFilter: gl::NEAREST as i32,
                 MipmapLevels: None,
             })
             .AllocateImage(size, gl::RGB);

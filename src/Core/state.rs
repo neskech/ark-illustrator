@@ -1,6 +1,6 @@
 use crate::{Canvas::{layer::Layer, tool::Tool, camera::Camera, renderer::Renderer}, GUI::gui::Gui};
 
-use super::event::{Event, MouseButtonPressedEvent, MouseMovedEvent};
+use super::{event::{Event, MouseButtonPressedEvent, MouseMovedEvent}, input::{KeyListener, MouseListener}};
 
 const NUM_TOOLS: usize = 0;
 
@@ -39,10 +39,12 @@ impl AppState {
         self.data.renderer.render(&self.data.camera);
     }
 
-    pub fn onEvent(&mut self, event: Event) {
+    pub fn onEvent(&mut self, event: Event, key: &KeyListener, mouse: &MouseListener) {
         self.data.camera.OnEvent(&event);
-        if let Event::MouseMoved(MouseMovedEvent { X, Y }) = event {
-            self.data.renderer.addQuad((X as f32, Y as f32), 1f32, None);
+        if mouse.IsMouseButtonPressed(glfw::MouseButtonLeft, None){
+            if let Event::MouseMoved(_) = event {
+                 self.data.renderer.addQuad(mouse.MousePos, 1f32, &self.data.camera, None);
+            }
         }
     }
 }

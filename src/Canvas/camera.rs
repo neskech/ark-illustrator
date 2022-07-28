@@ -17,23 +17,24 @@ pub struct Camera{
     pub CameraRight: na::Vector3<f32>,
     pub CameraUp: na::Vector3<f32>,
 
-    Rotation: f32,
+    pub Rotation: f32,
 
-    Fov: f32,
-    ZNear: f32,
-    ZFar: f32,
+    pub Fov: f32,
+    pub ZNear: f32,
+    pub ZFar: f32,
 
     orthoGraphicWidth: f32,
 }
 
 impl Camera{
     pub fn New(orthoWidth: f32) -> Self {
+        let aspect: f32 = 1f32;
         Self {
-            Position: na::Vector3::new(0f32, 0f32, 3f32 + MIN_ZOOM_LEVEL as f32),
+            Position: na::Vector3::new(0f32, 0f32, 1f32 + MIN_ZOOM_LEVEL as f32),
             CameraRight: na::Vector3::new(1f32, 0f32, 0f32),
             CameraUp: na::Vector3::new(0f32, 1f32, 0f32),
             Rotation: 0f32,
-            Fov: FOV,
+            Fov:f32::atan2(aspect, 1f32) * 2f32,
             ZNear: MIN_ZOOM_LEVEL,
             ZFar: MAX_ZOOM_LEVEL,
             orthoGraphicWidth: orthoWidth,
@@ -42,8 +43,8 @@ impl Camera{
 
     pub fn GetProjectionMatrix(&self) -> na::Matrix4<f32>{
         let aspect: f32 = 1f32;
-        let fov = f32::atan2(aspect, 1f32);
-        *na::Perspective3::new(unsafe { 800 as f32 / 800 as f32 }, 2.5f32, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL).as_matrix()
+        let fov = f32::atan2(aspect, 1f32) * 2f32;
+        *na::Perspective3::new(unsafe { 800 as f32 / 800 as f32 }, fov, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL).as_matrix()
     }
 
     pub fn GetViewMatrix(&self) -> na::Matrix4<f32>{
@@ -52,7 +53,7 @@ impl Camera{
         let eye = na::Point3::new(self.Position.x, self.Position.y, self.Position.z);
         let target = na::Point3::new(self.Position.x, self.Position.y, 0f32);
         
-         na::Isometry3::look_at_rh(&eye, &target, &self.CameraUp).to_homogeneous()
+         na::Isometry3::look_at_rh(&eye, &target, &self.CameraUp).to_matrix()
 
         // let f = (target - eye).normalize();
 		// let s = f.cross(&self.CameraUp).normalize();

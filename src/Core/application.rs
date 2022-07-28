@@ -1,5 +1,5 @@
 
-use super::window::{Window, translateEvent};
+use super::{window::{Window, translateEvent}, input::{MouseListener, KeyListener}};
 use egui_glfw_gl as egui_backend;
 use queues::IsQueue;
 
@@ -8,10 +8,14 @@ use queues::IsQueue;
 pub static mut SCREEN_WIDTH: u32 = 800;
 pub static mut SCREEN_HEIGHT: u32 = 800;
 
+
 pub struct App{
     window: Window,
     eventBus: queues::Queue<glfw::WindowEvent>,
     state: super::state::AppState,
+    key: KeyListener,
+    mouse: MouseListener,
+
 
 }
 
@@ -21,7 +25,9 @@ impl App{
         Self {
             window: Window::new(defaultSize),
             eventBus: queues::Queue::new(),
-            state: super::state::AppState::new()
+            state: super::state::AppState::new(),
+            key: KeyListener::New(),
+            mouse: MouseListener::New(),
         }
     }
 
@@ -89,9 +95,15 @@ impl App{
                 let event = self.eventBus.remove().unwrap();
                 match event {
                     glfw::WindowEvent::Close => self.window.glfwWindow.set_should_close(true),
+                    glfw::WindowEvent::Key(glfw::Key::Escape, .. ) => {
+                            self.window.glfwWindow.set_should_close(true);
+    
+                    },
                     _ => { 
-                      //  egui_backend::handle_event(event.clone(), &mut egui_input_state); 
-                        self.state.onEvent(translateEvent(event));
+                      //  egui_backend::handle_event(event.clone(), &mut egui_input_state);
+                        self.mouse.onEvent(&event);
+                        self.key.onEvent(&event); 
+                        self.state.onEvent(translateEvent(event), &self.key, &self.mouse);
                     }
                 }
             }
