@@ -1,4 +1,5 @@
-use std::sync::mpsc::Receiver;
+use core::ffi::CStr;
+use std::{sync::mpsc::Receiver, ffi::{c_void, CString}};
 use glfw::{Key, Action, Context, SwapInterval};
 use super::event::*;
 
@@ -20,6 +21,7 @@ impl Window{
         glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
         glfw.window_hint(glfw::WindowHint::DoubleBuffer(true));
         glfw.window_hint(glfw::WindowHint::Resizable(false));
+        glfw.window_hint(glfw::WindowHint::OpenGlDebugContext(true));
 
         let (mut window, events) = glfw.create_window(size.0, size.1, "Hello this is window", glfw::WindowMode::Windowed)
             .expect("Failed to create GLFW window.");
@@ -29,6 +31,11 @@ impl Window{
         window.make_current();
         glfw.set_swap_interval(SwapInterval::Sync(1)); //vsync
         gl::load_with(|s| window.get_proc_address(s) as *const _);
+
+        // unsafe { 
+        //     gl::Enable(gl::DEBUG_OUTPUT); 
+        //     gl::DebugMessageCallback(Some(callback), std::ptr::null()); 
+        // }
         
         return Self{
             glfwWindow: window,
@@ -73,7 +80,7 @@ impl Window{
 }
 
 //TODO move this to the event file
-fn translateEvent(event: glfw::WindowEvent) -> Event {
+pub fn translateEvent(event: glfw::WindowEvent) -> Event {
     match event {
         glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _ ) => {
             Event::WindowClose(WindowCloseEvent{})
@@ -98,4 +105,11 @@ fn translateEvent(event: glfw::WindowEvent) -> Event {
         }
         _ => {panic!("Cannot handle event type")}
     }
+}
+
+//type MyFn = extern "system" fn(u32, u32, u32, u32, i32, *const i8, *mut c_void);
+
+extern "system" fn callback(source: u32, errType: u32, id: u32, severity: u32, length: i32, message: *const i8, userParam: *mut c_void){
+  
+    println!("Error! type = {}, Severity = {}, message = {}", errType, severity, unsafe { CStr::from_ptr(message).to_str().unwrap() });
 }

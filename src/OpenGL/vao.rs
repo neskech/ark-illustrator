@@ -3,7 +3,7 @@ use std::ffi::c_void;
 use super::MatchType;
 use gl::types::*;
 
-struct VAO{
+pub struct VAO{
     ID: GLuint,
     NumAttributes: u32,
     ByteLength: u32,
@@ -16,18 +16,21 @@ impl VAO{
         s
     }
 
-    pub fn AddAtribute<T: 'static>(&mut self, stride: u32, vertexSizeBytes: i32, divisor: Option<u32>){
+    pub fn AddAtribute<T: 'static>(&mut self, stride: u32, vertexSizeBytes: i32, offset: usize, divisor: Option<u32>){
         unsafe { 
+                gl::EnableVertexAttribArray(self.NumAttributes);
+
+                println!("HERE IT IS {} {}", self.ByteLength, self.NumAttributes);
                 gl::VertexAttribPointer(
                     self.NumAttributes, 
-                    std::mem::size_of::<T>() as i32, 
+                    stride as i32, 
                     MatchType::<T>(), 
                     gl::FALSE,
                     vertexSizeBytes, 
-                    &self.ByteLength as *const _ as *const c_void
+                (std::mem::size_of::<T>() * offset) as *const gl::types::GLvoid
                 ); 
 
-                gl::EnableVertexAttribArray(self.NumAttributes);
+           
                 if let Some(div) = divisor {
                     gl::VertexAttribDivisor(self.NumAttributes, div);
                 }
@@ -39,6 +42,14 @@ impl VAO{
 
     pub fn ResetByteCount(&mut self){
         self.ByteLength = 0;
+    }
+
+    pub fn Bind(&self){
+        unsafe { gl::BindVertexArray(self.ID) }
+    }
+
+    pub fn UnBind(&self){
+        unsafe { gl::BindVertexArray(0) }
     }
 
     pub fn Destroy(&self){

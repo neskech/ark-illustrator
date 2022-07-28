@@ -13,36 +13,36 @@ pub struct VertexBuffer{
 impl VertexBuffer{
     pub fn New() -> Self{
         let mut me = Self {id: 0};
-        unsafe { gl::GenBuffers(1, &mut me.id as *mut GLuint) };
+        unsafe { gl::GenBuffers(1, &mut me.id) };
         me
     }
 
-    pub fn BufferData<T>(data: &Vec<T>, usage: u32){
+    pub fn BufferData<T>(&self, data: &Vec<T>, usage: u32){
         unsafe { 
 
             gl::BufferData(
                 gl::ARRAY_BUFFER, 
-                (std::mem::size_of::<T>() * data.len()) as isize, 
-                data as *const Vec<T> as *const c_void,
+                (std::mem::size_of::<T>() * data.len()) as gl::types::GLsizeiptr, 
+                data.as_ptr() as *const gl::types::GLvoid,
                 usage
             );
         };
     }
 
-    pub fn BufferSubData<T>(data: &Vec<T>, offset: usize, length: usize){
+    pub fn BufferSubData<T>(&self, data: &Vec<T>, offset: usize, length: usize){
         unsafe { 
  
             gl::BufferSubData(
                 gl::ARRAY_BUFFER, 
                 (offset * std::mem::size_of::<T>()) as isize, 
-                (std::mem::size_of::<T>() * length) as isize, 
-                data as *const Vec<T> as *const c_void,
+                (std::mem::size_of::<T>() * length) as gl::types::GLsizeiptr, 
+                data.as_ptr() as *const gl::types::GLvoid,
             );
 
         };
     }
 
-    pub fn AllocateData<T>(length: usize, usage: u32){
+    pub fn AllocateData<T>(&self, length: usize, usage: u32){
         unsafe { 
 
             gl::BufferData(
@@ -93,23 +93,23 @@ pub struct IndexBuffer{
 impl IndexBuffer{
     pub fn New() -> Self{
         let mut me = Self {id: 0};
-        unsafe { gl::GenBuffers(1, &mut me.id as *mut GLuint) };
+        unsafe { gl::GenBuffers(1, &mut me.id) };
         me
     }
 
-    pub fn BufferData(data: &Vec<u32>, usage: u32){
+    pub fn BufferData(&self, data: &Vec<u32>, usage: u32){
         unsafe { 
 
             gl::BufferData(
                 gl::ELEMENT_ARRAY_BUFFER, 
                 (std::mem::size_of::<u32>() * data.len()) as isize, 
-                data as *const Vec<u32> as *const c_void,
+                data.as_ptr() as *const gl::types::GLvoid,
                 usage
             );
         };
     }
 
-    pub fn BufferSubData(data: &Vec<u32>, offset: usize, length: usize){
+    pub fn BufferSubData(&self, data: &Vec<u32>, offset: usize, length: usize){
         unsafe { 
  
             gl::BufferSubData(
@@ -122,7 +122,7 @@ impl IndexBuffer{
         };
     }
 
-    pub fn AllocateData(length: usize, usage: u32){
+    pub fn AllocateData(&self, length: usize, usage: u32){
         unsafe { 
 
             gl::BufferData(

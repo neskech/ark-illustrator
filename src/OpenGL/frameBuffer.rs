@@ -3,9 +3,11 @@ use crate::OpenGL::texture::{Texture, TextureParams};
 
 pub struct FrameBuffer{
     ID: GLuint,
-    TextureAttachment: Texture,
+    pub TextureAttachment: Texture,
     RboID: GLuint,
 }
+
+struct FrameBufferBuilder {}
 
 impl FrameBuffer{
     pub fn New(size: (i32, i32)) -> Result<Self, String>{
@@ -22,7 +24,7 @@ impl FrameBuffer{
         }
         Ok(s)
     }
-
+    //TODO make this into a builder. An empty framebuffer with optional attachments
     fn Create(&mut self, size: (i32, i32)) -> Result<(), String>{
         self.Bind();
 

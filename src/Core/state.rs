@@ -1,10 +1,9 @@
-use crate::{Canvas::{layer::Layer, tool::Tool, camera::Camera}, GUI::gui::Gui};
+use crate::{Canvas::{layer::Layer, tool::Tool, camera::Camera, renderer::Renderer}, GUI::gui::Gui};
+
+use super::event::{Event, MouseButtonPressedEvent, MouseMovedEvent};
 
 const NUM_TOOLS: usize = 0;
 
-struct Renderer{
-
-}
 
 // pub struct AppData{ //TODO put this inside of canvas, which will also have the canvas size in pixels
 //     layers: Vec<Layer>,
@@ -15,8 +14,9 @@ struct Renderer{
 // }
 
 pub struct AppData{ //TODO put this inside of canvas, which will also have the canvas size in pixels
-
-}
+    renderer:  Renderer,
+    camera: Camera,
+}   
 pub struct AppState{
     gui: Gui,
     data: AppData,
@@ -27,7 +27,7 @@ impl AppState {
     pub fn new() -> Self {
         Self {  
            gui: Gui::new(),
-           data: AppData {  }
+           data: AppData { renderer: Renderer::new(), camera: Camera::New(0f32) }
         }
     }
 
@@ -35,7 +35,14 @@ impl AppState {
         self.gui.render(&mut self.data, eguiCtx);
     }
 
-    pub fn onEvent(&self) {
+    pub fn render(&mut self){
+        self.data.renderer.render(&self.data.camera);
+    }
 
+    pub fn onEvent(&mut self, event: Event) {
+        self.data.camera.OnEvent(&event);
+        if let Event::MouseMoved(MouseMovedEvent { X, Y }) = event {
+            self.data.renderer.addQuad((X as f32, Y as f32), 1f32, None);
+        }
     }
 }

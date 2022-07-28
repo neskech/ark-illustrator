@@ -16,7 +16,7 @@ impl Gui{
             panels: [createToolPanel()]
         }
     }
-    
+    //TODO have this take in the event bus
     pub fn render(&mut self, data: &mut AppData, eguiCtx: &egui::CtxRef){
         
         for panel in &mut self.panels {

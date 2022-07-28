@@ -26,23 +26,30 @@ impl Shader{
 
         unsafe {
             let vShader: GLuint = gl::CreateShader(gl::VERTEX_SHADER);
-            gl::ShaderSource(vShader, 1, 
-                &CStr::from_ptr(shaders.0.as_ptr() as *const c_char).as_ptr(), 
-                std::ptr::null());
-            gl::CompileShader(vShader);
+            let st = CString::new(shaders.0.clone()).unwrap();
+  
 
+            gl::ShaderSource(vShader, 1, 
+                &(st.as_ptr() as *const c_char), 
+                std::ptr::null());
+   
+            gl::CompileShader(vShader);
+           
             if let Err(msg) = Shader::HandleShaderCompilation(vShader, "Vertex") {
+                println!("{}", shaders.0);
                 gl::DeleteShader(vShader);
                 return Err(format!("{}\nError! Vertex shader of {} failed to compile", msg, path));
             }
 
             let fShader: GLuint = gl::CreateShader(gl::FRAGMENT_SHADER);
+            let st = CString::new(shaders.1.clone()).unwrap();
             gl::ShaderSource(fShader, 1, 
-                &CStr::from_ptr(shaders.1.as_ptr() as *const c_char).as_ptr(), 
+                &(st.as_ptr() as *const c_char), 
                 std::ptr::null());
             gl::CompileShader(fShader);
 
             if let Err(msg) = Shader::HandleShaderCompilation(fShader, "Fragment") {
+                println!("{}", shaders.1);
                 gl::DeleteShader(vShader);
                 gl::DeleteShader(fShader);
                 return Err(format!("{}\nError orginated from: \n{}", msg, path));
@@ -56,6 +63,7 @@ impl Shader{
             //must detach shaders for them to be deleted
             gl::DetachShader(self.id, vShader);
             gl::DetachShader(self.id, fShader);
+            print!("AHAHHAHAHA");
 
             //check for errors
             if let Err(msg) = self.HandleProgramLinkage() {
@@ -172,21 +180,21 @@ impl Shader{
    pub fn UploadMatrix2x2(&self, val: na::Matrix2<f32>, location: CString){
         unsafe { 
             let loc = gl::GetUniformLocation(self.id, location.as_ptr());
-            gl::UniformMatrix2fv(loc, 1, 0, val.as_ptr()); 
+            gl::UniformMatrix2fv(loc, 1, 0, val.as_slice().as_ptr() as *const f32); 
         }
    }
 
    pub fn UploadMatrix3x3(&self, val: na::Matrix3<f32>, location: CString){
         unsafe { 
             let loc = gl::GetUniformLocation(self.id, location.as_ptr());
-            gl::UniformMatrix3fv(loc, 1, 0, val.as_ptr()); 
+            gl::UniformMatrix3fv(loc, 1, 0, val.as_slice().as_ptr() as *const f32); 
         }
    }  
 
    pub fn UploadMatrix4x4(&self, val: na::Matrix4<f32>, location: CString){
         unsafe { 
             let loc = gl::GetUniformLocation(self.id, location.as_ptr());
-            gl::UniformMatrix4fv(loc, 1, 0, val.as_ptr()); 
+            gl::UniformMatrix4fv(loc, 1, 0, val.as_slice().as_ptr() as *const f32); 
         }
    }
 
@@ -242,26 +250,26 @@ fn ReadGLSL(path: &str) -> (String, String){
          .expect(&format!("Unable to read shader file of {} in shader.rs!", path)[..]);
 
     let mut vertex = String::from("");
-    let mut fragment = String::from("");
+    let mut fragment = String::from(""); //TODO make an array and use shaderID to index into it
 
     let mut shaderID = 0;
     for line in fileLines {
         let content = line.unwrap();
 
-        if content.contains("#vertex"){
+        if content.contains("#type vertex"){
             shaderID = 0;
             continue;
         }
-        else if content.contains("#fragment"){
+        else if content.contains("#type fragment"){
             shaderID = 1;
             continue;
         }
         
         if shaderID == 0 {
-            vertex = format!("{}{}", vertex, content);
+            vertex = format!("{}\n{}", vertex, content);
         }
         else {
-            fragment = format!("{}{}", fragment, content);
+            fragment = format!("{}\n{}", fragment, content);
         }
     }
 

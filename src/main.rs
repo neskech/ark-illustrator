@@ -1,5 +1,7 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
+ #![feature(cstr_from_bytes_until_nul)]
+ #![feature(core_c_str)]
 use Core::application::App;
 
 
