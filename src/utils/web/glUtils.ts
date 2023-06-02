@@ -3,9 +3,9 @@ import { ensures, requires } from "../contracts";
 export type GL = WebGL2RenderingContext;
 
 export class GLObject<T> {
-  id: T;
-  valid: boolean;
-  forGLObjectOfType: string;
+  private id: T;
+  private valid: boolean;
+  private forGLObjectOfType: string;
 
   constructor(id_: T, objectType = 'unknown') {
     this.id = id_;
@@ -95,3 +95,10 @@ export function colorTypeToPacked(c: Color): number {
    const [r, g, b, a] = c;
    return (r << 24) | (g << 16) | (b << 8) | a;
 }
+
+export function benchmarkLog(msg: string, f: () => void) {
+   console.time(msg);
+   f();
+   console.timeEnd(msg);
+}
+

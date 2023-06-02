@@ -96,6 +96,14 @@ export class VertexArrayObject {
     logger(s);
   }
 
+  bind(gl: GL) {
+    glOpErr(gl, gl.bindVertexArray.bind(this), this.id.innerId());
+  }
+
+  unbind(gl: GL) {
+    glOpErr(gl, gl.bindVertexArray.bind(this), 0);
+  }
+
   destroy(gl: GL): void {
     this.id.destroy((id) => {
       glOpErr(gl, gl.deleteVertexArray.bind(this), id);

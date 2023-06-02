@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { unreachable } from "../func/funUtils";
 import { Option } from "../func/option";
+import type FrameBuffer from "./frameBuffer";
+import { type ReadPixelOptions } from "./frameBuffer";
 import {
   GLObject,
   glOpErr,
@@ -11,6 +13,20 @@ import {
 
 type TextureFilter = "Linear" | "Nearest";
 type TextureWrap = "Clamp To Edge" | "Repeat" | "Mirrored Repeat";
+type Format = "RGBA" | "RGB" | "ALPHA";
+
+function formatToEnum(gl: GL, f: Format): GLenum {
+  switch (f) {
+    case "RGBA":
+      return gl.RGBA;
+    case "RGB":
+      return gl.RGB;
+    case "ALPHA":
+      return gl.ALPHA;
+    default:
+      return unreachable();
+  }
+}
 
 function textureFilterToEnum(gl: GL, t: TextureFilter): GLenum {
   switch (t) {
@@ -36,11 +52,22 @@ function textureWrapToEnum(gl: GL, t: TextureWrap): GLenum {
   }
 }
 
-interface TextureOptions {
+export interface CopySubTextureOptions {
+  lowerDestinationX: number;
+  lowerDestinationY: number;
+  lowerSourceX: number;
+  lowerSourceY: number;
+  sourceWidth: number;
+  sourceHeight: number;
+  format: Format;
+}
+
+export interface TextureOptions {
   wrapX: TextureWrap;
   wrapY: TextureWrap;
   minFilter: TextureFilter;
   magFilter: TextureFilter;
+  format: Format
 }
 
 export default class Texture {
@@ -50,13 +77,15 @@ export default class Texture {
   constructor(gl: GL, options: TextureOptions) {
     const bId = Option.fromNull(glOpErr(gl, gl.createTexture.bind(this)));
     const gId = bId.expect(`Couldn't create texture with options ${options}`);
-    this.id = new GLObject(gId);
+    this.id = new GLObject(gId, 'texture');
 
     this.options = options;
     this.setTextureParams(gl);
   }
 
   private setTextureParams(gl: GL) {
+    this.bind(gl);
+
     glOpErr(
       gl,
       gl.texParameteri.bind(this),
@@ -88,6 +117,8 @@ export default class Texture {
       gl.TEXTURE_WRAP_T,
       textureWrapToEnum(gl, this.options.wrapY)
     );
+
+    this.unbind(gl);
   }
 
   allocateFromPixels(
@@ -97,29 +128,25 @@ export default class Texture {
     data: ArrayBufferView,
     offset = 0
   ) {
-    this.bind(gl);
 
     const mipMapLevels = 0; //something to consider for future
-    const format = gl.RGBA; //will not change
-    const border = 0; //just has to be
-    const texelType = gl.UNSIGNED_BYTE; //packed colors
+    const border = 0;
 
     glOpErr(
       gl,
       gl.texImage2D.bind(this),
       gl.TEXTURE_2D,
       mipMapLevels,
-      format,
+      formatToEnum(gl, this.options.format),
       width,
       height,
       border,
-      format,
-      texelType,
+      formatToEnum(gl, this.options.format),
+      gl.UNSIGNED_BYTE,
       data,
       offset
     );
 
-    this.unbind(gl);
   }
 
   allocateEmpty(gl: GL, width: number, height: number, clearColor: Color) {
@@ -131,24 +158,24 @@ export default class Texture {
     this.allocateFromPixels(gl, width, height, pixels);
   }
 
-  allocateFromImageUrl(gl: GL, url: string, preload=true) {
+  allocateFromImageUrl(gl: GL, url: string, preload = true) {
     const img = new Image();
 
     /**
-    * Because images have to be downloaded over the internet
-    * they might take a moment until they are ready.
-    * Until then put a single pixel in the texture so we can
-    * use it immediately. When the image has finished downloading
-    * we'll update the texture with the contents of the image.
-    */
+     * Because images have to be downloaded over the internet
+     * they might take a moment until they are ready.
+     * Until then put a single pixel in the texture so we can
+     * use it immediately. When the image has finished downloading
+     * we'll update the texture with the contents of the image.
+     */
     if (preload) {
-        const pixel = new Uint8Array([255, 255, 255, 255]);
-        this.allocateFromPixels(gl, 1, 1, pixel);
+      const pixel = new Uint8Array([255, 255, 255, 255]);
+      this.allocateFromPixels(gl, 1, 1, pixel);
     }
-
+    
+    const format = formatToEnum(gl, this.options.format);
     function allocateFromImg() {
       const mipMapLevels = 0;
-      const format = gl.RGBA;
       const texelType = gl.UNSIGNED_BYTE;
 
       gl.texImage2D(
@@ -170,29 +197,67 @@ export default class Texture {
     img.src = url;
   }
 
+  allocateFromSubFramebuffer(
+    gl: GL,
+    options: CopySubTextureOptions
+  ) {
+
+    const mipMapLevels = 0;
+    glOpErr(
+      gl,
+      gl.copyTexSubImage2D.bind(this),
+      gl.TEXTURE_2D,
+      mipMapLevels,
+      options.lowerDestinationX,
+      options.lowerDestinationY,
+      options.lowerSourceX,
+      options.lowerSourceY,
+      options.sourceWidth,
+      options.sourceHeight
+    );
+
+  }
+
   copyFromFramebuffer(gl: GL, width: number, height: number) {
     this.bind(gl);
 
     const mipMapLevels = 0;
-    const format = gl.RGBA;
     const xOffset = 0;
     const yOffset = 0;
     const border = 0;
 
     glOpErr(
-        gl,
-        gl.copyTexSubImage2D.bind(this),
-        gl.TEXTURE_2D,
-        mipMapLevels,
-        format,
-        xOffset,
-        yOffset,
-        width,
-        height,
-        border
+      gl,
+      gl.copyTexSubImage2D.bind(this),
+      gl.TEXTURE_2D,
+      mipMapLevels,
+      formatToEnum(gl, this.options.format),
+      xOffset,
+      yOffset,
+      width,
+      height,
+      border
     );
 
     this.unbind(gl);
+  }
+
+  readPixelsViaFramebuffer(gl: GL, frameBuffer: FrameBuffer, options: ReadPixelOptions, pixelBuf: Uint8Array, handleBinding=false) {
+      if (handleBinding) {
+        frameBuffer.bind(gl);
+        this.bind(gl);
+      }
+
+      frameBuffer.readPixelsTo(gl, options, pixelBuf);
+
+      if (handleBinding) {
+        this.unbind(gl);
+        frameBuffer.unBind(gl);
+      }
+  }
+
+  writeToFile(filePath: string) {
+    
   }
 
   bind(gl: GL) {
@@ -203,6 +268,10 @@ export default class Texture {
     glOpErr(gl, gl.bindTexture.bind(this), gl.TEXTURE_2D, 0);
   }
 
+  static activateUnit(gl: GL, unitOffset: number) {
+     glOpErr(gl, gl.activeTexture.bind(this), gl.TEXTURE0 + unitOffset)
+  }
+
   getId(): GLObject<WebGLTexture> {
     return this.id;
   }
@@ -211,4 +280,17 @@ export default class Texture {
     return this.options;
   }
 
+  toString(): string {
+    return `Texture Object --\n
+            Wrapping Behavior X: ${this.options.wrapX}\n
+            Wrapping Behavior Y: ${this.options.wrapY}\n
+            Mag Filter: ${this.options.magFilter}\n
+            Min Filter: ${this.options.minFilter}\n
+            Format: ${this.options.format}
+    `
+  }
+
+  log(logger: (s: string) => void = console.log) {
+     logger(this.toString());
+  }
 }
