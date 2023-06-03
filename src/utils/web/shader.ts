@@ -129,8 +129,8 @@ export default class Shader {
     this.linked = true;
   }
 
-  async construct(gl: GL, shaderPath: string) {
-    await this.compileFromFile(gl, shaderPath);
+  async construct(gl: GL, shaderName: string) {
+    await this.compileFromFile(gl, shaderName);
     this.link(gl);
   }
 

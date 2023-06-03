@@ -32,13 +32,14 @@ export class VaoBuilder {
     numElements: number,
     typeName: AttributeType = "float",
     attributeName = "unknown"
-  ) {
+  ): VaoBuilder {
     this.typeData.push({
       typeSize: ATTRIBUTE_SIZE,
       numElements,
       typeName: typeName,
       attributeName,
     });
+    return this;
   }
 
   build(gl: GL): VertexArrayObject {

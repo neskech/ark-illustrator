@@ -5,14 +5,16 @@ import { type VertexArrayObject } from "./vertexArray";
 import type Buffer from "./buffer";
 import type Shader from "./shader";
 
-type PipelineFn = (
+export type PipelineFn = (
   gl: GL,
   vao: VertexArrayObject,
   vbo: Buffer,
+  shader: Shader,
+  target?: FrameBuffer,
   ebo?: Buffer
 ) => void;
 
-interface PipelineData {
+export interface PipelineData {
   name: string;
   vertexArray: VertexArrayObject;
   vertexBuffer: Buffer;
@@ -66,14 +68,14 @@ export default class RenderPipeline {
       this.indexBuffer.map((b) => b.bind(gl));
       this.renderTarget.map((f) => f.bind(gl));
 
-      if (this.indexBuffer.isSome())
-        this.initFn(
-          gl,
-          this.vertexArray,
-          this.vertexBuffer,
-          this.indexBuffer.unwrap()
-        );
-      else this.initFn(gl, this.vertexArray, this.vertexBuffer);
+    this.initFn(
+        gl,
+        this.vertexArray,
+        this.vertexBuffer,
+        this.shader,
+        this.renderTarget.isSome() ? this.renderTarget.unwrap() : undefined,
+        this.indexBuffer.isSome() ? this.indexBuffer.unwrap() : undefined,
+    );
 
       this.vertexArray.unbind(gl);
       this.vertexBuffer.unBind(gl);
@@ -100,15 +102,15 @@ export default class RenderPipeline {
       this.indexBuffer.map((b) => b.bind(gl));
       this.renderTarget.map((f) => f.bind(gl));
       this.shader.use(gl);
-
-      if (this.indexBuffer.isSome())
-        this.renderFn(
-          gl,
-          this.vertexArray,
-          this.vertexBuffer,
-          this.indexBuffer.unwrap()
-        );
-      else this.renderFn(gl, this.vertexArray, this.vertexBuffer);
+    
+      this.renderFn(
+            gl,
+            this.vertexArray,
+            this.vertexBuffer,
+            this.shader,
+            this.renderTarget.isSome() ? this.renderTarget.unwrap() : undefined,
+            this.indexBuffer.isSome() ? this.indexBuffer.unwrap() : undefined,
+      );
     
       this.vertexArray.unbind(gl);
       this.vertexBuffer.unBind(gl);
