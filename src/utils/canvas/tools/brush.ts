@@ -1,15 +1,26 @@
-import path from "path";
-import { requires } from "../contracts";
-import { Vec2F, vec2F } from "../web/vector";
-import next from "next/types";
-import scale from "vectorious/dist/core/scale";
-import { NDArray } from "vectorious";
+import { requires } from "../../contracts";
+import { type Vec2F, vec2F } from "../../web/vector";
+import { type NDArray } from "vectorious";
 import { assert } from "console";
+import { CanvasEventHandler, EventDispatcher, type Tool } from "./tool";
+import { todo } from "~/utils/func/funUtils";
 
-interface Brush {
+////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+            //! TYPE DEFINITIONS
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+export interface BrushSettings {
     size: number,
     opacity: number,
     smoothing: number
+}
+
+export interface Brush extends Tool {
+    settings: BrushSettings,
 }
 
 interface SmoothingOptions {
@@ -19,15 +30,64 @@ interface SmoothingOptions {
     smoothingFn?: SmoothFunction
 }
 
+
+////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+            //! CONSTRUCTOR + CONCRETE FUNCTIONS
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+const dispatcher: EventDispatcher = function(this: Brush, event, handler, state) {
+    requires(() => isValidBrush(this));
+
+    console.info(`Event handler called for brush tool with event of type ${event.type}`);
+
+    event.preventDefault();
+    handler(event, state);
+}
+
+const mouseMove: CanvasEventHandler = function(this: Brush, event, state, x, y) {
+    
+    todo();
+}
+
+const mouseDown: CanvasEventHandler = function(this: Brush, event, state, x, y) {
+    todo();
+}
+
+const mouseUp: CanvasEventHandler = function(this: Brush, event, state, x, y) {
+    todo();
+}
+
+export function createBrush(settings: BrushSettings): Brush {
+    return {
+        settings,
+        dispatchEvent: dispatcher,
+        mousedown: mouseDown,
+        mouseup: mouseUp,
+        mousemove: mouseMove,
+    }
+}
+
+
+////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+            //! HELPERS
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 type Path = Vec2F[];
 type SmoothFunction = 'Bezier' | 'Bezier Spline' | 'Idk'
 
 const MAX_BEZIER_INTERPOLATIONS = 10
-const MAX_BEZIER_SPLINE_LENGTH = 5
 
 function isValidBrush(b: Brush): boolean {
-    return 0 <= b.opacity && b.opacity <= 100 &&
-           0 <= b.smoothing && b.smoothing <= 100;
+    return 0 <= b.settings.opacity && b.settings.opacity <= 100 &&
+           0 <= b.settings.smoothing && b.settings.smoothing <= 100;
 }
 
 

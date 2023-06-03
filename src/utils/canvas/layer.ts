@@ -1,5 +1,5 @@
-import { GL } from "../web/glUtils";
-import Texture, { TextureOptions } from "../web/texture";
+import { type GL } from "../web/glUtils";
+import Texture, { type TextureOptions } from "../web/texture";
 
 const LAYER_TEXTURE_OPTIONS: TextureOptions = {
     wrapX: 'Clamp To Edge',
@@ -9,7 +9,7 @@ const LAYER_TEXTURE_OPTIONS: TextureOptions = {
     format: 'RGBA'
 }
 
-class Layer {
+export default class Layer {
     imageData: Texture 
 
     constructor(gl: GL) {

@@ -91,6 +91,7 @@ export function curry<F extends Fun>(f: F): ReturnCurry<F> {
   return ((a: First<Parameters<F>>) => curry((...args) => f(a, ...args))) as ReturnCurry<F>;
 }
 
+export const todo = () => { throw new Error("todo") };
 export const greaterThan = (a: number) => (b: number) => b > a;
 export const lessThan = (a: number) => (b: number) => a > b;
 export const greaterThanEqual = (a: number) => (b: number) => b >= a;
