@@ -1,29 +1,60 @@
+import { type Option } from "~/utils/func/option";
 import { type CanvasState } from "../canvas";
 import { type Brush } from "./brush";
+import { type GlobalToolSettings } from './settings';
 
-type EventString = keyof HTMLElementEventMap
-export type CanvasEventHandler = (e: CanvasEvent, state: CanvasState, canvasX?: number, canvasY?: number) => void;
-export type CanvasEvent = HTMLElementEventMap[EventString]
-export type EventDispatcher = (e: CanvasEvent, evFn: CanvasEventHandler, state: CanvasState) => void
- 
-type Tool_ = {
-    [key in EventString]?: CanvasEventHandler;
+type EventString = keyof HTMLElementEventMap;
+export type CanvasEventHandler<Settings> = (
+  e: CanvasEvent,
+  state: CanvasState,
+  settings?: Settings,
+  canvasX?: number,
+  canvasY?: number
+) => void;
+
+export type CanvasEvent = HTMLElementEventMap[EventString];
+
+export type EventDispatcher<S> = (
+  e: CanvasEvent,
+  evFn: CanvasEventHandler<S>,
+  state: CanvasState,
+  settings: GlobalToolSettings,
+  presetNumber: Option<number>
+) => void;
+
+type Tool_<Settings> = {
+  [key in EventString]?: CanvasEventHandler<Settings>;
 };
 
-export interface Tool extends Tool_ {
-    dispatchEvent: EventDispatcher
+export interface Tool<S> extends Tool_<S> {
+  dispatchEvent: EventDispatcher<S>;
 }
 
 type ToolMap = {
-    brush: Brush
+  brush: Brush;
+};
+type ToolType = keyof ToolMap;
+
+export interface HandleEventArgs {
+  map: ToolMap;
+  currentTool: ToolType;
+  canvasState: CanvasState;
+  event: CanvasEvent;
+  globalSettings: GlobalToolSettings;
+  presetNumber: Option<number>;
 }
-type ToolType = keyof ToolMap
 
-export function handleEvent(map: ToolMap, currentTool: ToolType, event: CanvasEvent, state: CanvasState): void {
-    const tool = map[currentTool];
-    const evStr: EventString = event.type as EventString; //TODO: pain point
-    const handler = tool[evStr];
+export function handleEvent({
+  map,
+  currentTool,
+  event,
+  canvasState,
+  globalSettings,
+  presetNumber,
+}: HandleEventArgs): void {
+  const tool = map[currentTool];
+  const evStr: EventString = event.type as EventString; //TODO: pain point
+  const handler = tool[evStr];
 
-    if (handler)
-        tool.dispatchEvent(event, handler, state);
+  if (handler) tool.dispatchEvent(event, handler, canvasState, globalSettings, presetNumber);
 }

@@ -2,6 +2,7 @@ import { requires } from "~/utils/contracts";
 import { type CanvasEventHandler, type EventDispatcher, type Tool } from "./tool";
 import { todo } from "~/utils/func/funUtils";
 import { vec2F, type Vec2F } from "~/utils/web/vector";
+import { Unit } from "~/utils/func/result";
 
 
 ////////////////////////////////////////////////////////////////
@@ -13,9 +14,12 @@ import { vec2F, type Vec2F } from "~/utils/web/vector";
 
 const ROTATION_SENSITIVITY = 1.0;
 
-export interface Rotation extends Tool {
+export interface Rotation extends Tool<Unit> {
     centerOfRotation: Vec2F
 }
+
+type Disptatch = EventDispatcher<Unit>;
+type Handler = CanvasEventHandler<Unit>;
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -25,7 +29,7 @@ export interface Rotation extends Tool {
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-const dispatcher: EventDispatcher = function(event, handler, state) {
+const dispatcher: Disptatch = function(event, handler, state) {
     requires(isValidRotator());
 
     console.info(`Event handler called for rotation tool with event of type ${event.type}`);
@@ -34,15 +38,15 @@ const dispatcher: EventDispatcher = function(event, handler, state) {
     handler(event, state);
 }
 
-const mouseMove: CanvasEventHandler = function(event, state, x, y) {
+const mouseMove: Handler = function(event, state) {
     todo();
 }
 
-const mouseDown: CanvasEventHandler = function(event, state, x, y) {
+const mouseDown: Handler = function(event, state) {
     todo();
 }
 
-const mouseUp: CanvasEventHandler = function(event, state, x, y) {
+const mouseUp: Handler = function(event, state) {
     todo();
 }
 

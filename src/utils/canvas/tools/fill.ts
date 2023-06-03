@@ -1,10 +1,11 @@
-import { requires } from "~/utils/contracts";
+import { requires } from '~/utils/contracts';
 import {
   type CanvasEventHandler,
   type EventDispatcher,
   type Tool,
-} from "./tool";
-import { todo } from "~/utils/func/funUtils";
+} from './tool';
+import { todo } from '~/utils/func/funUtils';
+import { type FillSettings } from './settings';
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -12,14 +13,11 @@ import { todo } from "~/utils/func/funUtils";
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Fill extends Tool<FillSettings> {}
 
-export interface FillSettings {
-  tolerance: number;
-}
-
-export interface Fill extends Tool {
-  settings: FillSettings;
-}
+type Disptatch = EventDispatcher<FillSettings>;
+type Handler = CanvasEventHandler<FillSettings>;
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -29,8 +27,7 @@ export interface Fill extends Tool {
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-const dispatcher: EventDispatcher = function (this: Fill, event, handler, state) {
-  requires(isValidFill(this));
+const dispatcher: Disptatch = function (this: Fill, event, handler, state) {
 
   console.info(
     `Event handler called for rotation tool with event of type ${event.type}`
@@ -40,21 +37,20 @@ const dispatcher: EventDispatcher = function (this: Fill, event, handler, state)
   handler(event, state);
 };
 
-const mouseMove: CanvasEventHandler = function (this: Fill, event, state, x, y) {
+const mouseMove: Handler = function (this: Fill, event, state) {
   todo();
 };
 
-const mouseDown: CanvasEventHandler = function (this: Fill, event, state, x, y) {
+const mouseDown: Handler = function (this: Fill, event, state) {
   todo();
 };
 
-const mouseUp: CanvasEventHandler = function (this: Fill, event, state, x, y) {
+const mouseUp: Handler = function (this: Fill, event, state) {
   todo();
 };
 
-export function createBrush(settings: FillSettings): Fill {
+export function createFill(): Fill {
   return {
-    settings,
     dispatchEvent: dispatcher,
     mousedown: mouseDown,
     mouseup: mouseUp,
@@ -70,6 +66,6 @@ export function createBrush(settings: FillSettings): Fill {
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-function isValidFill(f: Fill) {
-  return 0 <= f.settings.tolerance && f.settings.tolerance <= 1;
+function areValidFillSettings(f: FillSettings) {
+  return 0 <= f.tolerance && f.tolerance <= 1;
 }

@@ -6,16 +6,18 @@ import { Unit, unit } from "~/utils/func/result";
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-            //! TYPE DEFINITIONS
+            //! TYPE DEFINITIONS + CONSTANTS
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 const HAND_SENSITIVITY = 1.0;
 
-export interface Hand extends Tool {
-    empty: Unit //gets rid of linter error
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Hand extends Tool<Unit> {}
+
+type Dispatch = EventDispatcher<Unit>
+type Handler = CanvasEventHandler<Unit>
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -25,7 +27,7 @@ export interface Hand extends Tool {
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-const dispatcher: EventDispatcher = function(event, handler, state) {
+const dispatcher: Dispatch = function(event, handler, state) {
     requires(isValidHand());
 
     console.info(`Event handler called for hand tool with event of type ${event.type}`);
@@ -34,21 +36,20 @@ const dispatcher: EventDispatcher = function(event, handler, state) {
     handler(event, state);
 }
 
-const mouseMove: CanvasEventHandler = function(event, state, x, y) {
+const mouseMove: Handler = function(event, state, x, y) {
     todo();
 }
 
-const mouseDown: CanvasEventHandler = function(event, state, x, y) {
+const mouseDown: Handler = function(event, state, x, y) {
     todo();
 }
 
-const mouseUp: CanvasEventHandler = function(event, state, x, y) {
+const mouseUp: Handler = function(event, state, x, y) {
     todo();
 }
 
 export function createBrush(): Hand {
     return {
-        empty: unit,
         dispatchEvent: dispatcher,
         mousedown: mouseDown,
         mouseup: mouseUp,

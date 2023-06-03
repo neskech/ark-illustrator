@@ -1,11 +1,11 @@
-import { requires } from "~/utils/contracts";
+import { requires } from '~/utils/contracts';
 import {
   type CanvasEventHandler,
   type EventDispatcher,
   type Tool,
-} from "./tool";
-import { todo } from "~/utils/func/funUtils";
-import { type Unit, unit } from "~/utils/func/result";
+} from './tool';
+import { todo } from '~/utils/func/funUtils';
+import { type Unit, unit } from '~/utils/func/result';
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -16,9 +16,11 @@ import { type Unit, unit } from "~/utils/func/result";
 
 const ROTATION_SENSITIVITY = 1.0;
 
-export interface Zoom extends Tool {
-  empty: Unit;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Zoom extends Tool<Unit> {}
+
+type Disptatch = EventDispatcher<Unit>;
+type Handler = CanvasEventHandler<Unit>;
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -28,7 +30,7 @@ export interface Zoom extends Tool {
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-const dispatcher: EventDispatcher = function (event, handler, state) {
+const dispatcher: Disptatch = function (event, handler, state) {
   requires(isValidRotator());
 
   console.info(
@@ -39,21 +41,20 @@ const dispatcher: EventDispatcher = function (event, handler, state) {
   handler(event, state);
 };
 
-const mouseMove: CanvasEventHandler = function (event, state, x, y) {
+const mouseMove: Handler = function (event, state) {
   todo();
 };
 
-const mouseDown: CanvasEventHandler = function (event, state, x, y) {
+const mouseDown: Handler = function (event, state) {
   todo();
 };
 
-const mouseUp: CanvasEventHandler = function (event, state, x, y) {
+const mouseUp: Handler = function (event, state) {
   todo();
 };
 
 export function createBrush(): Zoom {
   return {
-    empty: unit,
     dispatchEvent: dispatcher,
     mousedown: mouseDown,
     mouseup: mouseUp,
