@@ -1,21 +1,12 @@
 import { NDArray } from "vectorious";
 import { requires } from "../contracts";
-import { P } from "../func/match";
 import {
-  type Mat2x2,
-  type Mat4x4,
   type Vec3F,
-  mat2x2,
   vec3F,
-  Mat3x3,
-  mat3x3,
-  Vec2F,
+  type Vec2F,
 } from "../web/vector";
 
-const CANVAS_WIDTH = 1;
-const CANVAS_HEIGHT = 1;
 const DEFAULT_ZOOM = 1;
-
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 10;
 
@@ -91,7 +82,7 @@ function viewMatrixFrom(
   up: Vec3F,
   right: Vec3F,
   position: Vec3F
-): Mat4x4 {
+): NDArray {
   //https://learnopengl.com/Getting-started/Camera
   const leftMat = new NDArray(
     [
@@ -117,8 +108,7 @@ function viewMatrixFrom(
       dtype: "float32",
     }
   );
-  leftMat.dot(rightMat);
-  return { val: leftMat, __type: "Mat4x4" };
+  return leftMat.multiply(rightMat);
 }
 
 function deg2Rads(degrees: number): number {
@@ -129,21 +119,17 @@ function clamp(min: number, max: number, x: number): number {
   return x < min ? min : x > max ? max : x;
 }
 
-class Camera {
+export default class Camera {
   private position: Vec3F;
   private rotation: number;
   private fov: number;
   private zNear: number;
   private zFar: number;
-  private screenAspectRation: number;
+  private screenAspectRatio: number;
 
-  private viewMatrix: Mat4x4;
-  private projectionMatrix: Mat4x4;
 
-  private rotationMatrix: Mat2x2;
-
-  constructor(canvasAspectRatio: number, screenAspectRation: number) {
-    requires(canvasAspectRatio > 0 && screenAspectRation > 0);
+  constructor(canvasAspectRatio: number, screenAspectRatio: number) {
+    requires(canvasAspectRatio > 0 && screenAspectRatio > 0);
 
     /**
      * We desire for z = 1 to be the 'default zoom' level
@@ -173,7 +159,7 @@ class Camera {
 
     this.rotation = 0;
     this.position = vec3F(0, 0, 1);
-    this.screenAspectRation = screenAspectRation;
+    this.screenAspectRatio = screenAspectRatio;
 
     /**
      * If we zoom in farther than zNear, the canvas
@@ -187,62 +173,28 @@ class Camera {
      */
     this.zNear = MIN_ZOOM;
     this.zFar = MAX_ZOOM;
-
-    /**
-     * Since the user may be static (no camera movements)
-     * for much of the time (as is the nature of a drawing
-     * application) it seems reasonable to cache these matrices'
-     * instead of constantly recreating them
-     *
-     * Even if we did update consistently, having values that
-     * stick around like this prevents unnecessary heap allocations
-     */
-
-    //https://learnopengl.com/Getting-started/Camera
-    const camDirection = vec3F(0, 0, -1);
-    const camUp = vec3F(0, 1, 0);
-    const camRight = vec3F(1, 0, 0);
-    this.viewMatrix = viewMatrixFrom(
-      camDirection,
-      camUp,
-      camRight,
-      this.position
-    );
-
-    /**
-     * We want the canvas to get farther away as we zoom out,
-     * so an orthographic matrix would not suffice
-     */
-    this.projectionMatrix = this.makePerspectiveMatrix();
-
-    /**
-     * The standard basis corresponds to rotation
-     * = 0
-     *
-     * We use this for rotating any translation vectors
-     * we get in the translate() function
-     */
-    this.rotationMatrix = mat2x2([
-      [1, 0],
-      [0, 1],
-    ]);
   }
 
-  private makeViewMatrix() {
+  private makeViewMatrix(): NDArray {
+    const rotationMatrix = rotationMatrixFrom(deg2Rads(this.rotation));
+
     const camDirection = vec3F(0, 0, -1);
+
     //second column
     const camUp = vec3F(
-      this.rotationMatrix.val.data[1],
-      this.rotationMatrix.val.data[3],
+      rotationMatrix.data[1],
+      rotationMatrix.data[3],
       0
     );
+
     //first column
     const camRight = vec3F(
-      this.rotationMatrix.val.data[0],
-      this.rotationMatrix.val.data[2],
+      rotationMatrix.data[0],
+      rotationMatrix.data[2],
       0
     );
-    this.viewMatrix = viewMatrixFrom(
+
+    return viewMatrixFrom(
       camDirection,
       camUp,
       camRight,
@@ -250,20 +202,8 @@ class Camera {
     );
   }
 
-  private makePerspectiveMatrix() {}
-
   translateRotation(translation: number) {
-    //https://en.wikipedia.org/wiki/Rotation_matrix
     this.rotation = (translation + this.rotation) % 360;
-    const radians = deg2Rads(this.rotation);
-
-    //TODO indexing could be wrong
-    this.rotationMatrix.val.data[0] = Math.cos(radians);
-    this.rotationMatrix.val.data[1] = -Math.sin(radians);
-    this.rotationMatrix.val.data[3] = Math.sin(radians);
-    this.rotationMatrix.val.data[4] = Math.cos(radians);
-
-    this.makeViewMatrix();
   }
 
   setRotation(theta: number) {
@@ -272,25 +212,20 @@ class Camera {
   }
 
   translatePosition(translation: Vec2F) {
-    const rotated = this.rotationMatrix.val.copy().multiply(translation.val);
+    const rotationMatrix = rotationMatrixFrom(deg2Rads(this.rotation));
+    const rotated = rotationMatrix.multiply(translation.val);
     this.position.val.x += rotated.x;
     this.position.val.y += rotated.y;
-
-    this.makeViewMatrix();
   }
 
   setPosition(position: Vec2F) {
     this.position.val.x = position.val.x;
     this.position.val.y = position.val.y;
-
-    this.makeViewMatrix();
   }
 
   translateZoom(translation: number) {
     const newZ = this.position.val.z + translation;
     this.position.val.z = clamp(MIN_ZOOM, MAX_ZOOM, newZ);
-
-    this.makeViewMatrix();
   }
 
   setZoom(zoomLevel: number) {
@@ -299,11 +234,11 @@ class Camera {
   }
 
   getViewMatrixRaw(): NDArray {
-    return this.viewMatrix.val;
+    return this.makeViewMatrix();
   }
 
   getProjectionMatrixRaw(): NDArray {
-    return this.projectionMatrix.val;
+    return perspectiveMatrixFrom(this.fov, this.screenAspectRatio, this.zNear, this.zFar);
   }
 
   getTransformMatrixRaw(): NDArray {
@@ -319,9 +254,9 @@ class Camera {
             zFar: ${this.zFar}\n\n
 
             Matrices --\n
-            View Matrix: ${this.viewMatrix.val.toString()}\n\n
-            Projection Matrix: ${this.projectionMatrix.val.toString()}\n\n
-            Rotation Matrix: ${this.rotationMatrix.val.toString()}
+            View Matrix: ${this.getViewMatrixRaw().toString()}\n\n
+            Projection Matrix: ${this.getProjectionMatrixRaw().toString()}\n\n
+            Rotation Matrix: ${rotationMatrixFrom(this.rotation).toString()}
     `;
   }
 
