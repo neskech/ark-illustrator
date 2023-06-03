@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
+import Jimp from "jimp";
+import { assert, requires } from "../contracts";
 import { unreachable } from "../func/funUtils";
-import { Option } from "../func/option";
+import { None, Option, Some } from "../func/option";
 import type FrameBuffer from "./frameBuffer";
 import { type ReadPixelOptions } from "./frameBuffer";
 import {
@@ -10,6 +12,7 @@ import {
   type Color,
   colorTypeToPacked,
 } from "./glUtils";
+import { Err, Ok, type Result, type Unit, unit } from "../func/result";
 
 type TextureFilter = "Linear" | "Nearest";
 type TextureWrap = "Clamp To Edge" | "Repeat" | "Mirrored Repeat";
@@ -63,24 +66,56 @@ export interface CopySubTextureOptions {
 }
 
 export interface TextureOptions {
+  width?: number;
+  height?: number;
   wrapX: TextureWrap;
   wrapY: TextureWrap;
   minFilter: TextureFilter;
   magFilter: TextureFilter;
-  format: Format
+  format: Format;
 }
 
 export default class Texture {
   private id: GLObject<WebGLTexture>;
   private options: TextureOptions;
+  private width: Option<number>;
+  private height: Option<number>;
 
   constructor(gl: GL, options: TextureOptions) {
     const bId = Option.fromNull(glOpErr(gl, gl.createTexture.bind(this)));
     const gId = bId.expect(`Couldn't create texture with options ${options}`);
-    this.id = new GLObject(gId, 'texture');
+    this.id = new GLObject(gId, "texture");
 
     this.options = options;
     this.setTextureParams(gl);
+
+    this.width = options.width == null ? None() : Some(options.width);
+    this.height = options.height == null ? None() : Some(options.height);
+  }
+
+  private assertValidDimensions() {
+    assert(this.width.isSome() && this.height.isSome());
+  }
+
+  private setDimensions(width: number, height: number) {
+    // if dimensions don't match, error. Else take them
+    this.width = Some(
+      this.width
+        .map((w) => {
+          assert(w == width);
+          return w;
+        })
+        .unwrapOrDefault(width)
+    );
+
+    this.height = Some(
+      this.height
+        .map((h) => {
+          assert(h == height);
+          return h;
+        })
+        .unwrapOrDefault(height)
+    );
   }
 
   private setTextureParams(gl: GL) {
@@ -128,7 +163,6 @@ export default class Texture {
     data: ArrayBufferView,
     offset = 0
   ) {
-
     const mipMapLevels = 0; //something to consider for future
     const border = 0;
 
@@ -146,10 +180,11 @@ export default class Texture {
       data,
       offset
     );
-
   }
 
   allocateEmpty(gl: GL, width: number, height: number, clearColor: Color) {
+    this.setDimensions(width, height);
+
     const packedColor = colorTypeToPacked(clearColor);
     const pixels = new Uint32Array(width * height);
 
@@ -172,7 +207,7 @@ export default class Texture {
       const pixel = new Uint8Array([255, 255, 255, 255]);
       this.allocateFromPixels(gl, 1, 1, pixel);
     }
-    
+
     const format = formatToEnum(gl, this.options.format);
     function allocateFromImg() {
       const mipMapLevels = 0;
@@ -192,15 +227,15 @@ export default class Texture {
       this.bind(gl);
       glOpErr(gl, allocateFromImg);
       this.unbind(gl);
+
+      this.setDimensions(img.width, img.height);
     };
 
     img.src = url;
   }
 
-  allocateFromSubFramebuffer(
-    gl: GL,
-    options: CopySubTextureOptions
-  ) {
+  allocateFromSubFramebuffer(gl: GL, options: CopySubTextureOptions) {
+    this.setDimensions(options.sourceWidth, options.sourceHeight);
 
     const mipMapLevels = 0;
     glOpErr(
@@ -215,16 +250,17 @@ export default class Texture {
       options.sourceWidth,
       options.sourceHeight
     );
-
   }
 
-  copyFromFramebuffer(gl: GL, width: number, height: number) {
+  copyFromFramebuffer(gl: GL, frameBuffer: FrameBuffer) {
     this.bind(gl);
 
     const mipMapLevels = 0;
     const xOffset = 0;
     const yOffset = 0;
     const border = 0;
+
+    this.setDimensions(frameBuffer.getWidth(), frameBuffer.getHeight());
 
     glOpErr(
       gl,
@@ -234,30 +270,73 @@ export default class Texture {
       formatToEnum(gl, this.options.format),
       xOffset,
       yOffset,
-      width,
-      height,
+      this.width.unwrap(),
+      this.height.unwrap(),
       border
     );
 
     this.unbind(gl);
   }
 
-  readPixelsViaFramebuffer(gl: GL, frameBuffer: FrameBuffer, options: ReadPixelOptions, pixelBuf: Uint8Array, handleBinding=false) {
-      if (handleBinding) {
-        frameBuffer.bind(gl);
-        this.bind(gl);
-      }
+  readPixelsViaFramebuffer(
+    gl: GL,
+    frameBuffer: FrameBuffer,
+    options: ReadPixelOptions,
+    pixelBuf: Uint8Array,
+    handleBinding = false
+  ) {
+    if (handleBinding) {
+      frameBuffer.bind(gl);
+      this.bind(gl);
+    }
 
-      frameBuffer.readPixelsTo(gl, options, pixelBuf);
+    this.setDimensions(frameBuffer.getWidth(), frameBuffer.getHeight());
+    frameBuffer.readPixelsTo(gl, options, pixelBuf);
 
-      if (handleBinding) {
-        this.unbind(gl);
-        frameBuffer.unBind(gl);
-      }
+    if (handleBinding) {
+      this.unbind(gl);
+      frameBuffer.unBind(gl);
+    }
   }
 
-  writeToFile(filePath: string) {
-    
+  async writeToFileViaFramebuffer(
+    gl: GL,
+    filePath: string,
+    frameBuffer: FrameBuffer,
+    options: ReadPixelOptions
+  ): Promise<Result<Unit, string>> {
+    this.assertValidDimensions();
+    requires(this.options.format == 'RGBA');
+
+    const w = this.width.unwrap();
+    const h = this.height.unwrap();
+    const channels = 4; // r g b a
+
+    const pixelBuf = new Uint8Array(w * h * channels);
+    this.readPixelsViaFramebuffer(gl, frameBuffer, options, pixelBuf, true);
+
+    try {
+      const img = await Jimp.create(w, h);
+      for (let i = 0; i < w * h; i++) {
+
+        const red = pixelBuf[i];
+        const blue = pixelBuf[i + 1];
+        const green = pixelBuf[i + 2];
+        const alpha = pixelBuf[i + 3];
+
+        img.bitmap.data[i] =  (alpha << 24) | (green << 16) | (blue << 8) | red;
+      }
+
+      await img.writeAsync(filePath);
+      return Ok(unit);
+
+    } catch (err) {
+       const errMsg = `Failed to write texture to ${filePath}\n
+                       Texture Information: ${this.toString()}\n`
+       if (err instanceof Error)
+         return Err(`${errMsg}\n\nThe error: ${err.message}`)
+       return Err(errMsg);
+    }
   }
 
   bind(gl: GL) {
@@ -269,7 +348,7 @@ export default class Texture {
   }
 
   static activateUnit(gl: GL, unitOffset: number) {
-     glOpErr(gl, gl.activeTexture.bind(this), gl.TEXTURE0 + unitOffset)
+    glOpErr(gl, gl.activeTexture.bind(this), gl.TEXTURE0 + unitOffset);
   }
 
   getId(): GLObject<WebGLTexture> {
@@ -280,17 +359,27 @@ export default class Texture {
     return this.options;
   }
 
+  getWidth() {
+    return this.width.expect('tried getting texture width, but it was unspecified');
+  }
+
+  getHeight() {
+    return this.height.expect('tried getting texture height, but it was unspecified');
+  }
+
   toString(): string {
     return `Texture Object --\n
+            Width: ${this.width.map(t => `${t}`).unwrapOrDefault('unspecified')}\n
+            Height: ${this.height.map(t => `${t}`).unwrapOrDefault('unspecified')}\n
             Wrapping Behavior X: ${this.options.wrapX}\n
             Wrapping Behavior Y: ${this.options.wrapY}\n
             Mag Filter: ${this.options.magFilter}\n
             Min Filter: ${this.options.minFilter}\n
             Format: ${this.options.format}
-    `
+    `;
   }
 
   log(logger: (s: string) => void = console.log) {
-     logger(this.toString());
+    logger(this.toString());
   }
 }

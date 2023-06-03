@@ -46,22 +46,22 @@ function targetToEnum(gl: GL, t: FrameBufferTarget): GLenum {
 }
 
 function fStatusToString(gl: GL, s: GLenum): string {
-    requires(s != gl.FRAMEBUFFER_COMPLETE);
+  requires(s != gl.FRAMEBUFFER_COMPLETE);
 
-    switch (s) {
-        case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-            return 'FRAMEBUFFER_INCOMPLETE_ATTACHMENT'
-        case gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-            return 'FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT'
-        case gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-            return 'FRAMEBUFFER_INCOMPLETE_DIMENSIONS'
-        case gl.FRAMEBUFFER_UNSUPPORTED:
-            return 'FRAMEBUFFER_UNSUPPORTED'
-        case gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-            return 'FRAMEBUFFER_INCOMPLETE_MULTISAMPLE'
-        default:
-            return unreachable();
-    }
+  switch (s) {
+    case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+      return "FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+    case gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+      return "FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+    case gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+      return "FRAMEBUFFER_INCOMPLETE_DIMENSIONS";
+    case gl.FRAMEBUFFER_UNSUPPORTED:
+      return "FRAMEBUFFER_UNSUPPORTED";
+    case gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+      return "FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+    default:
+      return unreachable();
+  }
 }
 
 export interface ReadPixelOptions {
@@ -82,32 +82,47 @@ export interface BlitOptions {
 
 export interface FrameBufferOptions {
   target: FrameBufferTarget;
+  width: number;
+  height: number;
 }
 export default class FrameBuffer {
   private id: GLObject<WebGLFramebuffer>;
-  private options: FrameBufferOptions;
+  private target: FrameBufferTarget
+  private width: number
+  private height: number
 
-  constructor(gl: GL, options: FrameBufferOptions) {
+  constructor(gl: GL, {target, width, height}: FrameBufferOptions) {
     const fId = Option.fromNull(glOpErr(gl, gl.createFramebuffer.bind(this)));
     const fgId = fId.expect("Couldn't create vertex buffer");
     this.id = new GLObject(fgId);
-    this.options = options;
+    this.target = target;
+    this.width = width;
+    this.height = height;
   }
 
   assertOkStatus(gl: GL) {
     this.bind(gl);
 
-    const status = gl.checkFramebufferStatus(targetToEnum(gl, this.options.target));
+    const status = gl.checkFramebufferStatus(
+      targetToEnum(gl, this.target)
+    );
     if (status != gl.FRAMEBUFFER_COMPLETE)
-        throw new Error(`Invalid framebuffer status with status ${fStatusToString(gl, status)}`)
+      throw new Error(
+        `Invalid framebuffer status with status ${fStatusToString(gl, status)}`
+      );
 
-    this.unBind(gl)
+    this.unBind(gl);
   }
 
-  blitTo(gl: GL, readBuffer: FrameBuffer, blitOptions: BlitOptions, handleBinding=false) {
+  blitTo(
+    gl: GL,
+    readBuffer: FrameBuffer,
+    blitOptions: BlitOptions,
+    handleBinding = false
+  ) {
     if (handleBinding) {
-        this.bind(gl);
-        readBuffer.bind(gl);
+      this.bind(gl);
+      readBuffer.bind(gl);
     }
 
     glOpErr(
@@ -126,8 +141,8 @@ export default class FrameBuffer {
     );
 
     if (handleBinding) {
-        this.unBind(gl);
-        readBuffer.unBind(gl);
+      this.unBind(gl);
+      readBuffer.unBind(gl);
     }
 
     this.assertOkStatus(gl);
@@ -135,11 +150,16 @@ export default class FrameBuffer {
   }
 
   attachTexture(gl: GL, texture: Texture) {
+    requires(
+      this.width == texture.getWidth() &&
+      this.height == texture.getHeight()
+    );
+
     const mipMapLevels = 0;
     glOpErr(
       gl,
       gl.framebufferTexture2D.bind(this),
-      targetToEnum(gl, this.options.target),
+      targetToEnum(gl, this.target),
       gl.COLOR_ATTACHMENT0,
       gl.TEXTURE_2D,
       texture.getId().innerId(),
@@ -151,16 +171,16 @@ export default class FrameBuffer {
 
   readPixelsTo(gl: GL, options: ReadPixelOptions, pixelBuf: Uint8Array) {
     glOpErr(
-        gl,
-        gl.readPixels.bind(this),
-        options.lowerLeftX,
-        options.lowerLeftY,
-        options.width,
-        options.height,
-        formatToEnum(gl, options.format),
-        gl.UNSIGNED_BYTE,
-        pixelBuf,
-        0
+      gl,
+      gl.readPixels.bind(this),
+      options.lowerLeftX,
+      options.lowerLeftY,
+      options.width,
+      options.height,
+      formatToEnum(gl, options.format),
+      gl.UNSIGNED_BYTE,
+      pixelBuf,
+      0
     );
   }
 
@@ -168,7 +188,7 @@ export default class FrameBuffer {
     glOpErr(
       gl,
       gl.bindFramebuffer.bind(this),
-      targetToEnum(gl, this.options.target),
+      targetToEnum(gl, this.target),
       this.id.innerId()
     );
   }
@@ -177,12 +197,16 @@ export default class FrameBuffer {
     glOpErr(
       gl,
       gl.bindFramebuffer.bind(this),
-      targetToEnum(gl, this.options.target),
+      targetToEnum(gl, this.target),
       0
     );
   }
 
-  getOptions() {
-    return this.options;
+  getWidth() {
+    return this.width;
+  }
+
+  getHeight() {
+    return this.height
   }
 }
