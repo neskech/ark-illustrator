@@ -36,7 +36,7 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader) {
                           uniform mat4 projection;
                           
                           void main() {
-                            gl_Position = vec4(a_position, 0, 1);
+                            gl_Position = projection * view * vec4(a_position, 0, 1);
                             gl_PointSize = 64.0;
                           }\n`;
    console.log(fragmentSource, '\n\n', vertexSource)
