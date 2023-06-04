@@ -92,7 +92,7 @@ export default class FrameBuffer {
   private height: number;
 
   constructor(gl: GL, { target, width, height }: FrameBufferOptions) {
-    const fId = Option.fromNull(glOpErr(gl, gl.createFramebuffer.bind(this)));
+    const fId = Option.fromNull(glOpErr(gl, gl.createFramebuffer.bind(gl)));
     const fgId = fId.expect("Couldn't create vertex buffer");
     this.id = new GLObject(fgId);
     this.target = target;
@@ -125,7 +125,7 @@ export default class FrameBuffer {
 
     glOpErr(
       gl,
-      gl.blitFramebuffer.bind(this),
+      gl.blitFramebuffer.bind(gl),
       blitOptions.srcBottomLeft[0],
       blitOptions.srcBottomLeft[1],
       blitOptions.srcTopLeft[0],
@@ -155,7 +155,7 @@ export default class FrameBuffer {
     const mipMapLevels = 0;
     glOpErr(
       gl,
-      gl.framebufferTexture2D.bind(this),
+      gl.framebufferTexture2D.bind(gl),
       targetToEnum(gl, this.target),
       gl.COLOR_ATTACHMENT0,
       gl.TEXTURE_2D,
@@ -169,7 +169,7 @@ export default class FrameBuffer {
   readPixelsTo(gl: GL, options: ReadPixelOptions, pixelBuf: Uint8Array) {
     glOpErr(
       gl,
-      gl.readPixels.bind(this),
+      gl.readPixels.bind(gl),
       options.lowerLeftX,
       options.lowerLeftY,
       options.width,
@@ -184,7 +184,7 @@ export default class FrameBuffer {
   bind(gl: GL) {
     glOpErr(
       gl,
-      gl.bindFramebuffer.bind(this),
+      gl.bindFramebuffer.bind(gl),
       targetToEnum(gl, this.target),
       this.id.innerId()
     );
@@ -193,9 +193,9 @@ export default class FrameBuffer {
   unBind(gl: GL) {
     glOpErr(
       gl,
-      gl.bindFramebuffer.bind(this),
+      gl.bindFramebuffer.bind(gl),
       targetToEnum(gl, this.target),
-      0
+      null
     );
   }
 

@@ -1,17 +1,19 @@
-import { type Option } from "../func/option";
-import type FrameBuffer from "./frameBuffer";
+import { type Option } from '../func/option';
+import type FrameBuffer from './frameBuffer';
 import { type GL } from './glUtils';
-import { type VertexArrayObject } from "./vertexArray";
-import type Buffer from "./buffer";
-import type Shader from "./shader";
+import { type VertexArrayObject } from './vertexArray';
+import type Buffer from './buffer';
+import type Shader from './shader';
+import { type CanvasState } from '../canvas/canvas';
 
 export type PipelineFn = (
   gl: GL,
   vao: VertexArrayObject,
   vbo: Buffer,
   shader: Shader,
+  state: CanvasState,
   target?: FrameBuffer,
-  ebo?: Buffer
+  ebo?: Buffer,
 ) => void;
 
 export interface PipelineData {
@@ -23,7 +25,7 @@ export interface PipelineData {
   renderTarget: Option<FrameBuffer>;
   renderFn: PipelineFn;
   initFn: PipelineFn;
-  benchmarkLogging: boolean
+  benchmarkLogging: boolean;
 }
 
 export default class RenderPipeline {
@@ -35,7 +37,7 @@ export default class RenderPipeline {
   private renderTarget: Option<FrameBuffer>;
   private renderFn: PipelineFn;
   private initFn: PipelineFn;
-  private benchmarkLogging: boolean
+  private benchmarkLogging: boolean;
 
   constructor({
     name,
@@ -46,7 +48,7 @@ export default class RenderPipeline {
     renderTarget,
     renderFn,
     initFn,
-    benchmarkLogging
+    benchmarkLogging,
   }: PipelineData) {
     this.name = name;
     this.vertexArray = vertexArray;
@@ -59,64 +61,28 @@ export default class RenderPipeline {
     this.benchmarkLogging = benchmarkLogging;
   }
 
-  init(gl: GL) {
-    if (this.benchmarkLogging) console.time(`Render pipeline init function for pipeline '${this.name}`)
-    
+  init(gl: GL, canvasState: CanvasState) {
+    if (this.benchmarkLogging)
+      console.time(`Render pipeline init function for pipeline '${this.name}`);
+
     try {
       this.vertexArray.bind(gl);
       this.vertexBuffer.bind(gl);
       this.indexBuffer.map((b) => b.bind(gl));
-      this.renderTarget.map((f) => f.bind(gl));
 
-    this.initFn(
+      this.initFn(
         gl,
         this.vertexArray,
         this.vertexBuffer,
         this.shader,
+        canvasState,
         this.renderTarget.isSome() ? this.renderTarget.unwrap() : undefined,
-        this.indexBuffer.isSome() ? this.indexBuffer.unwrap() : undefined,
-    );
-
-      this.vertexArray.unbind(gl);
-      this.vertexBuffer.unBind(gl);
-      this.indexBuffer.map((b) => b.unBind(gl));
-      this.renderTarget.map((f) => f.unBind(gl));
-
-    } catch (err) {
-      const errMsg = `Error in render pipeline '${this.name}' on render stage`;
-      if (err instanceof Error)
-        throw new Error(`${errMsg}\n\nReason: ${err.message}`);
-      throw new Error(errMsg);
-    }
-
-    if (this.benchmarkLogging) console.timeEnd(`Render pipeline init for pipeline '${this.name}`)
-  }
-
-
-  render(gl: GL) {
-    if (this.benchmarkLogging) console.time(`Render pipeline render function for pipeline '${this.name}`)
-
-    try {
-      this.vertexArray.bind(gl);
-      this.vertexBuffer.bind(gl);
-      this.indexBuffer.map((b) => b.bind(gl));
-      this.renderTarget.map((f) => f.bind(gl));
-      this.shader.use(gl);
-    
-      this.renderFn(
-            gl,
-            this.vertexArray,
-            this.vertexBuffer,
-            this.shader,
-            this.renderTarget.isSome() ? this.renderTarget.unwrap() : undefined,
-            this.indexBuffer.isSome() ? this.indexBuffer.unwrap() : undefined,
+        this.indexBuffer.isSome() ? this.indexBuffer.unwrap() : undefined
       );
-    
-      this.vertexArray.unbind(gl);
+
       this.vertexBuffer.unBind(gl);
       this.indexBuffer.map((b) => b.unBind(gl));
-      this.renderTarget.map((f) => f.unBind(gl));
-      this.shader.stopUsing(gl);
+      this.vertexArray.unBind(gl);
 
     } catch (err) {
       const errMsg = `Error in render pipeline '${this.name}' on init stage`;
@@ -125,14 +91,56 @@ export default class RenderPipeline {
       throw new Error(errMsg);
     }
 
-    if (this.benchmarkLogging) console.timeEnd(`Render pipeline render function for pipeline '${this.name}`)
+    if (this.benchmarkLogging)
+      console.timeEnd(`Render pipeline init for pipeline '${this.name}`);
+  }
+
+  render(gl: GL, canvasState: CanvasState) {
+    if (this.benchmarkLogging)
+      console.time(
+        `Render pipeline render function for pipeline '${this.name}`
+      );
+
+    try {
+      this.vertexArray.bind(gl);
+      this.vertexBuffer.bind(gl);
+      this.indexBuffer.map((b) => b.bind(gl));
+      this.renderTarget.map((f) => f.bind(gl));
+      this.shader.use(gl);
+
+      this.renderFn(
+        gl,
+        this.vertexArray,
+        this.vertexBuffer,
+        this.shader,
+        canvasState,
+        this.renderTarget.isSome() ? this.renderTarget.unwrap() : undefined,
+        this.indexBuffer.isSome() ? this.indexBuffer.unwrap() : undefined
+      );
+
+      this.vertexArray.unBind(gl);
+      this.vertexBuffer.unBind(gl);
+      this.indexBuffer.map((b) => b.unBind(gl));
+      this.renderTarget.map((f) => f.unBind(gl));
+      this.shader.stopUsing(gl);
+    } catch (err) {
+      const errMsg = `Error in render pipeline '${this.name}' on init stage`;
+      if (err instanceof Error)
+        throw new Error(`${errMsg}\n\nReason: ${err.message}`);
+      throw new Error(errMsg);
+    }
+
+    if (this.benchmarkLogging)
+      console.timeEnd(
+        `Render pipeline render function for pipeline '${this.name}`
+      );
   }
 
   destroy(gl: GL) {
     this.vertexArray.destroy(gl);
     this.vertexBuffer.destroy(gl);
     this.shader.destroy(gl);
-    this.indexBuffer.map(b => b.destroy(gl));
-    this.renderTarget.map(f => f.destroy(gl));
+    this.indexBuffer.map((b) => b.destroy(gl));
+    this.renderTarget.map((f) => f.destroy(gl));
   }
 }

@@ -23,6 +23,9 @@ let pipelines: PipelineMap;
 let running: boolean;
 
 export function init(canvas: HTMLCanvasElement) {
+  if (gl)
+    return;
+
   const result = Option.fromNull(canvas.getContext('webgl2'));
   gl = result.expect(
     'Could not intialize webgl2. Your browser may not support it'
@@ -35,7 +38,7 @@ export function init(canvas: HTMLCanvasElement) {
 
   initEventListeners(canvas);
 
-  pipelines.debugPipeline.init(gl);
+  pipelines.debugPipeline.init(gl, state);
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
@@ -63,6 +66,9 @@ function initEventListeners(canvas: HTMLCanvasElement) {
 }
 
 export function startRenderLoop() {
+  if (running)
+    return;
+    
   running = true;
   render();
 }
@@ -70,7 +76,10 @@ export function startRenderLoop() {
 function render() {
   if (!running) return;
 
-  pipelines.debugPipeline.render(gl);
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  pipelines.debugPipeline.render(gl, state);
 
   window.requestAnimationFrame(render);
 }

@@ -92,6 +92,8 @@ export function curry<F extends Fun>(f: F): ReturnCurry<F> {
 }
 
 export const todo = () => { throw new Error("todo") };
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const todoEmpty = () => {};
 export const greaterThan = (a: number) => (b: number) => b > a;
 export const lessThan = (a: number) => (b: number) => a > b;
 export const greaterThanEqual = (a: number) => (b: number) => b >= a;

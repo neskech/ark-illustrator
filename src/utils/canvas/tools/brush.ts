@@ -1,9 +1,9 @@
 import { requires } from "../../contracts";
 import { type Vec2F, vec2F } from "../../web/vector";
 import { type NDArray } from "vectorious";
-import { assert } from "console";
+import { assert } from "../../contracts";
 import { type CanvasEventHandler, type EventDispatcher, type Tool } from "./tool";
-import { todo } from "~/utils/func/funUtils";
+import { todo, todoEmpty } from "~/utils/func/funUtils";
 import { type BrushSettings } from "./settings";
 
 ////////////////////////////////////////////////////////////////
@@ -15,7 +15,9 @@ import { type BrushSettings } from "./settings";
 //////////////////////////////////////////////////////////////
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Brush extends Tool<BrushSettings> {}
+export interface Brush extends Tool<BrushSettings> {
+  isMouseDown: boolean
+}
 
 interface SmoothingOptions {
   path: Path;
@@ -44,7 +46,7 @@ const dispatcher: Dispatch = function (
   presetNumber,
 ) {
 
-  console.info(`Event handler called for brush tool with event of type ${event.type}`);
+  //console.info(`Event handler called for brush tool with event of type ${event.type}`);
 
   const presetIndex = presetNumber.expect("Preset index should be defined for brush tool");
   assert(0 <= presetIndex && presetIndex < settings.brushSettings.length);
@@ -53,23 +55,34 @@ const dispatcher: Dispatch = function (
   assert(() => areValidBrushSettings(bSettings));
 
   event.preventDefault();
-  handler(event, state, bSettings);
+  handler.bind(this)(event, state, bSettings);
 };
 
 const mouseMove: Handler = function (this: Brush, event, state, settings) {
-  todo();
+  todoEmpty()
 };
 
 const mouseDown: Handler = function (this: Brush, event, state, settings) {
-  todo();
+  if (this.isMouseDown)
+    return;
+
+  console.log('mouse down!!')
+  this.isMouseDown = true;
+  state.camera.translateZoom(0.01);
+  todoEmpty()
 };
 
 const mouseUp: Handler = function (this: Brush, event, state, settings) {
-  todo();
+  if (!this.isMouseDown)
+    return;
+    
+  this.isMouseDown = false;
+      todoEmpty()
 };
 
 export function createBrush(): Brush {
   return {
+    isMouseDown: false,
     dispatchEvent: dispatcher,
     mousedown: mouseDown,
     mouseup: mouseUp,

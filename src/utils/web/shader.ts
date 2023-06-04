@@ -1,8 +1,9 @@
-import { zip } from "../func/arrayUtils";
-import { Option } from "../func/option";
-import { type GL, GLObject, glOpErr } from "./glUtils";
-import type Texture from "./texture";
-import * as fsPromise from "fs/promises";
+import { zip } from '../func/arrayUtils';
+import { Option } from '../func/option';
+import { type GL, GLObject, glOpErr } from './glUtils';
+import type Texture from './texture';
+import fs from 'fs';
+import { promisify } from 'util';
 import {
   type Mat2x2,
   type Mat3x3,
@@ -13,7 +14,10 @@ import {
   type Vec3I,
   type Vec4F,
   type Vec4I,
-} from "./vector";
+} from './vector';
+import { Result } from '../func/result';
+
+//TODO: make all err based code result based
 
 export default class Shader {
   private vertexShaderId: GLObject<WebGLShader>;
@@ -24,20 +28,20 @@ export default class Shader {
 
   constructor(gl: GL) {
     const vId = Option.fromNull(
-      glOpErr(gl, gl.createShader.bind(this), gl.VERTEX_SHADER)
+      glOpErr(gl, gl.createShader.bind(gl), gl.VERTEX_SHADER)
     );
     const vgId = vId.expect("Couldn't create vertex shader");
-    this.vertexShaderId = new GLObject(vgId, "vertex shader");
+    this.vertexShaderId = new GLObject(vgId, 'vertex shader');
 
     const fId = Option.fromNull(
-      glOpErr(gl, gl.createShader.bind(this), gl.FRAGMENT_SHADER)
+      glOpErr(gl, gl.createShader.bind(gl), gl.FRAGMENT_SHADER)
     );
     const fgId = fId.expect("Couldn't create fragment shader");
-    this.fragmentShaderId = new GLObject(fgId, "fragment shader");
+    this.fragmentShaderId = new GLObject(fgId, 'fragment shader');
 
-    const pId = Option.fromNull(glOpErr(gl, gl.createProgram.bind(this)));
+    const pId = Option.fromNull(glOpErr(gl, gl.createProgram.bind(gl)));
     const pgId = pId.expect("Couldn't create shader program");
-    this.programId = new GLObject(pgId, "shader program");
+    this.programId = new GLObject(pgId, 'shader program');
 
     this.compiled = false;
     this.linked = false;
@@ -45,46 +49,59 @@ export default class Shader {
 
   async compileFromFile(gl: GL, shaderName: string) {
     try {
-      const vertFile = await fsPromise.open(
+      const open = promisify(fs.readFile);
+      const vertContents = await open(
         `../../../public/shaders/${shaderName}.vertex`,
-        "r"
+        'utf-8'
       );
-      const vertContents = await vertFile.readFile({
-        encoding: "ascii",
-      });
-
-      const fragFile = await fsPromise.open(
+      const fragContents = await open(
         `../../../public/shaders/${shaderName}.frag`,
-        "r"
+        'utf-8'
       );
-      const fragContents = await fragFile.readFile({
-        encoding: "ascii",
-      });
 
       this.compileFromSource(gl, vertContents, fragContents);
     } catch (err) {
-      console.error(`Failed to read ${shaderName} shaders`);
-      throw err;
+      if (err instanceof Error) throw err;
+      else throw new Error(`Failed to read ${shaderName} shaders`);
+    }
+  }
+
+  compileFromFileSynchronous(gl: GL, shaderName: string) {
+    try {
+      const vertContents = fs.readFileSync(
+        `../../../public/shaders/${shaderName}.vertex`,
+        'utf-8'
+      );
+
+      const fragContents = fs.readFileSync(
+        `../../../public/shaders/${shaderName}.frag`,
+        'utf-8'
+      );
+
+      this.compileFromSource(gl, vertContents, fragContents);
+    } catch (err) {
+      if (err instanceof Error) throw err;
+      else throw new Error(`Failed to read ${shaderName} shaders`);
     }
   }
 
   compileFromSource(gl: GL, vertexSource: string, fragmentSource: string) {
-    if (this.compiled) throw new Error("Tried compiling shader twice");
+    if (this.compiled) throw new Error('Tried compiling shader twice');
 
     glOpErr(
       gl,
-      gl.shaderSource.bind(this),
+      gl.shaderSource.bind(gl),
       this.vertexShaderId.innerId(),
       vertexSource
     );
     glOpErr(
       gl,
-      gl.shaderSource.bind(this),
+      gl.shaderSource.bind(gl),
       this.fragmentShaderId.innerId(),
       fragmentSource
     );
-    glOpErr(gl, gl.compileShader.bind(this), this.vertexShaderId.innerId());
-    glOpErr(gl, gl.compileShader.bind(this), this.fragmentShaderId.innerId());
+    glOpErr(gl, gl.compileShader.bind(gl), this.vertexShaderId.innerId());
+    glOpErr(gl, gl.compileShader.bind(gl), this.fragmentShaderId.innerId());
 
     //defer checking compilation status until linking time
     this.compiled = true;
@@ -92,21 +109,27 @@ export default class Shader {
 
   link(gl: GL) {
     if (!this.compiled)
-      throw new Error("tried linking shaders before compilation");
+      throw new Error('tried linking shaders before compilation');
 
-    if (this.linked) throw new Error("tried linking shader twice");
+    if (this.linked) throw new Error('tried linking shader twice');
 
     glOpErr(
       gl,
-      gl.attachShader.bind(this),
+      gl.attachShader.bind(gl),
       this.programId.innerId(),
       this.vertexShaderId.innerId()
     );
     glOpErr(
       gl,
-      gl.attachShader.bind(this),
+      gl.attachShader.bind(gl),
       this.programId.innerId(),
       this.fragmentShaderId.innerId()
+    );
+
+    glOpErr(
+      gl,
+      gl.linkProgram.bind(gl),
+      this.programId.innerId()
     );
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -116,15 +139,20 @@ export default class Shader {
     );
     if (!success) {
       const programInfo = gl.getProgramInfoLog(this.programId.innerId());
-      const vertexInfo = gl.getProgramInfoLog(this.vertexShaderId.innerId());
-      const fragmentInfo = gl.getProgramInfoLog(
+      const vertexInfo = gl.getShaderInfoLog(this.vertexShaderId.innerId());
+      const fragmentInfo = gl.getShaderInfoLog(
         this.fragmentShaderId.innerId()
       );
-      throw new Error(`Failed to constrict shader. Info logs --\n
-                             Program Log: ${programInfo ?? ""}\n
-                             Vertex Log: ${vertexInfo ?? ""}\n
-                             Fragment Log: ${fragmentInfo ?? ""}`);
+      throw new Error(`Failed to construct shader. Info logs --\n
+                             Program Log: ${programInfo ?? ''}\n
+                             Vertex Log: ${vertexInfo ?? ''}\n
+                             Fragment Log: ${fragmentInfo ?? ''}`);
     }
+
+    gl.detachShader(this.programId.innerId(), this.vertexShaderId.innerId());
+    gl.detachShader(this.programId.innerId(), this.fragmentShaderId.innerId());
+    gl.deleteShader(this.vertexShaderId.innerId());
+    gl.deleteShader(this.fragmentShaderId.innerId());
 
     this.linked = true;
   }
@@ -132,6 +160,24 @@ export default class Shader {
   async construct(gl: GL, shaderName: string) {
     await this.compileFromFile(gl, shaderName);
     this.link(gl);
+  }
+
+  constructSynchronous(gl: GL, shaderName: string): Result<void, string> {
+    const f = () => {
+      Result.fromError<void, string>(() => {
+        this.compileFromFileSynchronous(gl, shaderName);
+      }).throwIfErr();
+
+      this.link(gl);
+    };
+
+    return Result.fromError(f);
+  }
+
+  constructFromSource(gl: GL, vertexSource: string, fragmentSource: string): Result<void, string> {
+     this.compileFromSource(gl, vertexSource, fragmentSource);
+     const res = Result.fromError<void, string>(() => this.link(gl));
+     return res;
   }
 
   static async parallelCompile(
@@ -149,11 +195,11 @@ export default class Shader {
   }
 
   use(gl: GL) {
-    glOpErr(gl, gl.useProgram.bind(this), this.programId.innerId());
+    glOpErr(gl, gl.useProgram.bind(gl), this.programId.innerId());
   }
 
   stopUsing(gl: GL) {
-    glOpErr(gl, gl.useProgram.bind(this), 0);
+    glOpErr(gl, gl.useProgram.bind(gl), null);
   }
 
   destroy(gl: GL) {

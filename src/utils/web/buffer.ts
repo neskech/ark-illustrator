@@ -47,7 +47,7 @@ export default class GLBuffer {
   private sizeBytes;
 
   constructor(gl: GL, { btype, usage, autoResizing }: BufferOptions) {
-    const bId = Option.fromNull(glOpErr(gl, gl.createBuffer.bind(this)));
+    const bId = Option.fromNull(glOpErr(gl, gl.createBuffer.bind(gl)));
     const gId = bId.expect("Couldn't create vertex buffer");
     this.id = new GLObject(gId, 'buffer');
 
@@ -81,40 +81,42 @@ export default class GLBuffer {
     glOpErr(gl, bufferEmptyData);
   }
 
-  addData(gl: GL, data: ArrayBufferView, dstOffsetBytes = 0) {
+  addData(gl: GL, data: ArrayBufferView, srcOffsetBytes = 0) {
     const target = bufTypeToEnum(gl, this.bufType);
+    const usage = usageToEnum(gl, this.usage);
 
-    const endIndex = dstOffsetBytes + data.byteLength;
+    const endIndex = srcOffsetBytes + data.byteLength;
     if (endIndex >= this.sizeBytes && this.autoResizing)
       this.resize(gl, endIndex);
-    else if (endIndex >= this.sizeBytes && !this.autoResizing)
+    else if (endIndex >= this.sizeBytes && !this.autoResizing && this.sizeBytes != 0)
       throw new Error(`Out of bounds write on gl buffer.\n 
       Data Size Bytes: ${data.byteLength}\n
-      Data Write Offset Bytes: ${dstOffsetBytes}\n
+      Data Write Offset Bytes: ${srcOffsetBytes}\n
       End Index BytesL ${endIndex}\n
       Current Buffer Size Bytes: ${this.sizeBytes}\n\n                         
       Entire buffer::\n
       ${this.toString()}`);
-
+   
     glOpErr(
       gl,
-      gl.bufferSubData.bind(this),
+      gl.bufferData.bind(gl),
       target,
-      dstOffsetBytes,
       data,
-      data.byteOffset,
-      data.byteLength
+      usage,
+      srcOffsetBytes
     );
+
+    this.sizeBytes = data.byteLength;
   }
 
   bind(gl: GL) {
     const target = bufTypeToEnum(gl, this.bufType);
-    glOpErr(gl, gl.bindBuffer.bind(this), target, this.id.innerId());
+    glOpErr(gl, gl.bindBuffer.bind(gl), target, this.id.innerId());
   }
 
   unBind(gl: GL) {
     const target = bufTypeToEnum(gl, this.bufType);
-    glOpErr(gl, gl.bindBuffer.bind(this), target, 0);
+    glOpErr(gl, gl.bindBuffer.bind(gl), target, null);
   }
 
   toString(): string {
@@ -131,7 +133,7 @@ export default class GLBuffer {
 
   destroy(gl: GL) {
     this.id.destroy((id) => {
-      glOpErr(gl, gl.deleteBuffer.bind(this), id);
+      glOpErr(gl, gl.deleteBuffer.bind(gl), id);
     });
   }
 }

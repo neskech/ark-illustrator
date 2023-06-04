@@ -82,7 +82,7 @@ export default class Texture {
   private height: Option<number>;
 
   constructor(gl: GL, options: TextureOptions) {
-    const bId = Option.fromNull(glOpErr(gl, gl.createTexture.bind(this)));
+    const bId = Option.fromNull(glOpErr(gl, gl.createTexture.bind(gl)));
     const gId = bId.expect(`Couldn't create texture with options ${options}`);
     this.id = new GLObject(gId, "texture");
 
@@ -123,7 +123,7 @@ export default class Texture {
 
     glOpErr(
       gl,
-      gl.texParameteri.bind(this),
+      gl.texParameteri.bind(gl),
       gl.TEXTURE_2D,
       gl.TEXTURE_MAG_FILTER,
       textureFilterToEnum(gl, this.options.magFilter)
@@ -131,7 +131,7 @@ export default class Texture {
 
     glOpErr(
       gl,
-      gl.texParameteri.bind(this),
+      gl.texParameteri.bind(gl),
       gl.TEXTURE_2D,
       gl.TEXTURE_MIN_FILTER,
       textureFilterToEnum(gl, this.options.minFilter)
@@ -139,7 +139,7 @@ export default class Texture {
 
     glOpErr(
       gl,
-      gl.texParameteri.bind(this),
+      gl.texParameteri.bind(gl),
       gl.TEXTURE_2D,
       gl.TEXTURE_WRAP_S,
       textureWrapToEnum(gl, this.options.wrapX)
@@ -147,7 +147,7 @@ export default class Texture {
 
     glOpErr(
       gl,
-      gl.texParameteri.bind(this),
+      gl.texParameteri.bind(gl),
       gl.TEXTURE_2D,
       gl.TEXTURE_WRAP_T,
       textureWrapToEnum(gl, this.options.wrapY)
@@ -168,7 +168,7 @@ export default class Texture {
 
     glOpErr(
       gl,
-      gl.texImage2D.bind(this),
+      gl.texImage2D.bind(gl),
       gl.TEXTURE_2D,
       mipMapLevels,
       formatToEnum(gl, this.options.format),
@@ -240,7 +240,7 @@ export default class Texture {
     const mipMapLevels = 0;
     glOpErr(
       gl,
-      gl.copyTexSubImage2D.bind(this),
+      gl.copyTexSubImage2D.bind(gl),
       gl.TEXTURE_2D,
       mipMapLevels,
       options.lowerDestinationX,
@@ -264,7 +264,7 @@ export default class Texture {
 
     glOpErr(
       gl,
-      gl.copyTexSubImage2D.bind(this),
+      gl.copyTexSubImage2D.bind(gl),
       gl.TEXTURE_2D,
       mipMapLevels,
       formatToEnum(gl, this.options.format),
@@ -340,15 +340,15 @@ export default class Texture {
   }
 
   bind(gl: GL) {
-    glOpErr(gl, gl.bindTexture.bind(this), gl.TEXTURE_2D, this.id.innerId());
+    glOpErr(gl, gl.bindTexture.bind(gl), gl.TEXTURE_2D, this.id.innerId());
   }
 
   unbind(gl: GL) {
-    glOpErr(gl, gl.bindTexture.bind(this), gl.TEXTURE_2D, 0);
+    glOpErr(gl, gl.bindTexture.bind(gl), gl.TEXTURE_2D, null);
   }
 
   static activateUnit(gl: GL, unitOffset: number) {
-    glOpErr(gl, gl.activeTexture.bind(this), gl.TEXTURE0 + unitOffset);
+    glOpErr(gl, gl.activeTexture.bind(gl), gl.TEXTURE0 + unitOffset);
   }
 
   getId(): GLObject<WebGLTexture> {

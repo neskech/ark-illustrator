@@ -21,10 +21,10 @@ type VAOid = GLObject<WebGLVertexArrayObject>;
 
 export class VaoBuilder {
   private typeData: IncrementalTypeData[];
-  private id: VAOid;
+  private vertexArray: VertexArrayObject;
 
-  constructor(glId: VAOid) {
-    this.id = glId;
+  constructor(vertexArray: VertexArrayObject) {
+    this.vertexArray = vertexArray;
     this.typeData = [];
   }
 
@@ -65,49 +65,54 @@ export class VaoBuilder {
       byteOffset += typeSize;
     }
 
-    return new VertexArrayObject(this.id, this.typeData);
+    this.vertexArray.setDebugData(this.typeData);
+    return this.vertexArray;
   }
 }
 
 export class VertexArrayObject {
   private id: VAOid;
-  private debugData: IncrementalTypeData[];
+  private debugData: IncrementalTypeData[] | null;
 
-  static new(gl: GL): VaoBuilder {
-    const vId = Option.fromNull(glOpErr(gl, gl.createVertexArray.bind(this)));
+  constructor(gl: GL) {
+    this.debugData = null;
+    const vId = Option.fromNull(glOpErr(gl, gl.createVertexArray.bind(gl)));
     const glId = new GLObject(vId.expect('couldn\'t create new vertex array object'));
-    return new VaoBuilder(glId);
+    this.id = glId;
   }
 
-  constructor(id_: VAOid, typeData: IncrementalTypeData[]) {
-    this.id = id_;
-    this.debugData = typeData;
+  builder(): VaoBuilder {
+    return new VaoBuilder(this);
   }
 
   log(logger: (s: string) => void = console.log): void {
-    const s: string = this.debugData.reduce((acc, curr) => {
+    const s: string = this.debugData?.reduce((acc, curr) => {
       return `${acc} {
           typeSize: ${curr.typeSize},
           numElements: ${curr.numElements},
           typeName: ${curr.typeName},
           attributeName: ${curr.attributeName}
         }`;
-    }, "");
+    }, "") ?? "";
 
     logger(s);
   }
 
-  bind(gl: GL) {
-    glOpErr(gl, gl.bindVertexArray.bind(this), this.id.innerId());
+  setDebugData(data: IncrementalTypeData[]) {
+    this.debugData = data;
   }
 
-  unbind(gl: GL) {
-    glOpErr(gl, gl.bindVertexArray.bind(this), 0);
+  bind(gl: GL) {
+    glOpErr(gl, gl.bindVertexArray.bind(gl), this.id.innerId());
+  }
+
+  unBind(gl: GL) {
+    glOpErr(gl, gl.bindVertexArray.bind(gl), null);
   }
 
   destroy(gl: GL): void {
     this.id.destroy((id) => {
-      glOpErr(gl, gl.deleteVertexArray.bind(this), id);
+      glOpErr(gl, gl.deleteVertexArray.bind(gl), id);
     });
   }
 }
