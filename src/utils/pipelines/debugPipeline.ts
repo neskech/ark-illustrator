@@ -8,16 +8,20 @@ import Buffer from '~/utils/web/buffer';
 import { None } from '../func/option';
 import Shader from '../web/shader';
 import { type NDArray } from 'vectorious';
-import { type Mat4x4 } from '../web/vector';
+import { vec3F, type Mat4x4, vec4F } from '../web/vector';
 
 function wrapMat4(mat4: NDArray): Mat4x4 {
   return { val: mat4, __type: 'Mat4x4' };
 }
 
-const initFn: PipelineFn = function init(gl, vao, vbo, shader) {
+const initFn: PipelineFn = function init(gl, vao, vbo, shader, state) {
   vao.builder().addAttribute(2, 'float', 'position').build(gl);
 
   const vertexData = new Float32Array([0.0, 0.0, 0.3, 0.3, -0.5, 0.3]);
+
+  const v = vec4F(0.3, 0.3, 0, 1);
+  const result = state.camera.getProjectionMatrixRaw().multiply(state.camera.getViewMatrixRaw()).multiply(state.camera.getTransformMatrixRaw()).multiply(v.val);
+  console.log(result.data)
 
   vbo.addData(gl, vertexData);
 
@@ -36,7 +40,7 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader) {
                           uniform mat4 projection;
                           
                           void main() {
-                            gl_Position = projection * view * vec4(a_position, 0, 1);
+                            gl_Position = projection * view * model * vec4(a_position, 0, 1);
                             gl_PointSize = 64.0;
                           }\n`;
    console.log(fragmentSource, '\n\n', vertexSource)

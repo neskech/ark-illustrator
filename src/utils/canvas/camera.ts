@@ -5,7 +5,6 @@ import {
   vec3F,
   type Vec2F,
 } from "../web/vector";
-import { eye as identity } from 'vectorious/dist/core/eye';
 import { Float32Vector3, Matrix4 } from "matrixgl";
 
 const DEFAULT_ZOOM = 1;
@@ -118,8 +117,8 @@ export default class Camera {
   }
 
   translateZoom(translation: number) {
-    const newZ = this.position.val.z + translation;
-    this.position.val.z = clamp(MIN_ZOOM, MAX_ZOOM, newZ);
+    const newZ = this.position.val.data[2] + translation;
+    this.position.val.data[2] = clamp(MIN_ZOOM, MAX_ZOOM, newZ);
   }
 
   setZoom(zoomLevel: number) {
@@ -128,9 +127,8 @@ export default class Camera {
   }
 
   getViewMatrixRaw(): NDArray {
-    const convert: (v: Vec3F) => Float32Vector3 = (v) => new Float32Vector3(v.val.x, v.val.y, v.val.z);
 
-    const pos = convert(this.position);
+    const pos = new Float32Vector3(this.position.val.data[0], this.position.val.data[1], this.position.val.data[2]);
     const lookAtPos = new Float32Vector3(pos.x, pos.y, 0);
     const theta = deg2Rads(this.rotation);
     const upVector = new Float32Vector3(-Math.sin(theta), Math.cos(theta), 0);
@@ -158,7 +156,12 @@ export default class Camera {
   }
 
   getTransformMatrixRaw(): NDArray {
-    return transformMatrixFrom(this.rotation, this.position);
+    const pos = new Float32Vector3(this.position.val.data[0], this.position.val.data[1], 0);
+    const model = Matrix4.identity().translate(pos.x, pos.y, pos.z).rotateZ(deg2Rads(this.rotation));
+    return new NDArray(model.values, {
+      shape: [4, 4],
+      dtype: 'float32'
+    })
   }
 
   toString(): string {
@@ -246,43 +249,6 @@ function rotationMatrixFrom(theta: number): NDArray {
       dtype: "float32",
     }
   );
-}
-
-//https://github.com/liona24/webgl-matrix/blob/master/src/mat4.rs
-function lookAtRh(eye: Vec3F, target: Vec3F, up: Vec3F) {
-   const z = eye.val.copy().subtract(target.val);
-   const EPSILLON = 1e-5;
-
-   const zMag = Math.sqrt(z.x * z.x + z.y * z.y + z.z * z.z);
-   if (zMag < EPSILLON)
-     return identity(4);
-
-   const scalingZ = 1. / zMag;
-   z.x *= scalingZ;
-   z.y *= scalingZ;
-   z.z *= scalingZ;
-
-   const x = up.val.copy().cross(z);
-   const xMag = Math.sqrt(x.x * x.x + x.y * x.y + x.z * x.z);
-
-   const scalingX = 1. / xMag;
-   x.x *= scalingX;
-   x.y *= scalingX;
-   x.z *= scalingX;
-
-   const y = z.copy().cross(x);
-
-   return new NDArray([
-      [x.x, y.x, z.x, 0.],
-      [x.y, y.y, z.y, 0.],
-      [x.z, y.z, z.z, 0.],
-      [-x.copy().dot(eye.val), -y.copy().dot(eye.val), -z.copy().dot(eye.val), 1.]
-   ],
-   {
-      shape: [4, 4],
-      dtype: 'float32'
-   }
-   )
 }
 
 function viewMatrixFrom(

@@ -75,7 +75,8 @@ const mouseDown: Handler = function (this: Brush, event, state, settings) {
 const mouseUp: Handler = function (this: Brush, event, state, settings) {
   if (!this.isMouseDown)
     return;
-    
+  const realEvent = event as MouseEvent;
+  console.log(realEvent.clientX, realEvent.clientY)
   this.isMouseDown = false;
       todoEmpty()
 };
