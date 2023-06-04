@@ -5,33 +5,31 @@ import RenderPipeline, {
 } from '../web/renderPipeline';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
-import { None, Option, Some } from '../func/option';
+import { None } from '../func/option';
 import Shader from '../web/shader';
-import { constructQuadIndices } from './pipelines';
-
-const NUM_VERTICES_QUAD = 4;
-const NUM_INDICES_QUAD = 6;
-const SIZE_INTEGER = 4;
-const SIZE_FLOAT = 4;
 
 const initFn: PipelineFn = function init(gl, _, vbo, shader) {
-  const vertexData = [
+  const vertexData = new Float32Array([
+    0.5, 0.5,
+    0.9, 0.9,
+    -0.5, 0.9
+  ]);
 
-  ]
+  vbo.addData(gl, vertexData);
 
   shader
   .construct(gl, 'debug')
-  .then(() => console.info('Success compiling draw shader'))
+  .then(() => console.info('Success compiling debug shader'))
   .catch((msg) => {
     throw new Error(msg as string);
   });
 };
 
-const renderFn: PipelineFn = function render(gl, _, vbo, shdaer) {
-
+const renderFn: PipelineFn = function render(gl, _, __, ___) {
+    gl.drawArrays(gl.TRIANGLES, 0, 1);
 };
 
-export default function getDrawPipeline(gl: GL): RenderPipeline {
+export default function getDebugPipeline(gl: GL): RenderPipeline {
   const vertexArray: VertexArrayObject = VertexArrayObject.new(gl)
     .addAttribute(2, 'integer', 'position')
     .build(gl);

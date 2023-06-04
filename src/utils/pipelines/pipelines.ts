@@ -1,9 +1,20 @@
-import { Vec2F, vec2F } from '../web/vector';
+import { type GL } from '../web/glUtils';
+import type RenderPipeline from '../web/renderPipeline';
+import { type Vec2F, vec2F } from '../web/vector';
+import getDebugPipeline from './debugPipeline';
 
-export default interface PipelineMap {
-    drawPipeline: 
-    layerPipeline:
-    overlayPipeline:
+export interface PipelineMap {
+    debugPipeline: RenderPipeline
+}
+
+export default function getPipelineMap(gl: GL): PipelineMap {
+    return {
+        debugPipeline: getDebugPipeline(gl)
+    }
+}
+
+export function destroyPipelines(gl: GL, map: PipelineMap): void {
+    map.debugPipeline.destroy(gl);
 }
 
 export function constructQuad(position: Vec2F, width: number, height: number): [Vec2F, Vec2F, Vec2F, Vec2F] {

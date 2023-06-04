@@ -27,15 +27,15 @@ export interface PipelineData {
 }
 
 export default class RenderPipeline {
-  name: string;
-  vertexArray: VertexArrayObject;
-  vertexBuffer: Buffer;
-  indexBuffer: Option<Buffer>;
-  shader: Shader;
-  renderTarget: Option<FrameBuffer>;
-  renderFn: PipelineFn;
-  initFn: PipelineFn;
-  benchmarkLogging: boolean
+  private name: string;
+  private vertexArray: VertexArrayObject;
+  private vertexBuffer: Buffer;
+  private indexBuffer: Option<Buffer>;
+  private shader: Shader;
+  private renderTarget: Option<FrameBuffer>;
+  private renderFn: PipelineFn;
+  private initFn: PipelineFn;
+  private benchmarkLogging: boolean
 
   constructor({
     name,
@@ -126,5 +126,13 @@ export default class RenderPipeline {
     }
 
     if (this.benchmarkLogging) console.timeEnd(`Render pipeline render function for pipeline '${this.name}`)
+  }
+
+  destroy(gl: GL) {
+    this.vertexArray.destroy(gl);
+    this.vertexBuffer.destroy(gl);
+    this.shader.destroy(gl);
+    this.indexBuffer.map(b => b.destroy(gl));
+    this.renderTarget.map(f => f.destroy(gl));
   }
 }

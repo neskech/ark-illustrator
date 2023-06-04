@@ -1,6 +1,6 @@
 import { type Option } from "~/utils/func/option";
 import { type CanvasState } from "../canvas";
-import { type Brush } from "./brush";
+import { createBrush, type Brush } from "./brush";
 import { type GlobalToolSettings } from './settings';
 
 type EventString = keyof HTMLElementEventMap;
@@ -30,10 +30,25 @@ export interface Tool<S> extends Tool_<S> {
   dispatchEvent: EventDispatcher<S>;
 }
 
-type ToolMap = {
+export type ToolMap = {
   brush: Brush;
 };
-type ToolType = keyof ToolMap;
+
+export type ToolType = keyof ToolMap;
+
+export interface ToolState {
+    tools: ToolMap,
+    currentTool: ToolType
+}
+
+export function getDefaultToolState(): ToolState {
+    return {
+        tools: {
+            brush: createBrush()
+        },
+        currentTool: 'brush'
+    }
+}
 
 export interface HandleEventArgs {
   map: ToolMap;
