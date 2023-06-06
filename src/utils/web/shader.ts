@@ -4,18 +4,8 @@ import { type GL, GLObject, glOpErr } from './glUtils';
 import type Texture from './texture';
 import fs from 'fs';
 import { promisify } from 'util';
-import {
-  type Mat2x2,
-  type Mat3x3,
-  type Mat4x4,
-  type Vec2F,
-  type Vec2I,
-  type Vec3F,
-  type Vec3I,
-  type Vec4F,
-  type Vec4I,
-} from './vector';
 import { Result } from '../func/result';
+import { Float32Vector2, Float32Vector3, Float32Vector4 } from 'matrixgl';
 
 //TODO: make all err based code result based
 
@@ -126,11 +116,7 @@ export default class Shader {
       this.fragmentShaderId.innerId()
     );
 
-    glOpErr(
-      gl,
-      gl.linkProgram.bind(gl),
-      this.programId.innerId()
-    );
+    glOpErr(gl, gl.linkProgram.bind(gl), this.programId.innerId());
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const success = gl.getProgramParameter(
@@ -140,9 +126,7 @@ export default class Shader {
     if (!success) {
       const programInfo = gl.getProgramInfoLog(this.programId.innerId());
       const vertexInfo = gl.getShaderInfoLog(this.vertexShaderId.innerId());
-      const fragmentInfo = gl.getShaderInfoLog(
-        this.fragmentShaderId.innerId()
-      );
+      const fragmentInfo = gl.getShaderInfoLog(this.fragmentShaderId.innerId());
       throw new Error(`Failed to construct shader. Info logs --\n
                              Program Log: ${programInfo ?? ''}\n
                              Vertex Log: ${vertexInfo ?? ''}\n
@@ -174,10 +158,14 @@ export default class Shader {
     return Result.fromError(f);
   }
 
-  constructFromSource(gl: GL, vertexSource: string, fragmentSource: string): Result<void, string> {
-     this.compileFromSource(gl, vertexSource, fragmentSource);
-     const res = Result.fromError<void, string>(() => this.link(gl));
-     return res;
+  constructFromSource(
+    gl: GL,
+    vertexSource: string,
+    fragmentSource: string
+  ): Result<void, string> {
+    this.compileFromSource(gl, vertexSource, fragmentSource);
+    const res = Result.fromError<void, string>(() => this.link(gl));
+    return res;
   }
 
   static async parallelCompile(
@@ -226,43 +214,43 @@ export default class Shader {
     gl.uniform1fv(loc, vals);
   }
 
-  uploadFloatVec2(gl: GL, location: string, val: Vec2F) {
+  uploadFloatVec2(gl: GL, location: string, val: Float32Vector2) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniform2f(loc, val.val.x, val.val.y);
+    gl.uniform2f(loc, val.x, val.y);
   }
 
-  uploadFloatVec2Array(gl: GL, location: string, vals: Vec2F[]) {
+  uploadFloatVec2Array(gl: GL, location: string, vals: Float32Vector2[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2fv(
       loc,
-      vals.flatMap((v) => [v.val.x, v.val.y])
+      vals.flatMap((v) => [v.x, v.y])
     );
   }
 
-  uploadFloatVec3(gl: GL, location: string, val: Vec3F) {
+  uploadFloatVec3(gl: GL, location: string, val: Float32Vector3) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniform3f(loc, val.val.x, val.val.y, val.val.z);
+    gl.uniform3f(loc, val.x, val.y, val.z);
   }
 
-  uploadFloatVec3Array(gl: GL, location: string, vals: Vec3F[]) {
+  uploadFloatVec3Array(gl: GL, location: string, vals: Float32Vector3[]) {
     ``;
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3fv(
       loc,
-      vals.flatMap((v) => [v.val.x, v.val.y, v.val.z])
+      vals.flatMap((v) => [v.x, v.y, v.z])
     );
   }
 
-  uploadFloatVec4(gl: GL, location: string, val: Vec4F) {
+  uploadFloatVec4(gl: GL, location: string, val: Float32Vector4) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniform4f(loc, val.val.x, val.val.y, val.val.z, val.val.w);
+    gl.uniform4f(loc, val.x, val.y, val.z, val.w);
   }
 
-  uploadFloatVec4Array(gl: GL, location: string, vals: Vec4F[]) {
+  uploadFloatVec4Array(gl: GL, location: string, vals: Float32Vector4[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3fv(
       loc,
-      vals.flatMap((v) => [v.val.x, v.val.y, v.val.z, v.val.w])
+      vals.flatMap((v) => [v.x, v.y, v.z, v.w])
     );
   }
 
@@ -276,7 +264,7 @@ export default class Shader {
     gl.uniform1iv(loc, vals);
   }
 
-  uploadIntVec2(gl: GL, location: string, val: Vec2I) {
+  uploadIntVec2(gl: GL, location: string, val: Vector2Base) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2i(loc, val.val.x, val.val.y);
   }

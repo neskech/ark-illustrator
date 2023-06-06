@@ -1,103 +1,83 @@
-import { NDArray } from "vectorious";
-import { requires } from "../contracts";
-type Brand<T, B extends string> = { val: T; __type: B };
+import { NDArray } from 'vectorious';
+import { requires } from '../contracts';
+import {
+  Vector2Base,
+  Vector3Base,
+  Vector4Base,
+} from 'matrixgl/lib/esm/vector_base';
+import {
+  Float32Vector2,
+  Float32Vector3,
+  Matrix2x2,
+  type Float32Vector4,
+  Matrix3x3,
+  Matrix4x4,
+} from 'matrixgl';
 
-export type Vec2F = Brand<NDArray, "Vec2F">;
-export type Vec3F = Brand<NDArray, "Vec3F">;
-export type Vec4F = Brand<NDArray, "Vec4F">;
+type Brand<T, S extends string> = { __type: S };
+type ExtractFromBrand<B> = B extends Brand<infer T, infer _> ? T : never;
 
-export type Vec2I = Brand<NDArray, "Vec2I">;
-export type Vec3I = Brand<NDArray, "Vec3I">;
-export type Vec4I = Brand<NDArray, "Vec4I">;
+type LinearAlgebra =
+  | Float32Vector2
+  | Float32Vector3
+  | Float32Vector4
+  | Int32Vector2
+  | Int32Vector3
+  | Int32Vector4
+  | Matrix2x2
+  | Matrix3x3
+  | Matrix4x4;
 
-export type Mat2x2 = Brand<NDArray, "Mat2x2">;
-export type Mat3x3 = Brand<NDArray, "Mat3x3">;
-export type Mat4x4 = Brand<NDArray, "Mat4x4">;
+type LinearAlgebraType =
+  | Brand<Float32Vector2, 'floatVector2'>
+  | Brand<Float32Vector3, 'floatVector3'>
+  | Brand<Float32Vector4, 'floatVector4'>
+  | Brand<Int32Vector2, 'intVector2'>
+  | Brand<Int32Vector3, 'intVector3'>
+  | Brand<Int32Vector4, 'intVector4'>
+  | Brand<Matrix2x2, 'Matrix2x2'>
+  | Brand<Matrix3x3, 'Matrix3x3'>
+  | Brand<Matrix4x4, 'Matrix4x4'>;
 
-export type LinearAlgebraType = 'Vec2F' | 'Vec3F' | 'Vec4F' | 'Vec2I' | 'Vec3I' | 'Vec4I' | 'Mat2x2' | 'Mat3x3' | 'Mat4x4';
+const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
+const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
+const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
+const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
+const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
+const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
 
-type LA_FLOAT_TYPE = 'Vec2F' | 'Vec3F' | 'Vec4F' | 'Mat2x2' | 'Mat3x3' | 'Mat4x4';
-type LA_INT_TYPE = 'Vec2I' | 'Vec3I' | 'Vec4I';
-
-type LA_FLOAT_TYPE_CONCRETE = Vec2F | Vec3F | Vec4F | Mat2x2 | Mat3x3 | Mat4x4;
-type LA_INT_TYPE_CONCRETE = Vec2I | Vec3I | Vec4I;
-type LA_TYPE = LA_FLOAT_TYPE_CONCRETE | LA_INT_TYPE_CONCRETE;
-
-type ArrayBuffer = Int32Array | Float32Array;
-type ArrayBufferType = "int32" | "float32";
-type BufferSpecification = ["int32", LA_INT_TYPE] | ["float32", LA_FLOAT_TYPE];
+function stringToBrandedType(s: )
 
 const RESIZE_FACTOR = 1.5;
 const DEFAULT_CAPACITY = 10;
 
-function typeSizeFrom(t: LinearAlgebraType): number {
-    switch (t) {
-        case 'Vec2F':
-            return 2;
-        case 'Vec3F':
-            return 3;
-        case 'Vec4F':
-            return 4;
-        case 'Vec2I':
-            return 2;
-        case 'Vec3I':
-            return 3;
-        case 'Vec4I':
-            return 4;
-        case 'Mat2x2':
-            return 4;
-        case 'Mat3x3':
-            return 9;
-        case 'Mat4x4':
-            return 16;
-    }
-}
+//TODO: also pass in a constructor that takes array, returns T
+function createLinearAlgebraList<T extends LinearAlgebraType>(s: ): List<ExtractFromBrand<T>>;
 
-function typeShapeFrom(t: LinearAlgebraType): [number, number] {
-    switch (t) {
-        case 'Vec2F':
-            return [2, 1];
-        case 'Vec3F':
-            return [3, 1];
-        case 'Vec4F':
-            return [4, 1];
-        case 'Vec2I':
-            return [2, 1];
-        case 'Vec3I':
-            return [3, 1];
-        case 'Vec4I':
-            return [4, 1];
-        case 'Mat2x2':
-            return [2, 2];
-        case 'Mat3x3':
-            return [3, 3];
-        case 'Mat4x4':
-            return [4, 4];
-    }
-}
-
-export const getArrayOfType = (spec: BufferSpecification, capacity = DEFAULT_CAPACITY, logging = false) => {
-  const [dtype, ltype] = spec;
-  if (dtype === "int32") return new List<LA_FLOAT_TYPE_CONCRETE>(capacity, dtype, ltype, logging);
-  else return new List<LA_INT_TYPE_CONCRETE>(capacity, dtype, ltype, logging);
-};
-
-class List<T extends LA_TYPE> {
+class List<T extends LinearAlgebra> {
   private buffer: ArrayBuffer;
   private bufferType: ArrayBufferType;
   private capacity: number;
   private size: number;
   private debugLogging: boolean;
-  private linearAlgType: LinearAlgebraType
-  private typeShape: [number, number]
-  private typeSize: number
+  private linearAlgType: LinearAlgebraType;
+  private typeShape: [number, number];
+  private typeSize: number;
 
-  constructor(capacity: number, dtype: ArrayBufferType, ltype: LinearAlgebraType, logging: boolean) {
+  constructor(
+    capacity: number,
+    dtype: ArrayBufferType,
+    ltype: LinearAlgebraType,
+    logging: boolean
+  ) {
     requires(capacity >= 1);
 
     this.size = 0;
     this.capacity = capacity;
-    this.buffer = dtype == 'int32' ? new Int32Array(this.capacity) : new Float32Array(this.capacity);
+    this.buffer =
+      dtype == 'int32'
+        ? new Int32Array(this.capacity)
+        : new Float32Array(this.capacity);
 
     this.debugLogging = logging;
 
@@ -106,7 +86,6 @@ class List<T extends LA_TYPE> {
 
     this.typeSize = typeSizeFrom(ltype);
     this.typeShape = typeShapeFrom(ltype);
-
   }
 
   private tryResize() {
@@ -127,13 +106,14 @@ class List<T extends LA_TYPE> {
     const newBuf = new Float32Array(this.capacity);
 
     const minLen = Math.min(this.buffer.length, this.capacity);
-    for (let i = 0; i < minLen; i++)
-      newBuf[i] = this.buffer[i];
+    for (let i = 0; i < minLen; i++) newBuf[i] = this.buffer[i];
 
     this.buffer = newBuf;
 
     if (this.debugLogging)
-        console.info(`Resized buffer of type ${this.bufferType} from ${prevCapacity} to ${newCapacity}`)
+      console.info(
+        `Resized buffer of type ${this.bufferType} from ${prevCapacity} to ${newCapacity}`
+      );
   }
 
   resize(newSize: number) {
@@ -158,13 +138,12 @@ class List<T extends LA_TYPE> {
 
     //shift everything over
     const stopIndex = scaledIndex + this.typeSize;
-    for (let i = this.size; i > stopIndex; i--) 
-        this.buffer[i] = this.buffer[i - this.typeSize];
+    for (let i = this.size; i > stopIndex; i--)
+      this.buffer[i] = this.buffer[i - this.typeSize];
 
     const end = scaledIndex + this.typeSize;
     for (let i = scaledIndex; i < end; i++)
-        this.buffer[i] = t.val.data[i - scaledIndex];
-
+      this.buffer[i] = t.val.data[i - scaledIndex];
   }
 
   pop(): T {
@@ -177,22 +156,22 @@ class List<T extends LA_TYPE> {
     const scaledIndex = this.scaleIndex(index);
 
     const arr = new Array(this.typeSize);
-    for (let i = scaledIndex; i < scaledIndex + this.typeSize; i++) 
-        arr[i - scaledIndex] = this.buffer[scaledIndex];
+    for (let i = scaledIndex; i < scaledIndex + this.typeSize; i++)
+      arr[i - scaledIndex] = this.buffer[scaledIndex];
 
     const ndArr = new NDArray(arr, {
-        shape: this.typeShape,
-        dtype: this.bufferType
+      shape: this.typeShape,
+      dtype: this.bufferType,
     });
 
     const t: T = {
-        val: ndArr,
-        __type: this.linearAlgType
-    } as T
+      val: ndArr,
+      __type: this.linearAlgType,
+    } as T;
 
     const end = this.size - this.typeSize;
-    for (let i = scaledIndex; i < end; i++) 
-        this.buffer[i] = this.buffer[i + this.typeSize];
+    for (let i = scaledIndex; i < end; i++)
+      this.buffer[i] = this.buffer[i + this.typeSize];
 
     this.size -= this.typeSize;
 
@@ -209,8 +188,8 @@ class List<T extends LA_TYPE> {
 
   toString(): string {
     let str = '[';
-    for (let i = 0; i < this.size; i++) 
-        str += `${this.buffer[i]}${i == this.size - 1 ? '' : ', '}`;
+    for (let i = 0; i < this.size; i++)
+      str += `${this.buffer[i]}${i == this.size - 1 ? '' : ', '}`;
     str += ']';
 
     return `List Buffer --\n\n
@@ -227,131 +206,226 @@ class List<T extends LA_TYPE> {
 
             Raw List Data --\n\n\n
             Data: ${str}
-            `
-
+            `;
   }
 
   log(logger: (s: string) => void = console.log) {
-    logger(this.toString())
+    logger(this.toString());
   }
 }
 
-export function arrayEquals(l: number[], r: number[]): boolean {
-  requires(l.length === r.length);
+export class Int32Vector2 extends Vector2Base<Int32Array> {
+  _values: Int32Array;
 
-  for (let i = 0; i < l.length; i++) {
-    if (l[i] != r[i]) return false;
+  constructor(x: number, y: number) {
+    super();
+    this._values = new Int32Array([x, y]);
   }
-  return true;
+
+  get x(): number {
+    return this._values[0];
+  }
+  set x(value: number) {
+    this._values[0] = value;
+  }
+  get y(): number {
+    return this._values[1];
+  }
+  set y(value: number) {
+    this._values[1] = value;
+  }
+
+  get values(): Int32Array {
+    return this._values;
+  }
+
+  get magnitude(): number {
+    const x = this._values[0];
+    const y = this._values[1];
+    return Math.sqrt(x * x + y * y);
+  }
+
+  toString(): string {
+    return `Vector2Int -- x: ${this.x}, y: ${this.y}`;
+  }
 }
 
-/////// float vectors ///////////////
+export class Int32Vector3 extends Vector3Base<Int32Array> {
+  _values: Int32Array;
 
-export function vec2F(x: number, y: number): Vec2F {
-  return {
-    val: new NDArray([x, y], {
-      shape: [2, 1],
-      dtype: "float32",
-    }),
-    __type: "Vec2F",
-  };
+  constructor(x: number, y: number) {
+    super();
+    this._values = new Int32Array([x, y]);
+  }
+
+  get x(): number {
+    return this._values[0];
+  }
+  set x(value: number) {
+    this._values[0] = value;
+  }
+  get y(): number {
+    return this._values[1];
+  }
+  set y(value: number) {
+    this._values[1] = value;
+  }
+  get z(): number {
+    return this._values[2];
+  }
+  set z(value: number) {
+    this._values[2] = value;
+  }
+
+  get values(): Int32Array {
+    return this._values;
+  }
+
+  get magnitude(): number {
+    const x = this._values[0];
+    const y = this._values[1];
+    const z = this._values[2];
+    return Math.sqrt(x * x + y * y + z * z);
+  }
+
+  toString(): string {
+    return `Vector2Int -- x: ${this.x}, y: ${this.y}, z: ${this.z}`;
+  }
 }
 
-export function vec3F(x: number, y: number, z: number): Vec3F {
-  return {
-    val: new NDArray([x, y, z], {
-      shape: [3, 1],
-      dtype: "float32",
-    }),
-    __type: "Vec3F",
-  };
+export class Int32Vector4 extends Vector4Base<Int32Array> {
+  _values: Int32Array;
+
+  constructor(x: number, y: number) {
+    super();
+    this._values = new Int32Array([x, y]);
+  }
+
+  get x(): number {
+    return this._values[0];
+  }
+  set x(value: number) {
+    this._values[0] = value;
+  }
+  get y(): number {
+    return this._values[1];
+  }
+  set y(value: number) {
+    this._values[1] = value;
+  }
+  get z(): number {
+    return this._values[2];
+  }
+  set z(value: number) {
+    this._values[2] = value;
+  }
+  get w(): number {
+    return this._values[3];
+  }
+  set w(value: number) {
+    this._values[3] = value;
+  }
+
+  get values(): Int32Array {
+    return this._values;
+  }
+
+  get magnitude(): number {
+    const x = this._values[0];
+    const y = this._values[1];
+    const z = this._values[2];
+    const w = this._values[3];
+    return Math.sqrt(x * x + y * y + z * z + w * w);
+  }
+
+  toString(): string {
+    return `Vector2Int -- x: ${this.x}, y: ${this.y}, z: ${this.z}, w: ${this.w}`;
+  }
 }
 
-export function vec4F(x: number, y: number, z: number, w: number): Vec4F {
-  return {
-    val: new NDArray([x, y, z, w], {
-      shape: [4, 1],
-      dtype: "float32",
-    }),
-    __type: "Vec4F",
-  };
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//! VECTOR FUNCTIONS
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+export function copy(a: Float32Vector2): Float32Vector2 {
+  return new Float32Vector2(a.x, a.y);
 }
 
-/////// int vectors ///////////////
-
-export function vec2I(x: number, y: number): Vec2I {
-  return {
-    val: new NDArray([x, y], {
-      shape: [4, 1],
-      dtype: "int32",
-    }),
-    __type: "Vec2I",
-  };
+export function add(a: Float32Vector2, b: Float32Vector2): Float32Vector2 {
+  a.x += b.x;
+  a.y += b.y;
+  return a;
 }
 
-export function vec3I(x: number, y: number, z: number): Vec3I {
-  return {
-    val: new NDArray([x, y, z], {
-      shape: [3, 1],
-      dtype: "int32",
-    }),
-    __type: "Vec3I",
-  };
+export function sub(a: Float32Vector2, b: Float32Vector2): Float32Vector2 {
+  a.x -= b.x;
+  a.y -= b.y;
+  return a;
 }
 
-export function vec4I(x: number, y: number, z: number, w: number): Vec4I {
-  return {
-    val: new NDArray([x, y, z, w], {
-      shape: [4, 1],
-      dtype: "int32",
-    }),
-    __type: "Vec4I",
-  };
+export function scale(a: Float32Vector2, scaling: number): Float32Vector2 {
+  a.x *= scaling;
+  a.y *= scaling;
+  return a;
 }
 
-/////// matrices ///////////////
+export function normalize(a: Float32Vector2): Float32Vector2 {
+  const mag = a.magnitude;
 
-type Mat2x2Arg = [[number, number], [number, number]];
+  if (mag === 0) return a;
 
-export function mat2x2(data: Mat2x2Arg): Mat2x2 {
-  return {
-    val: new NDArray(data, {
-      shape: [2, 2],
-      dtype: "int32",
-    }),
-    __type: "Mat2x2",
-  };
+  a.x /= mag;
+  a.y /= mag;
+  return a;
 }
 
-type Mat3x3Arg = [
-  [number, number, number],
-  [number, number, number],
-  [number, number, number]
-];
-
-export function mat3x3(data: Mat3x3Arg): Mat3x3 {
-  return {
-    val: new NDArray(data, {
-      shape: [3, 3],
-      dtype: "int32",
-    }),
-    __type: "Mat3x3",
-  };
+export function displacement(
+  from: Float32Vector2,
+  to: Float32Vector2
+): Float32Vector2 {
+  return sub(copy(to), from);
 }
 
-type Mat4x4Arg = [
-  [number, number, number, number],
-  [number, number, number, number],
-  [number, number, number, number],
-  [number, number, number, number]
-];
+export function direction(
+  from: Float32Vector2,
+  to: Float32Vector2
+): Float32Vector2 {
+  return normalize(displacement(from, to));
+}
 
-export function mat4x4(data: Mat4x4Arg): Mat4x4 {
-  return {
-    val: new NDArray(data, {
-      shape: [4, 4],
-      dtype: "int32",
-    }),
-    __type: "Mat4x4",
-  };
+export function distanceAlong(
+  from: Float32Vector2,
+  to: Float32Vector2,
+  t: number
+): Float32Vector2 {
+  return scale(direction(from, to), t);
+}
+
+export function angle(a: Float32Vector2): number {
+  return Math.atan2(a.y, a.x);
+}
+
+export function fromAngle(theta: number): Float32Vector2 {
+  return new Float32Vector2(Math.cos(theta), Math.sin(theta));
+}
+
+export function rotateBy(a: Float32Vector2, theta: number): Float32Vector2 {
+  return fromAngle(angle(a) + theta);
+}
+
+export function dot(a: Float32Vector2, b: Float32Vector2): number {
+  return a.x * b.x + a.y * b.y;
+}
+
+export function angleBetween(a: Float32Vector2, b: Float32Vector2): number {
+  return Math.acos(dot(a, b) / (a.magnitude * b.magnitude));
+}
+
+export function cross(a: Float32Vector2, b: Float32Vector2): Float32Vector3 {
+  return new Float32Vector3(0, 0, a.x * b.y - b.x * a.y);
 }
