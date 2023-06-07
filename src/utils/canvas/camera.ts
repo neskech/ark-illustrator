@@ -1,18 +1,14 @@
 import { NDArray } from "vectorious";
 import { requires } from "../contracts";
-import {
-  type Vec3F,
-  vec3F,
-  type Vec2F,
-} from "../web/vector";
-import { Float32Vector3, Matrix4 } from "matrixgl";
+import { Float32Vector2, Float32Vector3, Matrix2x2, Matrix4, type Matrix4x4 } from "matrixgl";
+import { add } from '../web/vector';
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 10;
 
 export default class Camera {
-  private position: Vec3F;
+  private position: Float32Vector3;
   private rotation: number;
   private fov: number;
   private zNear: number;
@@ -50,7 +46,7 @@ export default class Camera {
     this.fov = Math.atan2(canvasAspectRatio / 2, DEFAULT_ZOOM) * 2;
 
     this.rotation = 0;
-    this.position = vec3F(0, 0, DEFAULT_ZOOM);
+    this.position = new Float32Vector3(0, 0, DEFAULT_ZOOM);
     this.screenAspectRatio = screenAspectRatio;
 
     /**
@@ -67,34 +63,6 @@ export default class Camera {
     this.zFar = MAX_ZOOM;
   }
 
-  private makeViewMatrix(): NDArray {
-    const rotationMatrix = rotationMatrixFrom(deg2Rads(this.rotation));
-
-    const camDirection = vec3F(0, 0, -1);
-    
-
-    //second column
-    const camUp = vec3F(
-      rotationMatrix.data[1],
-      rotationMatrix.data[3],
-      0
-    );
-
-    //first column
-    const camRight = vec3F(
-      rotationMatrix.data[0],
-      rotationMatrix.data[2],
-      0
-    );
-
-    return viewMatrixFrom(
-      camDirection,
-      camUp,
-      camRight,
-      this.position
-    );
-  }
-
   translateRotation(translation: number) {
     this.rotation = (translation + this.rotation) % 360;
   }
@@ -104,77 +72,71 @@ export default class Camera {
     this.translateRotation(theta);
   }
 
-  translatePosition(translation: Vec2F) {
-    const rotationMatrix = rotationMatrixFrom(deg2Rads(this.rotation));
-    const rotated = rotationMatrix.multiply(translation.val);
-    this.position.val.x += rotated.x;
-    this.position.val.y += rotated.y;
+  translatePosition(translation: Float32Vector2) {
+    const rotated = this.rotateVectorToBasis(translation);
+    add(this.position, rotated);
   }
 
-  setPosition(position: Vec2F) {
-    this.position.val.x = position.val.x;
-    this.position.val.y = position.val.y;
+  setPosition(position: Float32Vector2) {
+    this.position.x = position.x;
+    this.position.y = position.y;
   }
 
   translateZoom(translation: number) {
-    const newZ = this.position.val.data[2] + translation;
-    this.position.val.data[2] = clamp(MIN_ZOOM, MAX_ZOOM, newZ);
+    const newZ = this.position.z + translation;
+    this.position.z = clamp(MIN_ZOOM, MAX_ZOOM, newZ);
   }
 
   setZoom(zoomLevel: number) {
-    this.position.val.z = 0;
+    this.position.z = 0;
     this.translateZoom(zoomLevel);
   }
 
-  getViewMatrixRaw(): NDArray {
-
-    const pos = new Float32Vector3(this.position.val.data[0], this.position.val.data[1], this.position.val.data[2]);
-    const lookAtPos = new Float32Vector3(pos.x, pos.y, 0);
+  getViewMatrix(): Matrix4x4 {
+    const lookAtPos = new Float32Vector3(this.position.x, this.position.y, 0);
     const theta = deg2Rads(this.rotation);
     const upVector = new Float32Vector3(-Math.sin(theta), Math.cos(theta), 0);
 
-    const lookAt = Matrix4.lookAt(pos, lookAtPos, upVector);
-    return new NDArray(lookAt.values, {
-      shape: [4, 4],
-      dtype: 'float32'
-    });
+    return Matrix4.lookAt(this.position, lookAtPos, upVector);
   }
 
-  getProjectionMatrixRaw(): NDArray {
-    const projection = Matrix4.perspective({
+  getProjectionMatrix(): Matrix4x4 {
+    return Matrix4.perspective({
       fovYRadian: this.fov,
       aspectRatio: this.screenAspectRatio,
       near: this.zNear,
       far: this.zFar
     })
-
-    return new NDArray(projection.values, {
-      shape: [4, 4],
-      dtype: 'float32'
-    })
    
   }
 
-  getTransformMatrixRaw(): NDArray {
-    const pos = new Float32Vector3(this.position.val.data[0], this.position.val.data[1], 0);
-    const model = Matrix4.identity().translate(pos.x, pos.y, pos.z).rotateZ(deg2Rads(this.rotation));
-    return new NDArray(model.values, {
-      shape: [4, 4],
-      dtype: 'float32'
-    })
+  getTransformMatrixRaw(): Matrix4x4 {
+    return Matrix4.identity().translate(this.position.x, this.position.y, 0).rotateZ(deg2Rads(this.rotation));
+  }
+
+  private getRotationMatrix(): Matrix2x2 {
+    const theta = deg2Rads(this.rotation);
+    return new Matrix2x2(Math.cos(theta), -Math.sin(theta), Math.sin(theta), Math.cos(theta));
+  }
+
+  rotateVectorToBasis(v: Float32Vector2): Float32Vector2 {
+    const mat = this.getRotationMatrix();
+    const x = v.x * mat.values[0] + v.y * mat.values[1];
+    const y = v.x * mat.values[2] + v.y * mat.values[3];
+    return new Float32Vector2(x, y);
   }
 
   toString(): string {
     return `Camera Object --\n
-            Position: ${this.position.val.toString()}\n
+            Position: ${this.position.toString()}\n
             Rotation: ${this.rotation}\n
             Fov: ${this.fov}\n
             zNear: ${this.zNear}\n
             zFar: ${this.zFar}\n\n
 
             Matrices --\n
-            View Matrix: ${this.getViewMatrixRaw().toString()}\n\n
-            Projection Matrix: ${this.getProjectionMatrixRaw().toString()}\n\n
+            View Matrix: ${this.getViewMatrix().toString()}\n\n
+            Projection Matrix: ${this.getProjectionMatrix().toString()}\n\n
             Rotation Matrix: ${rotationMatrixFrom(this.rotation).toString()}
     `;
   }
@@ -184,59 +146,6 @@ export default class Camera {
   }
 }
 
-function transformMatrixFrom(theta: number, translation: Vec3F): NDArray {
-  const rot = new NDArray(
-    [
-      [Math.cos(theta), -Math.sin(theta), 0, 0],
-      [Math.sin(theta), Math.cos(theta), 0, 0],
-      [0, 0, 1, 0],
-      [0, 0, 0, 1],
-    ],
-    {
-      shape: [4, 4],
-      dtype: "float32",
-    }
-  );
-
-  const trans = new NDArray(
-    [
-      [1, 0, 0, 0],
-      [0, 1, 0, 0],
-      [0, 0, 1, 0],
-      [translation.val.x, translation.val.y, translation.val.z, 1],
-    ],
-    {
-      shape: [4, 4],
-      dtype: "float32",
-    }
-  );
-
-  return rot.multiply(trans);
-}
-
-function perspectiveMatrixFrom(
-  fovInRadians: number,
-  aspectRatio: number,
-  zNear: number,
-  zFar: number
-): NDArray {
-  //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_model_view_projection#perspective_projection_matrix
-
-  const f = 1.0 / Math.tan(fovInRadians / 2);
-  const rangeInv = 1 / (zNear - zFar);
-  return new NDArray(
-    [
-      [f / aspectRatio, 0, 0, 0],
-      [0, f, 0, 0],
-      [0, 0, (zNear + zFar) * rangeInv, -1],
-      [0, 0, zNear * zFar * rangeInv * 2, 0],
-    ],
-    {
-      shape: [4, 4],
-      dtype: "float32",
-    }
-  );
-}
 
 function rotationMatrixFrom(theta: number): NDArray {
   return new NDArray(
@@ -251,39 +160,6 @@ function rotationMatrixFrom(theta: number): NDArray {
   );
 }
 
-function viewMatrixFrom(
-  look: Vec3F,
-  up: Vec3F,
-  right: Vec3F,
-  position: Vec3F
-): NDArray {
-  //https://learnopengl.com/Getting-started/Camera
-  const leftMat = new NDArray(
-    [
-      [look.val.x, look.val.y, look.val.z, 0],
-      [up.val.x, up.val.y, up.val.z, 0],
-      [right.val.x, right.val.y, right.val.z, 0],
-      [0, 0, 0, 1],
-    ],
-    {
-      shape: [4, 4],
-      dtype: "float32",
-    }
-  );
-  const rightMat = new NDArray(
-    [
-      [1, 0, 0, -position.val.x],
-      [0, 1, 0, -position.val.y],
-      [0, 0, 1, -position.val.z],
-      [0, 0, 0, 1],
-    ],
-    {
-      shape: [4, 4],
-      dtype: "float32",
-    }
-  );
-  return leftMat.multiply(rightMat);
-}
 
 function deg2Rads(degrees: number): number {
   return degrees * (Math.PI / 180);

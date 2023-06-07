@@ -5,7 +5,8 @@ import type Texture from './texture';
 import fs from 'fs';
 import { promisify } from 'util';
 import { Result } from '../func/result';
-import { Float32Vector2, Float32Vector3, Float32Vector4 } from 'matrixgl';
+import { type Float32Vector2, type Float32Vector3, type Float32Vector4, type Matrix2x2, type Matrix3x3, type Matrix4x4 } from 'matrixgl';
+import { type Int32Vector2, type Int32Vector3, type Int32Vector4 } from './vector';
 
 //TODO: make all err based code result based
 
@@ -264,58 +265,58 @@ export default class Shader {
     gl.uniform1iv(loc, vals);
   }
 
-  uploadIntVec2(gl: GL, location: string, val: Vector2Base) {
+  uploadIntVec2(gl: GL, location: string, val: Int32Vector2) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniform2i(loc, val.val.x, val.val.y);
+    gl.uniform2i(loc, val.x, val.y);
   }
 
-  uploadIntVec2Array(gl: GL, location: string, vals: Vec2I[]) {
+  uploadIntVec2Array(gl: GL, location: string, vals: Int32Vector2[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2iv(
       loc,
-      vals.flatMap((v) => [v.val.x, v.val.y])
+      vals.flatMap((v) => [v.x, v.y])
     );
   }
 
-  uploadInttVec3(gl: GL, location: string, val: Vec3I) {
+  uploadInttVec3(gl: GL, location: string, val: Int32Vector3) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniform3i(loc, val.val.x, val.val.y, val.val.z);
+    gl.uniform3i(loc, val.x, val.y, val.z);
   }
 
-  uploadIntVec3Array(gl: GL, location: string, vals: Vec3I[]) {
+  uploadIntVec3Array(gl: GL, location: string, vals: Int32Vector3[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3iv(
       loc,
-      vals.flatMap((v) => [v.val.x, v.val.y, v.val.z])
+      vals.flatMap((v) => [v.x, v.y, v.z])
     );
   }
 
-  uploadIntVec4(gl: GL, location: string, val: Vec4I) {
+  uploadIntVec4(gl: GL, location: string, val: Int32Vector4) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniform4i(loc, val.val.x, val.val.y, val.val.z, val.val.w);
+    gl.uniform4i(loc, val.x, val.y, val.z, val.w);
   }
 
-  uploadIntVec4Array(gl: GL, location: string, vals: Vec4I[]) {
+  uploadIntVec4Array(gl: GL, location: string, vals: Int32Vector4[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform4iv(
       loc,
-      vals.flatMap((v) => [v.val.x, v.val.y, v.val.z, v.val.w])
+      vals.flatMap((v) => [v.x, v.y, v.z, v.w])
     );
   }
 
-  uploadMatrix2x2(gl: GL, location: string, matrix: Mat2x2) {
+  uploadMatrix2x2(gl: GL, location: string, matrix: Matrix2x2) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniformMatrix2fv(loc, false, matrix.val.data);
+    gl.uniformMatrix2fv(loc, false, matrix.values);
   }
 
-  uploadMatrix3x3(gl: GL, location: string, matrix: Mat3x3) {
+  uploadMatrix3x3(gl: GL, location: string, matrix: Matrix3x3) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniformMatrix3fv(loc, false, matrix.val.data);
+    gl.uniformMatrix3fv(loc, false, matrix.values);
   }
 
-  uploadMatrix4x4(gl: GL, location: string, matrix: Mat4x4) {
+  uploadMatrix4x4(gl: GL, location: string, matrix: Matrix4x4) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniformMatrix4fv(loc, false, matrix.val.data);
+    gl.uniformMatrix4fv(loc, false, matrix.values);
   }
 
   uploadTexture(gl: GL, location: string, texture: Texture) {

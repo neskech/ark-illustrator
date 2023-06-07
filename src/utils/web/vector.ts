@@ -1,4 +1,3 @@
-import { NDArray } from 'vectorious';
 import { requires } from '../contracts';
 import {
   Vector2Base,
@@ -8,14 +7,14 @@ import {
 import {
   Float32Vector2,
   Float32Vector3,
-  Matrix2x2,
-  type Float32Vector4,
-  Matrix3x3,
-  Matrix4x4,
+  type Matrix2x2, type Float32Vector4,
+  type Matrix3x3,
+  type Matrix4x4,
 } from 'matrixgl';
+import { unreachable } from '../func/funUtils';
 
-type Brand<T, S extends string> = { __type: S };
-type ExtractFromBrand<B> = B extends Brand<infer T, infer _> ? T : never;
+type ArrayBuffer = Int32Array | Float32Array
+type ArrayBufferType = 'integer' | 'float'
 
 type LinearAlgebra =
   | Float32Vector2
@@ -29,63 +28,81 @@ type LinearAlgebra =
   | Matrix4x4;
 
 type LinearAlgebraType =
-  | Brand<Float32Vector2, 'floatVector2'>
-  | Brand<Float32Vector3, 'floatVector3'>
-  | Brand<Float32Vector4, 'floatVector4'>
-  | Brand<Int32Vector2, 'intVector2'>
-  | Brand<Int32Vector3, 'intVector3'>
-  | Brand<Int32Vector4, 'intVector4'>
-  | Brand<Matrix2x2, 'Matrix2x2'>
-  | Brand<Matrix3x3, 'Matrix3x3'>
-  | Brand<Matrix4x4, 'Matrix4x4'>;
+| 'Float32Vector2'
+| 'Float32Vector3'
+| 'Float32Vector4'
+| 'Int32Vector2'
+| 'Int32Vector3'
+| 'Int32Vector4'
+| 'Matrix2x2'
+| 'Matrix3x3'
+| 'Matrix4x4';
 
-const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
-const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
-const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
-const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
-const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
-const floatVector2: Brand<Float32Vector2, 'floatVector2'> = { __type: 'floatVector2' }
+function typeToType(s: LinearAlgebraType): ArrayBufferType {
+  return s.includes('Int') ? 'integer' : 'float'
+}
 
-function stringToBrandedType(s: )
+function typeToTypeSize(s: LinearAlgebraType): number {
+  switch (s) {
+    case 'Float32Vector2':
+      return 2;
+    case 'Float32Vector3':
+      return 3;
+    case 'Float32Vector4':
+      return 4;
+    case 'Int32Vector2':
+      return 2;
+    case 'Int32Vector3':
+      return 3;
+    case 'Int32Vector4':
+      return 4;
+    case  'Matrix2x2':
+      return 4;
+    case 'Matrix3x3':
+      return 9;
+    case 'Matrix4x4':
+      return 16;
+    default:
+      return unreachable();
+  }
+}
 
 const RESIZE_FACTOR = 1.5;
-const DEFAULT_CAPACITY = 10;
 
-//TODO: also pass in a constructor that takes array, returns T
-function createLinearAlgebraList<T extends LinearAlgebraType>(s: ): List<ExtractFromBrand<T>>;
 
-class List<T extends LinearAlgebra> {
+export class List<T extends LinearAlgebra> {
   private buffer: ArrayBuffer;
   private bufferType: ArrayBufferType;
   private capacity: number;
   private size: number;
   private debugLogging: boolean;
   private linearAlgType: LinearAlgebraType;
-  private typeShape: [number, number];
   private typeSize: number;
+  private typeConstructor: (n: number[]) => T
 
   constructor(
     capacity: number,
-    dtype: ArrayBufferType,
     ltype: LinearAlgebraType,
+    typeConstructor: (n: number[]) => T,
     logging: boolean
   ) {
     requires(capacity >= 1);
 
     this.size = 0;
     this.capacity = capacity;
+
+    this.bufferType = typeToType(ltype);
+
     this.buffer =
-      dtype == 'int32'
+      this.bufferType == 'integer'
         ? new Int32Array(this.capacity)
         : new Float32Array(this.capacity);
 
+    this.typeConstructor = typeConstructor;
+
     this.debugLogging = logging;
-
-    this.bufferType = dtype;
     this.linearAlgType = ltype;
-
-    this.typeSize = typeSizeFrom(ltype);
-    this.typeShape = typeShapeFrom(ltype);
+    this.typeSize = typeToTypeSize(ltype);
   }
 
   private tryResize() {
@@ -143,7 +160,7 @@ class List<T extends LinearAlgebra> {
 
     const end = scaledIndex + this.typeSize;
     for (let i = scaledIndex; i < end; i++)
-      this.buffer[i] = t.val.data[i - scaledIndex];
+      this.buffer[i] = t.values[i - scaledIndex];
   }
 
   pop(): T {
@@ -155,19 +172,11 @@ class List<T extends LinearAlgebra> {
 
     const scaledIndex = this.scaleIndex(index);
 
-    const arr = new Array(this.typeSize);
+    const arr = new Array(this.typeSize) as number[];
     for (let i = scaledIndex; i < scaledIndex + this.typeSize; i++)
       arr[i - scaledIndex] = this.buffer[scaledIndex];
 
-    const ndArr = new NDArray(arr, {
-      shape: this.typeShape,
-      dtype: this.bufferType,
-    });
-
-    const t: T = {
-      val: ndArr,
-      __type: this.linearAlgType,
-    } as T;
+    const t = this.typeConstructor(arr);
 
     const end = this.size - this.typeSize;
     for (let i = scaledIndex; i < end; i++)
@@ -202,8 +211,6 @@ class List<T extends LinearAlgebra> {
             Inner Data Info --\n
             Linear Algebra Type: ${this.linearAlgType}\n
             Type Size: ${this.typeSize}\n
-            Type Shape: ${(this.typeShape[0], this.typeShape[1])}\n\n
-
             Raw List Data --\n\n\n
             Data: ${str}
             `;
