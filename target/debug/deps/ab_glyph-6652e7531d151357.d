@@ -1,0 +1,14 @@
+/Users/ness/Projects/Serious/Personal/ark/target/debug/deps/ab_glyph-6652e7531d151357.rmeta: /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/lib.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/codepoint_ids.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/err.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/font.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/font_arc.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/glyph.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/outlined.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/scale.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/ttfp.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/ttfp/outliner.rs
+
+/Users/ness/Projects/Serious/Personal/ark/target/debug/deps/ab_glyph-6652e7531d151357.d: /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/lib.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/codepoint_ids.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/err.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/font.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/font_arc.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/glyph.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/outlined.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/scale.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/ttfp.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/ttfp/outliner.rs
+
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/lib.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/codepoint_ids.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/err.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/font.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/font_arc.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/glyph.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/outlined.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/scale.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/ttfp.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/ab_glyph-0.2.15/src/ttfp/outliner.rs:

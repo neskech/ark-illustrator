@@ -1,0 +1,13 @@
+prefix=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out
+exec_prefix=${prefix}
+includedir=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/include
+libdir=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib
+
+Name: GLFW
+Description: A multi-platform library for OpenGL, window and input
+Version: 3.3.5
+URL: https://www.glfw.org/
+Requires.private: 
+Libs: -L${libdir} -lglfw3
+Libs.private:  -framework Cocoa -framework IOKit -framework CoreFoundation
+Cflags: -I${includedir}

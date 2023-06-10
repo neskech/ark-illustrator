@@ -1,0 +1,15 @@
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/CMakeFiles/uninstall.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/CMakeFiles/edit_cache.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/CMakeFiles/rebuild_cache.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/CMakeFiles/list_install_components.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/CMakeFiles/install.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/CMakeFiles/install/local.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/CMakeFiles/install/strip.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/update_mappings.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/glfw.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/edit_cache.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/rebuild_cache.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/list_install_components.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/install.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/install/local.dir
+/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build/src/CMakeFiles/install/strip.dir

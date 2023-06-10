@@ -1,116 +1,87 @@
-import { requires } from "../../contracts";
-import { type Vec2F, vec2F } from "../../web/vector";
-import { type NDArray } from "vectorious";
-import { assert } from "../../contracts";
-import { type CanvasEventHandler, type EventDispatcher, type Tool } from "./tool";
-import { todo, todoEmpty } from "~/utils/func/funUtils";
-import { type BrushSettings } from "./settings";
+import { requires } from '../../contracts';
+import { assert } from '../../contracts';
+import { Tool, type HandleEventArgs } from './tool';
+import { type BrushSettings } from './settings';
+import { Float32Vector2 } from 'matrixgl';
+import { add, copy, distance, distanceAlong, scale } from '~/utils/web/vector';
 
-////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! CLASS DEFINITION
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
-//! TYPE DEFINITIONS
+export class Brush extends Tool {
+  isMouseDown: boolean;
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+  constructor() {
+    super();
+    this.isMouseDown = false;
+  }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Brush extends Tool<BrushSettings> {
-  isMouseDown: boolean
+  handleEvent(args: HandleEventArgs): boolean {
+    const preset = args.presetNumber.expect('Brush needs preset number');
+    requires(this.areValidBrushSettings(args.settings.brushSettings[preset]));
+
+    const evType = args.eventString;
+    const event = args.event as MouseEvent;
+
+    switch (evType) {
+      case 'mousemove':
+        return this.mouseMovedHandler(args, event);
+      case 'mouseup':
+        return this.mouseUpHandler(args, event);
+      case 'mousedown':
+        return this.mouseDownHandler(args, event);
+      default:
+        return false;
+    }
+  }
+
+  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+    const { canvasState, settings, presetNumber } = args;
+    return false;
+  }
+
+  mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+    const { canvasState, settings, presetNumber } = args;
+    return false;
+  }
+
+  mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+    const { canvasState, settings, presetNumber } = args;
+    return false;
+  }
+
+  areValidBrushSettings(b: BrushSettings): boolean {
+    return (
+      0 <= b.opacity &&
+      b.opacity <= 100 &&
+      0 <= b.smoothing &&
+      b.smoothing <= 100
+    );
+  }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! HELPERS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+type Path = Float32Vector2[];
+type SmoothFunction = 'Bezier';
+
+const MAX_BEZIER_INTERPOLATIONS = 10;
 interface SmoothingOptions {
   path: Path;
   maxPointsToSmooth: number;
   minDistanceBetweenPoints: number;
   smoothingFn?: SmoothFunction;
-}
-
-type Dispatch = EventDispatcher<BrushSettings>;
-type Handler = CanvasEventHandler<BrushSettings>;
-
-////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
-
-//! CONSTRUCTOR + CONCRETE FUNCTIONS
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-const dispatcher: Dispatch = function (
-  this: Brush,
-  event,
-  handler,
-  state,
-  settings,
-  presetNumber,
-) {
-
-  //console.info(`Event handler called for brush tool with event of type ${event.type}`);
-
-  const presetIndex = presetNumber.expect("Preset index should be defined for brush tool");
-  assert(0 <= presetIndex && presetIndex < settings.brushSettings.length);
-  const bSettings = settings.brushSettings[presetIndex];
-
-  assert(() => areValidBrushSettings(bSettings));
-
-  event.preventDefault();
-  handler.bind(this)(event, state, bSettings);
-};
-
-const mouseMove: Handler = function (this: Brush, event, state, settings) {
-  todoEmpty()
-};
-
-const mouseDown: Handler = function (this: Brush, event, state, settings) {
-  if (this.isMouseDown)
-    return;
-
-  console.log('mouse down!!')
-  this.isMouseDown = true;
-  state.camera.translateZoom(0.01);
-  todoEmpty()
-};
-
-const mouseUp: Handler = function (this: Brush, event, state, settings) {
-  if (!this.isMouseDown)
-    return;
-  const realEvent = event as MouseEvent;
-  console.log(realEvent.clientX, realEvent.clientY)
-  this.isMouseDown = false;
-      todoEmpty()
-};
-
-export function createBrush(): Brush {
-  return {
-    isMouseDown: false,
-    dispatchEvent: dispatcher,
-    mousedown: mouseDown,
-    mouseup: mouseUp,
-    mousemove: mouseMove,
-  };
-}
-
-////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
-
-//! HELPERS
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-type Path = Vec2F[];
-type SmoothFunction = "Bezier" | "Bezier Spline" | "Idk";
-
-const MAX_BEZIER_INTERPOLATIONS = 10;
-
-function areValidBrushSettings(b: BrushSettings): boolean {
-  return (
-    0 <= b.opacity &&
-    b.opacity <= 100 &&
-    0 <= b.smoothing &&
-    b.smoothing <= 100
-  );
 }
 
 /**
@@ -123,7 +94,7 @@ function areValidBrushSettings(b: BrushSettings): boolean {
  * user's drawn path will lag behind, assuming this function
  * is called per frame
  */
-function applySmoothing({
+export function applySmoothing({
   path,
   maxPointsToSmooth,
   minDistanceBetweenPoints,
@@ -134,8 +105,6 @@ function applySmoothing({
   //can't apply smoothing on < 3 points
   if (path.length < 3) return path;
 
-  const smoothingFunction = smoothingFn ?? "Bezier";
-
   return bezierSmoothing(path, maxPointsToSmooth, minDistanceBetweenPoints);
 }
 
@@ -144,7 +113,8 @@ function bezierSmoothing(
   maxPointsToSmooth: number,
   minDistanceBetweenPoints: number
 ): Path {
-  const newPath = [];
+
+  const newPath: Path = [];
 
   /**
    * Draw it out on paper. You have 3 points, and you interpolate the first 2.
@@ -178,10 +148,8 @@ function bezierSmoothing(
     const end = path[index + pathLengthToSmooth - 1];
 
     // move forward by any distance remaining from the last part
-    const dispVector = displacementVector(start, end);
-    dispVector.val.normalize();
-    scaleBy(dispVector, prevDistanceToEndOfPath);
-    start.val.add(dispVector.val);
+    const offset = distanceAlong(start, end, prevDistanceToEndOfPath);
+    add(start, offset);
 
     const pathArr = [];
     for (let i = 0; i < pathLengthToSmooth; i++) pathArr.push(path[index + i]);
@@ -206,6 +174,26 @@ function bezierSmoothing(
   return newPath;
 }
 
+export function NMidpoints(path: Path, midpointPower: number): Path {
+  requires(0 < midpointPower && midpointPower <= 5);
+
+  let numMidpoints = Math.pow(2, midpointPower);
+  numMidpoints = Math.min(path.length, numMidpoints);
+
+  if (numMidpoints == 0)
+    return [];
+
+  const desiredDistances = new Array(numMidpoints) as number[];
+
+  const totalDistance = distanceAlongPath(path);
+  const deltaDistance = totalDistance / numMidpoints;
+
+  for (let i = 0; i < numMidpoints; i++)
+    desiredDistances[i] = i * deltaDistance;
+
+  return pointsAtDistances(path, desiredDistances);
+}
+
 function pointsAtDistances(path: Path, desiredDistances: number[]): Path {
   const newPath = [];
   let currentDistanceIdx = 0;
@@ -228,11 +216,8 @@ function pointsAtDistances(path: Path, desiredDistances: number[]): Path {
       const scaled = d - accumulatedDistance;
       const t = scaled / lineDistance;
 
-      const dispVector = displacementVector(start, end);
-      dispVector.val.normalize();
-      scaleBy(dispVector, t);
-      const point = start.val.copy().add(dispVector.val);
-      newPath.push(wrapToVec2f(point));
+      const offset = distanceAlong(start, end, t);
+      newPath.push(add(copy(start), offset));
 
       if (currentDistanceIdx++ == desiredDistances.length) return newPath;
 
@@ -253,26 +238,6 @@ function distanceAlongPath(path: Path): number {
   return accumulatedDistance;
 }
 
-function distanceSqrd(v1: Vec2F, v2: Vec2F) {
-  return v1.val.x * v2.val.x + v1.val.y * v2.val.y;
-}
-
-function scaleBy(v: Vec2F, scale: number): void {
-  v.val.x *= scale;
-  v.val.y *= scale;
-}
-
-function wrapToVec2f(v: NDArray): Vec2F {
-  return { val: v, __type: "Vec2F" };
-}
-
-function displacementVector(from: Vec2F, to: Vec2F): Vec2F {
-  return wrapToVec2f(to.val.copy().subtract(from.val));
-}
-
-function distance(v1: Vec2F, v2: Vec2F) {
-  return Math.sqrt(v1.val.x * v2.val.x + v1.val.y * v2.val.y);
-}
 
 function factorial(n: number): number {
   requires(n >= 0);
@@ -291,19 +256,18 @@ function combinations(n: number, i: number): number {
   return nfac / (ifac * nMinusIFac);
 }
 
-function NBezier(path: Path, t: number): Vec2F {
+function NBezier(path: Path, t: number): Float32Vector2 {
   requires(0 <= t && t <= 1);
 
   const n = path.length;
-  const point = vec2F(0, 0);
+  const point = new Float32Vector2(0, 0);
 
   for (let i = 0; i < n; i++) {
     const coef1 = combinations(n, i); //TODO memoization
     const coef2 = Math.pow(t, i);
     const coef3 = Math.pow(1 - t, n - i);
     const mult = coef1 * coef2 * coef3;
-    point.val.x += mult * path[i].val.x;
-    point.val.y += mult * path[i].val.y;
+    add(point, scale(path[i], mult))
   }
 
   return point;

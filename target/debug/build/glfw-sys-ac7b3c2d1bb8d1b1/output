@@ -1,0 +1,62 @@
+CMAKE_TOOLCHAIN_FILE_aarch64-apple-darwin = None
+CMAKE_TOOLCHAIN_FILE_aarch64_apple_darwin = None
+HOST_CMAKE_TOOLCHAIN_FILE = None
+CMAKE_TOOLCHAIN_FILE = None
+CMAKE_GENERATOR_aarch64-apple-darwin = None
+CMAKE_GENERATOR_aarch64_apple_darwin = None
+HOST_CMAKE_GENERATOR = None
+CMAKE_GENERATOR = None
+CMAKE_PREFIX_PATH_aarch64-apple-darwin = None
+CMAKE_PREFIX_PATH_aarch64_apple_darwin = None
+HOST_CMAKE_PREFIX_PATH = None
+CMAKE_PREFIX_PATH = None
+CMAKE_aarch64-apple-darwin = None
+CMAKE_aarch64_apple_darwin = None
+HOST_CMAKE = None
+CMAKE = None
+running: cd "/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build" && CMAKE_PREFIX_PATH="" "cmake" "/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/glfw-sys-3.3.5/." "-DGLFW_BUILD_EXAMPLES=OFF" "-DGLFW_BUILD_TESTS=OFF" "-DGLFW_BUILD_DOCS=OFF" "-DCMAKE_INSTALL_LIBDIR=lib" "-DCMAKE_INSTALL_PREFIX=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out" "-DCMAKE_C_FLAGS= -ffunction-sections -fdata-sections -fPIC -arch arm64" "-DCMAKE_C_COMPILER=/usr/bin/cc" "-DCMAKE_CXX_FLAGS= -ffunction-sections -fdata-sections -fPIC -arch arm64" "-DCMAKE_CXX_COMPILER=/usr/bin/c++" "-DCMAKE_ASM_FLAGS= -ffunction-sections -fdata-sections -fPIC -arch arm64" "-DCMAKE_ASM_COMPILER=/usr/bin/cc" "-DCMAKE_BUILD_TYPE=Debug"
+-- The C compiler identification is AppleClang 14.0.3.14030022
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Using Cocoa for window creation
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build
+running: cd "/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/build" && MAKEFLAGS="-j --jobserver-fds=8,9 --jobserver-auth=8,9" "cmake" "--build" "." "--target" "install" "--config" "Debug" "--parallel" "8"
+[  6%] Building C object src/CMakeFiles/glfw.dir/input.c.o
+[ 12%] Building C object src/CMakeFiles/glfw.dir/cocoa_init.m.o
+[ 18%] Building C object src/CMakeFiles/glfw.dir/monitor.c.o
+[ 25%] Building C object src/CMakeFiles/glfw.dir/cocoa_joystick.m.o
+[ 31%] Building C object src/CMakeFiles/glfw.dir/init.c.o
+[ 37%] Building C object src/CMakeFiles/glfw.dir/window.c.o
+[ 43%] Building C object src/CMakeFiles/glfw.dir/vulkan.c.o
+[ 50%] Building C object src/CMakeFiles/glfw.dir/context.c.o
+[ 56%] Building C object src/CMakeFiles/glfw.dir/cocoa_monitor.m.o
+[ 62%] Building C object src/CMakeFiles/glfw.dir/cocoa_window.m.o
+[ 68%] Building C object src/CMakeFiles/glfw.dir/cocoa_time.c.o
+[ 75%] Building C object src/CMakeFiles/glfw.dir/posix_thread.c.o
+[ 81%] Building C object src/CMakeFiles/glfw.dir/nsgl_context.m.o
+[ 87%] Building C object src/CMakeFiles/glfw.dir/egl_context.c.o
+[ 93%] Building C object src/CMakeFiles/glfw.dir/osmesa_context.c.o
+[100%] Linking C static library libglfw3.a
+[100%] Built target glfw
+Install the project...
+-- Install configuration: "Debug"
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/libglfw3.a
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/include/GLFW
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/include/GLFW/glfw3.h
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/include/GLFW/glfw3native.h
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3Config.cmake
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3ConfigVersion.cmake
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3Targets.cmake
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3Targets-debug.cmake
+-- Installing: /Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/pkgconfig/glfw3.pc
+cargo:root=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out
+cargo:rustc-link-search=native=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib
+cargo:rustc-link-lib=dylib=glfw3

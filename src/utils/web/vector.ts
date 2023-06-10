@@ -413,6 +413,18 @@ export function distanceAlong(
   return scale(direction(from, to), t);
 }
 
+export function distance(a: Float32Vector2, b: Float32Vector2): number {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+export function distanceSquared(a: Float32Vector2, b: Float32Vector2): number {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return dx * dx + dy * dy;
+}
+
 export function angle(a: Float32Vector2): number {
   return Math.atan2(a.y, a.x);
 }

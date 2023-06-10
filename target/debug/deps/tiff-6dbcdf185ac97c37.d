@@ -1,0 +1,14 @@
+/Users/ness/Projects/Serious/Personal/ark/target/debug/deps/tiff-6dbcdf185ac97c37.rmeta: /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/lib.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/bytecast.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/mod.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/ifd.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/stream.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/mod.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/colortype.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/writer.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/error.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/tags.rs
+
+/Users/ness/Projects/Serious/Personal/ark/target/debug/deps/tiff-6dbcdf185ac97c37.d: /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/lib.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/bytecast.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/mod.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/ifd.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/stream.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/mod.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/colortype.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/writer.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/error.rs /Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/tags.rs
+
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/lib.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/bytecast.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/mod.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/ifd.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/decoder/stream.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/mod.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/colortype.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/encoder/writer.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/error.rs:
+/Users/ness/.cargo/registry/src/github.com-1ecc6299db9ec823/tiff-0.6.1/src/tags.rs:

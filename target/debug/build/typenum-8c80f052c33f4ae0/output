@@ -1,0 +1,2 @@
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/typenum-8c80f052c33f4ae0/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/Users/ness/Projects/Serious/Personal/ark/target/debug/build/typenum-8c80f052c33f4ae0/out/op.rs
