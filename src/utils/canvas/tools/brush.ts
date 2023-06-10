@@ -32,6 +32,8 @@ export class Brush extends Tool {
     const event = args.event as MouseEvent;
 
     switch (evType) {
+      case 'mouseleave':
+        return this.mouseLeaveHandler();
       case 'mousemove':
         return this.mouseMovedHandler(args, event);
       case 'mouseup':
@@ -56,6 +58,7 @@ export class Brush extends Tool {
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
     const { canvasState, settings, presetNumber } = args;
+    canvasState.camera.translatePosition(new Float32Vector2(0.1, 0))
     this.isMouseDown = false;
     return false;
   }
@@ -73,6 +76,12 @@ export class Brush extends Tool {
     this.isMouseDown = true;
 
     return hasSpace && !this.isMouseDown;
+  }
+
+  mouseLeaveHandler(): boolean {
+    alert('left')
+    this.isMouseDown = false;
+    return false;
   }
 
   areValidBrushSettings(b: BrushSettings): boolean {

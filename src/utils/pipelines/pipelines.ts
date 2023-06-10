@@ -55,6 +55,36 @@ export function constructQuadSix(position: Float32Vector2, scale: number): SixSi
     ]
 } 
 
+export function constructQuadSixTex(position: Float32Vector2, scale: number): Float32Vector2[] {
+    const w = 0.5 * scale;
+    const h = 0.5 * scale;
+    return [
+        //top right
+        new Float32Vector2(position.x + w, position.y + h),
+        new Float32Vector2(1, 1),
+
+        //top left
+        new Float32Vector2(position.x - w, position.y + h),
+        new Float32Vector2(0, 1),
+
+        //bottom left
+        new Float32Vector2(position.x - w, position.y - h),
+        new Float32Vector2(0, 0),
+
+        //bottom left
+        new Float32Vector2(position.x - w, position.y - h),
+        new Float32Vector2(0, 0),
+
+        //bottom right
+        new Float32Vector2(position.x + w, position.y - h),
+        new Float32Vector2(1, 0),
+
+        //top right
+        new Float32Vector2(position.x + w, position.y + h),
+        new Float32Vector2(1, 1),
+    ]
+} 
+
 
 type SixSizeArray = [number, number, number, number, number, number]
 export function constructQuadIndices(offset: number): SixSizeArray {
