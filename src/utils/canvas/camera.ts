@@ -1,7 +1,8 @@
-import { NDArray } from "vectorious";
-import { requires } from "../contracts";
-import { Float32Vector2, Float32Vector3, Matrix2x2, Matrix4, type Matrix4x4 } from "matrixgl";
-import { add } from '../web/vector';
+import { NDArray } from 'vectorious';
+import { requires } from '../contracts';
+import { Float32Vector2, Float32Vector3, Matrix2x2, Matrix4, type Matrix4x4 } from 'matrixgl';
+import { Int32Vector2, add } from '../web/vector';
+import { CanvasState } from './canvas';
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.1;
@@ -14,7 +15,6 @@ export default class Camera {
   private zNear: number;
   private zFar: number;
   private screenAspectRatio: number;
-
 
   constructor(canvasAspectRatio: number, screenAspectRatio: number) {
     requires(canvasAspectRatio > 0 && screenAspectRatio > 0);
@@ -105,13 +105,14 @@ export default class Camera {
       fovYRadian: this.fov,
       aspectRatio: this.screenAspectRatio,
       near: this.zNear,
-      far: this.zFar
-    })
-   
+      far: this.zFar,
+    });
   }
 
-  getTransformMatrixRaw(): Matrix4x4 {
-    return Matrix4.identity().translate(this.position.x, this.position.y, 0).rotateZ(deg2Rads(this.rotation));
+  getTransformMatrix(): Matrix4x4 {
+    return Matrix4.identity()
+      .translate(this.position.x, this.position.y, 0)
+      .rotateZ(deg2Rads(this.rotation));
   }
 
   private getRotationMatrix(): Matrix2x2 {
@@ -137,7 +138,7 @@ export default class Camera {
             Matrices --\n
             View Matrix: ${this.getViewMatrix().toString()}\n\n
             Projection Matrix: ${this.getProjectionMatrix().toString()}\n\n
-            Rotation Matrix: ${rotationMatrixFrom(this.rotation).toString()}
+            Rotation Matrix: ${this.getRotationMatrix().toString()}
     `;
   }
 
@@ -146,20 +147,24 @@ export default class Camera {
   }
 }
 
-
-function rotationMatrixFrom(theta: number): NDArray {
-  return new NDArray(
-    [
-      [Math.cos(theta), -Math.sin(theta)],
-      [Math.sin(theta), Math.cos(theta)],
-    ],
-    {
-      shape: [2, 2],
-      dtype: "float32",
-    }
-  );
+export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vector2 {
+  const x = event.clientX - state.canvasRect.left;
+  const y = event.clientY - state.canvasRect.top;
+  return new Int32Vector2(x, y);
 }
 
+export function mouseToNormalized(event: MouseEvent, state: CanvasState): Float32Vector2 {
+  const x = (event.clientX - state.canvasRect.left) / state.canvasWidth;
+  const y = (event.clientY - state.canvasRect.top) / state.canvasHeight;
+  return new Float32Vector2(x, y);
+}
+
+export function mouseToNDC(event: MouseEvent, state: CanvasState): Float32Vector2 {
+  const p = mouseToNormalized(event, state);
+  p.x = (p.x - 0.5) * 2.0;
+  p.y = (p.y - 0.5) * 2.0;
+  return p;
+}
 
 function deg2Rads(degrees: number): number {
   return degrees * (Math.PI / 180);

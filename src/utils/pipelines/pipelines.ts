@@ -1,6 +1,6 @@
+import { Float32Vector2 } from 'matrixgl';
 import { type GL } from '../web/glUtils';
 import type RenderPipeline from '../web/renderPipeline';
-import { type Vec2F, vec2F } from '../web/vector';
 import getDebugPipeline from './debugPipeline';
 
 export interface PipelineMap {
@@ -17,18 +17,41 @@ export function destroyPipelines(gl: GL, map: PipelineMap): void {
     map.debugPipeline.destroy(gl);
 }
 
-export function constructQuad(position: Vec2F, width: number, height: number): [Vec2F, Vec2F, Vec2F, Vec2F] {
+
+type FourSizeArray = [Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2]
+export function constructQuad(position: Float32Vector2, width: number, height: number): FourSizeArray{
     return [
         //bottom left
-        vec2F(position.val.x - width / 2, position.val.y - height / 2),
+        new Float32Vector2(position.x - width / 2, position.y - height / 2),
         //top left
-        vec2F(position.val.x - width / 2, position.val.y + height / 2),
+        new Float32Vector2(position.x - width / 2, position.y + height / 2),
         //top right
-        vec2F(position.val.x + width / 2, position.val.y + height / 2),
+        new Float32Vector2(position.x + width / 2, position.y + height / 2),
         //bottom right
-        vec2F(position.val.x + width / 2, position.val.y - height / 2)
+        new Float32Vector2(position.x + width / 2, position.y - height / 2)
     ]
 } 
+
+type SixSizeArrayF = [Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2]
+export function constructQuadSix(position: Float32Vector2, scale: number): SixSizeArrayF {
+    const w = 0.5 * scale;
+    const h = 0.5 * scale;
+    return [
+        //bottom left
+        new Float32Vector2(position.x + w, position.y + h),
+        //top left
+        new Float32Vector2(position.x - w, position.y + h),
+        //top right
+        new Float32Vector2(position.x - w, position.y - h),
+        //bottom right
+        new Float32Vector2(position.x - w, position.y - h),
+
+        new Float32Vector2(position.x + w, position.y - h),
+
+        new Float32Vector2(position.x + w, position.y + h),
+    ]
+} 
+
 
 type SixSizeArray = [number, number, number, number, number, number]
 export function constructQuadIndices(offset: number): SixSizeArray {

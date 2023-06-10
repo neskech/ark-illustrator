@@ -4,6 +4,7 @@ import { Tool, type HandleEventArgs } from './tool';
 import { type BrushSettings } from './settings';
 import { Float32Vector2 } from 'matrixgl';
 import { add, copy, distance, distanceAlong, scale } from '~/utils/web/vector';
+import { mouseToNDC } from '../camera';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -12,6 +13,8 @@ import { add, copy, distance, distanceAlong, scale } from '~/utils/web/vector';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
+
+const MAX_POINTS_IN_BUFFER = 10;
 
 export class Brush extends Tool {
   isMouseDown: boolean;
@@ -42,17 +45,32 @@ export class Brush extends Tool {
 
   mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
     const { canvasState, settings, presetNumber } = args;
-    return false;
+
+    const hasSpace = canvasState.pointBuffer.length < MAX_POINTS_IN_BUFFER;
+    const point = mouseToNDC(event, canvasState);
+    if (hasSpace)
+      canvasState.pointBuffer.push(point)
+
+    return hasSpace;
   }
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
     const { canvasState, settings, presetNumber } = args;
+    this.isMouseDown = false;
     return false;
   }
 
   mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
     const { canvasState, settings, presetNumber } = args;
-    return false;
+
+    const hasSpace = canvasState.pointBuffer.length < MAX_POINTS_IN_BUFFER;
+    const point = mouseToNDC(event, canvasState);
+    if (hasSpace && !this.isMouseDown)
+      canvasState.pointBuffer.push(point)
+
+    this.isMouseDown = true;
+
+    return hasSpace && !this.isMouseDown;
   }
 
   areValidBrushSettings(b: BrushSettings): boolean {
@@ -73,7 +91,7 @@ export class Brush extends Tool {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-type Path = Float32Vector2[];
+export type Path = Float32Vector2[];
 type SmoothFunction = 'Bezier';
 
 const MAX_BEZIER_INTERPOLATIONS = 10;

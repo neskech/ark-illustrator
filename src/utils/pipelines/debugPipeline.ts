@@ -7,30 +7,14 @@ import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import { None } from '../func/option';
 import Shader from '../web/shader';
-import { type NDArray } from 'vectorious';
-import { vec3F, type Mat4x4, vec4F } from '../web/vector';
 
-function wrapMat4(mat4: NDArray): Mat4x4 {
-  return { val: mat4, __type: 'Mat4x4' };
-}
-
-const initFn: PipelineFn = function init(gl, vao, vbo, shader, state) {
+const initFn: PipelineFn = function init(gl, vao, vbo, shader, _) {
   vao.builder().addAttribute(2, 'float', 'position').build(gl);
 
   const vertexData = new Float32Array([0.0, 0.0, 0.3, 0.3, -0.5, 0.3]);
 
-  const v = vec4F(0.3, 0.3, 0, 1);
-  const result = state.camera.getProjectionMatrixRaw().multiply(state.camera.getViewMatrixRaw()).multiply(state.camera.getTransformMatrixRaw()).multiply(v.val);
-  console.log(result.data)
-
   vbo.addData(gl, vertexData);
 
-  // shader.constructSynchronous(gl, 'debug').match(
-  //    (_) => console.log('debug shader compilation success!'),
-  //    (e) => {
-  //       throw new Error(`Could not compile debug shader...\n\n${e}`)
-  //    }
-  // );
   const fragmentSource = `void main() {
                             gl_FragColor = vec4(0, 0, 1, 1);
                         }\n`;
@@ -43,7 +27,7 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, state) {
                             gl_Position = projection * view * model * vec4(a_position, 0, 1);
                             gl_PointSize = 64.0;
                           }\n`;
-   console.log(fragmentSource, '\n\n', vertexSource)
+
   shader.constructFromSource(gl, vertexSource, fragmentSource).match(
     (_) => console.log('debug shader compilation success!'),
     (e) => {
@@ -53,9 +37,9 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, state) {
 };
 
 const renderFn: PipelineFn = function render(gl, _, __, shader, state) {
-  shader.uploadMatrix4x4(gl, 'model', wrapMat4(state.camera.getTransformMatrixRaw()));
-  shader.uploadMatrix4x4(gl, 'view', wrapMat4(state.camera.getViewMatrixRaw()));
-  shader.uploadMatrix4x4(gl, 'projection', wrapMat4(state.camera.getProjectionMatrixRaw()));
+  shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
+  shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());
+  shader.uploadMatrix4x4(gl, 'projection', state.camera.getProjectionMatrix());
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 };
 

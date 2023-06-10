@@ -69,6 +69,14 @@ export default class GLBuffer {
     glOpErr(gl, bufferEmptyData);
   }
 
+  allocateWithData(gl: GL, data: ArrayBufferView, srcOffset = 0) {
+    const target = bufTypeToEnum(gl, this.bufType);
+    const usage = usageToEnum(gl, this.usage);
+    this.sizeBytes = data.byteLength;
+
+    glOpErr(gl, gl.bufferData.bind(gl), target, data, usage, srcOffset);
+  }
+
   resize(gl: GL, size: number) {
     const target = bufTypeToEnum(gl, this.bufType);
     const usage = usageToEnum(gl, this.usage);
@@ -81,7 +89,7 @@ export default class GLBuffer {
     glOpErr(gl, bufferEmptyData);
   }
 
-  addData(gl: GL, data: ArrayBufferView, srcOffsetBytes = 0) {
+  addData(gl: GL, data: ArrayBufferView, dstOffsetBytes = 0, srcOffsetBytes = 0) {
     const target = bufTypeToEnum(gl, this.bufType);
     const usage = usageToEnum(gl, this.usage);
 
@@ -99,14 +107,12 @@ export default class GLBuffer {
    
     glOpErr(
       gl,
-      gl.bufferData.bind(gl),
+      gl.bufferSubData.bind(gl),
       target,
+      dstOffsetBytes,
       data,
-      usage,
       srcOffsetBytes
     );
-
-    this.sizeBytes = data.byteLength;
   }
 
   bind(gl: GL) {
