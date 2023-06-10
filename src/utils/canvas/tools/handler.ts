@@ -1,30 +1,29 @@
-import { Option } from "~/utils/func/option";
-import { GlobalToolSettings } from "./settings";
-import { CanvasEvent, HandleEventArgs } from "./tool";
+import { Brush } from './brush';
+import { type EventString, type HandleEventArgs } from './tool';
 
 export type ToolMap = {
-    brush: Brush;
+  brush: Brush;
 };
 export type ToolType = keyof ToolMap;
 
 export interface ToolState {
-    tools: ToolMap,
-    currentTool: ToolType
+  tools: ToolMap;
+  currentTool: ToolType;
 }
 
 export function getDefaultToolState(): ToolState {
-    return {
-        tools: {
-            brush: createBrush()
-        },
-        currentTool: 'brush'
-    }
+  return {
+    tools: {
+      brush: new Brush(),
+    },
+    currentTool: 'brush',
+  };
 }
 
 export type HandlerArgs = Omit<HandleEventArgs, 'eventString'> & {
   map: ToolMap;
   currentTool: ToolType;
-}
+};
 
 export function handleEvent({
   map,
@@ -33,10 +32,15 @@ export function handleEvent({
   canvasState,
   settings,
   presetNumber,
-}: HandleEventArgs): void {
+}: HandlerArgs): void {
   const tool = map[currentTool];
   const evStr: EventString = event.type as EventString; //TODO: pain point
-  const handler = tool[evStr];
-
-  if (handler) tool.dispatchEvent(event, handler, canvasState, globalSettings, presetNumber);
+  
+  tool.handleEvent({
+    event,
+    canvasState,
+    eventString: evStr,
+    settings,
+    presetNumber,
+  });
 }
