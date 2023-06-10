@@ -1,9 +1,6 @@
 import { type CanvasState, getDefaultCanvasState } from './canvas/canvas';
 import { type ToolState, getDefaultToolState, handleEvent } from './canvas/tools/handler';
-import {
-  type GlobalToolSettings,
-  getDefaultSettings,
-} from './canvas/tools/settings';
+import { type GlobalToolSettings, getDefaultSettings } from './canvas/tools/settings';
 import { Option, Some } from './func/option';
 import getPipelineMap, {
   type PipelineMap,
@@ -19,18 +16,21 @@ let pipelines: PipelineMap;
 let running: boolean;
 
 export function init(canvas: HTMLCanvasElement) {
-  if (gl)
-    return;
+  if (gl) return;
 
-  const result = Option.fromNull(canvas.getContext('webgl2', { preserveDrawingBuffer: true }));
-  gl = result.expect(
-    'Could not intialize webgl2. Your browser may not support it'
+  const result = Option.fromNull(
+    canvas.getContext('webgl2', {
+      preserveDrawingBuffer: true,
+      premultipliedAlpha: false,
+    })
   );
+
+  gl = result.expect('Could not intialize webgl2. Your browser may not support it');
 
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
-  gl.viewport(0, 0, canvas.width, canvas.height)
+  gl.viewport(0, 0, canvas.width, canvas.height);
 
   state = getDefaultCanvasState(canvas);
   settings = getDefaultSettings();
@@ -69,9 +69,8 @@ function initEventListeners(canvas: HTMLCanvasElement) {
 }
 
 export function startRenderLoop() {
-  if (running)
-    return;
-    
+  if (running) return;
+
   running = true;
   render();
 }
@@ -79,12 +78,16 @@ export function startRenderLoop() {
 function render() {
   if (!running) return;
 
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
   // gl.clearColor(0, 0, 0, 0);
+  // gl.colorMask(true, true, true, false);
   // gl.clear(gl.COLOR_BUFFER_BIT);
 
- // pipelines.debugPipeline.render(gl, state);
+  // pipelines.debugPipeline.render(gl, state);
   pipelines.drawPipeline.render(gl, state);
-  
+
   window.requestAnimationFrame(render);
 }
 

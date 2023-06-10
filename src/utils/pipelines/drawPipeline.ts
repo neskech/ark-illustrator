@@ -59,11 +59,11 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
   
   void main() {
        vec2 normalized = vTextureCoord;
-       float value = circleShape(normalized, 1.0);
+       float value = circleShape(normalized, 0.5);
 
        if (value > 0.0)
           discard;
-
+       
        vec3 color = vec3(1, 0, 0.3);
        gl_FragColor = vec4(color, 1);
   }\n`;
@@ -124,6 +124,7 @@ const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ____
   vbo.addData(gl, buf);
 
   shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
+  console.log('model', state.camera.getTransformMatrix())
   shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());
   shader.uploadMatrix4x4(gl, 'projection', state.camera.getProjectionMatrix());
   gl.drawArrays(gl.TRIANGLES, 0, 6 * smoothed.length);
