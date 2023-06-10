@@ -8,8 +8,9 @@ import Buffer from '~/utils/web/buffer';
 import { None, Option, Some } from '../func/option';
 import Shader from '../web/shader';
 import { constructQuadIndices, constructQuadSix, constructQuadSixTex } from './pipelines';
-import { Path } from '../canvas/tools/brush';
+import { NMidpoints, Path, applySmoothing } from '../canvas/tools/brush';
 import { Float32Vector2 } from 'matrixgl';
+import { copy } from '../web/vector';
 
 const MAX_POINTS_PER_FRAME = 500;
 const NUM_VERTICES_QUAD = 4;
@@ -48,8 +49,6 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
   vbo.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
   const fragmentSource = `precision highp float;
-  uniform vec2 u_resolution;
-
   varying highp vec2 vTextureCoord;
   
   float circleShape(vec2 position, float radius) {
@@ -60,12 +59,12 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
   
   void main() {
        vec2 normalized = vTextureCoord;
-       float value = circleShape(normalized, 0.5);
+       float value = circleShape(normalized, 1.0);
 
        if (value > 0.0)
           discard;
 
-       vec3 color = vec3(value, 0, 0.3);
+       vec3 color = vec3(1, 0, 0.3);
        gl_FragColor = vec4(color, 1);
   }\n`;
   const vertexSource = `  attribute vec2 a_position;
@@ -89,18 +88,37 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
     }
   );
 };
-
-const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ebo) {
+//let hasRendered = false;
+let prevPoint = None<Float32Vector2>()
+const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ____) {
   // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   const pointsToRender = Math.min(MAX_POINTS_PER_FRAME, state.pointBuffer.length);
-  if (pointsToRender == 0) return;
+  if (pointsToRender == 0) { 
+    prevPoint = None();
+    return;
+  }
+//   if (hasRendered) return;
+//   hasRendered = true;
 
-  const popped = state.pointBuffer.splice(0, pointsToRender);
+  const poppe = state.pointBuffer.splice(0, pointsToRender);
 
-  const buf = new Float32Array(pointsToRender * 6 * VERTEX_SIZE);
+  const popped = prevPoint.map(p => [p, ...poppe]).unwrapOrDefault(poppe);
+  //const popped = [new Float32Vector2(-0.3, -0.3), new Float32Vector2(-0.3, 0.4), new Float32Vector2(0.3, 0.3)]
+  const smoothed = applySmoothing({
+    path: popped,
+    minDistanceBetweenPoints: 0.001,
+    maxPointsToSmooth: MAX_POINTS_PER_FRAME,
+    smoothingFn: 'Bezier',
+  })
+
+// const smoothed = poppedn;
+  prevPoint = Some(copy(smoothed[smoothed.length - 1]))
+    
+
+  const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);
   let i = 0;
-  for (const p of popped) {
-    const quadVerts = constructQuadSixTex(p, 0.1);
+  for (const p of smoothed) {
+    const quadVerts = constructQuadSixTex(p, 0.01);
     for (const v of quadVerts) {
       buf[i++] = v.x;
       buf[i++] = v.y;
@@ -112,12 +130,7 @@ const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ebo)
   shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
   shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());
   shader.uploadMatrix4x4(gl, 'projection', state.camera.getProjectionMatrix());
-  shader.uploadFloatVec2(
-    gl,
-    'u_resolution',
-    new Float32Vector2(state.canvasWidth, state.canvasHeight)
-  );
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  gl.drawArrays(gl.TRIANGLES, 0, 6 * smoothed.length);
 };
 
 export default function getDrawPipeline(gl: GL): RenderPipeline {

@@ -86,8 +86,10 @@ export default class RenderPipeline {
 
     } catch (err) {
       const errMsg = `Error in render pipeline '${this.name}' on init stage`;
-      if (err instanceof Error)
-        throw new Error(`${errMsg}\n\nReason: ${err.message}`);
+      if (err instanceof Error) {
+        err.message = `${errMsg} -- ${err.message}`
+        throw err;
+      }
       throw new Error(errMsg);
     }
 
@@ -124,9 +126,11 @@ export default class RenderPipeline {
       this.renderTarget.map((f) => f.unBind(gl));
       this.shader.stopUsing(gl);
     } catch (err) {
-      const errMsg = `Error in render pipeline '${this.name}' on init stage`;
-      if (err instanceof Error)
-        throw new Error(`${errMsg}\n\nReason: ${err.message}`);
+      const errMsg = `Error in render pipeline '${this.name}' on render stage`;
+      if (err instanceof Error) {
+        err.message = `${errMsg} -- ${err.message}`
+        throw err;
+      }
       throw new Error(errMsg);
     }
 

@@ -48,6 +48,7 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     'mousedown',
     'mousemove',
     'mouseup',
+    'mouseleave',
     'keydown',
     'keypress',
     'keyup',

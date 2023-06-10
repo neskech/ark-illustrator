@@ -14,7 +14,7 @@ import { mouseToNDC } from '../camera';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const MAX_POINTS_IN_BUFFER = 10;
+const MAX_POINTS_IN_BUFFER = 20;
 
 export class Brush extends Tool {
   isMouseDown: boolean;
@@ -67,7 +67,7 @@ export class Brush extends Tool {
     const { canvasState, settings, presetNumber } = args;
 
     const hasSpace = canvasState.pointBuffer.length < MAX_POINTS_IN_BUFFER;
-    const point = mouseToNDC(event, canvasState);
+    const point = canvasState.camera.mouseToWorld(event, canvasState);
     if (hasSpace && !this.isMouseDown)
       canvasState.pointBuffer.push(point)
 
@@ -79,7 +79,6 @@ export class Brush extends Tool {
   }
 
   mouseLeaveHandler(): boolean {
-    alert('left')
     this.isMouseDown = false;
     return false;
   }
@@ -105,7 +104,7 @@ export class Brush extends Tool {
 export type Path = Float32Vector2[];
 type SmoothFunction = 'Bezier';
 
-const MAX_BEZIER_INTERPOLATIONS = 10;
+const MAX_BEZIER_INTERPOLATIONS = 3;
 interface SmoothingOptions {
   path: Path;
   maxPointsToSmooth: number;
@@ -131,8 +130,6 @@ export function applySmoothing({
 }: SmoothingOptions): Path {
   requires(maxPointsToSmooth >= 3);
 
-  //can't apply smoothing on < 3 points
-  if (path.length < 3) return path;
 
   return bezierSmoothing(path, maxPointsToSmooth, minDistanceBetweenPoints);
 }
@@ -160,7 +157,7 @@ function bezierSmoothing(
   let index = 0;
 
   while (index < path.length) {
-    assert(prevDistanceToEndOfPath <= minDistanceBetweenPoints);
+    //assert(prevDistanceToEndOfPath <= minDistanceBetweenPoints);
 
     const pathLengthToSmooth = Math.min(
       MAX_BEZIER_INTERPOLATIONS,
@@ -175,9 +172,11 @@ function bezierSmoothing(
 
     const start = path[index];
     const end = path[index + pathLengthToSmooth - 1];
+    console.log(start.toString() + ' ' + end.toString())
 
     // move forward by any distance remaining from the last part
     const offset = distanceAlong(start, end, prevDistanceToEndOfPath);
+    console.log(offset)
     add(start, offset);
 
     const pathArr = [];
@@ -190,16 +189,20 @@ function bezierSmoothing(
 
     for (let i = 0; i < numPointsOnLine; i++) {
       const t = (minDistanceBetweenPoints * i) / normalLineDistance;
+      console.log(t)
       newPath.push(NBezier(pathArr, t));
+      //newPath.push(distanceAlong(start, end, i * minDistanceBetweenPoints))
 
       if (newPath.length == maxPointsToSmooth) return newPath;
     }
 
-    prevDistanceToEndOfPath = distance(newPath[newPath.length - 1], end);
+    if (numPointsOnLine > 0)
+        prevDistanceToEndOfPath = distance(newPath[newPath.length - 1], end);
 
-    index += pathLengthToSmooth;
+    index += pathLengthToSmooth - 1;
   }
-
+  path.forEach(v => console.log(v.toString()))
+  console.log(`old ${path.length} new ${newPath.length}`)
   return newPath;
 }
 
@@ -216,11 +219,13 @@ export function NMidpoints(path: Path, midpointPower: number): Path {
 
   const totalDistance = distanceAlongPath(path);
   const deltaDistance = totalDistance / numMidpoints;
+  alert( totalDistance)
 
   for (let i = 0; i < numMidpoints; i++)
     desiredDistances[i] = i * deltaDistance;
 
-  return pointsAtDistances(path, desiredDistances);
+  const res = pointsAtDistances(path, desiredDistances);
+  return res ? res : path ;
 }
 
 function pointsAtDistances(path: Path, desiredDistances: number[]): Path {
@@ -288,15 +293,15 @@ function combinations(n: number, i: number): number {
 function NBezier(path: Path, t: number): Float32Vector2 {
   requires(0 <= t && t <= 1);
 
-  const n = path.length;
+  const n = path.length - 1;
   const point = new Float32Vector2(0, 0);
 
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i <= n; i++) {
     const coef1 = combinations(n, i); //TODO memoization
     const coef2 = Math.pow(t, i);
     const coef3 = Math.pow(1 - t, n - i);
     const mult = coef1 * coef2 * coef3;
-    add(point, scale(path[i], mult))
+    add(point, scale(copy(path[i]), mult))
   }
 
   return point;
