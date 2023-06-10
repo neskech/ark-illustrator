@@ -47,7 +47,7 @@ export class Brush extends Tool {
     const { canvasState, settings, presetNumber } = args;
 
     const hasSpace = canvasState.pointBuffer.length < MAX_POINTS_IN_BUFFER;
-    const point = mouseToNDC(event, canvasState);
+    const point = canvasState.camera.mouseToWorld(event, canvasState);
     if (hasSpace && this.isMouseDown)
       canvasState.pointBuffer.push(point)
 
@@ -67,6 +67,8 @@ export class Brush extends Tool {
     const point = mouseToNDC(event, canvasState);
     if (hasSpace && !this.isMouseDown)
       canvasState.pointBuffer.push(point)
+
+    //canvasState.camera.translateZoom(0.1);
 
     this.isMouseDown = true;
 

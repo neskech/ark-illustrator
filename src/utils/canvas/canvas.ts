@@ -13,9 +13,10 @@ export interface CanvasState {
 
 export function getDefaultCanvasState(canvas: HTMLCanvasElement): CanvasState {
     const aspectRatio = canvas.width / canvas.height;
+    const screenAspRation = canvas.clientWidth / canvas.clientHeight;
     return {
         layers: [],
-        camera: new Camera(aspectRatio, aspectRatio),
+        camera: new Camera(aspectRatio, screenAspRation),
         pointBuffer: [],
         canvasWidth: canvas.width,
         canvasHeight: canvas.height,

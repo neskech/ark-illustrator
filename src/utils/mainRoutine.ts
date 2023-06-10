@@ -27,6 +27,11 @@ export function init(canvas: HTMLCanvasElement) {
     'Could not intialize webgl2. Your browser may not support it'
   );
 
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+
+  gl.viewport(0, 0, canvas.width, canvas.height)
+
   state = getDefaultCanvasState(canvas);
   settings = getDefaultSettings();
   pipelines = getPipelineMap(gl);
@@ -34,7 +39,7 @@ export function init(canvas: HTMLCanvasElement) {
 
   initEventListeners(canvas);
 
-  pipelines.debugPipeline.init(gl, state);
+  //pipelines.debugPipeline.init(gl, state);
   pipelines.drawPipeline.init(gl, state);
 }
 
@@ -76,7 +81,7 @@ function render() {
   // gl.clearColor(0, 0, 0, 0);
   // gl.clear(gl.COLOR_BUFFER_BIT);
 
-  pipelines.debugPipeline.render(gl, state);
+ // pipelines.debugPipeline.render(gl, state);
   pipelines.drawPipeline.render(gl, state);
 
   window.requestAnimationFrame(render);

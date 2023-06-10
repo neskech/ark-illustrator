@@ -43,10 +43,6 @@ export class VaoBuilder {
   }
 
   build(gl: GL): VertexArrayObject {
-    const vertexSizeBytes = this.typeData.reduce(
-      (acc, { typeSize }) => acc + typeSize,
-      0
-    );
 
     let byteOffset = 0;
     for (let i = 0; i < this.typeData.length; i++) {
@@ -57,7 +53,7 @@ export class VaoBuilder {
         numElements,
         attribTypeToGl(typeName, gl),
         false,
-        vertexSizeBytes,
+        0,
         byteOffset
       );
       

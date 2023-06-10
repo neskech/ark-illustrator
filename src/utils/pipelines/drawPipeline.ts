@@ -9,6 +9,7 @@ import { None, Option, Some } from '../func/option';
 import Shader from '../web/shader';
 import { constructQuadIndices, constructQuadSix } from './pipelines';
 import { Path } from '../canvas/tools/brush';
+import { Float32Vector2 } from 'matrixgl';
 
 const MAX_POINTS_PER_FRAME = 500;
 const NUM_VERTICES_QUAD = 4;
@@ -41,7 +42,7 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
   fillEbo(gl, indexBuffer);
 
   const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * SIZE_FLOAT;
-  vbo.preallocate(gl, verticesSizeBytes);
+  vbo.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
   const fragmentSource = `void main() {
                             gl_FragColor = vec4(0, 0, 1, 1);
@@ -53,7 +54,7 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
                           
                           void main() {
                             gl_Position = projection * view * model * vec4(a_position, 0, 1);
-                            gl_PointSize = 64.0;
+                                                    
                           }\n`;
 
   shader.constructFromSource(gl, vertexSource, fragmentSource).match(
@@ -66,7 +67,7 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
 
 const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ebo) {
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    const pointsToRender = Math.min(MAX_POINTS_PER_FRAME, state.pointBuffer.length);
+   const pointsToRender = Math.min(MAX_POINTS_PER_FRAME, state.pointBuffer.length);
     if (pointsToRender == 0) return;
 
 
@@ -77,6 +78,7 @@ const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ebo)
     for (const p of popped) {
         const quadVerts = constructQuadSix(p, 0.1);
         for (const v of quadVerts) {
+            console.log(v.toString())
             buf[i++] = v.x;
             buf[i++] = v.y;
         }
@@ -87,7 +89,7 @@ const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ebo)
     shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
     shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());
     shader.uploadMatrix4x4(gl, 'projection', state.camera.getProjectionMatrix());
-    gl.drawArrays(gl.TRIANGLES, 0, 6 * pointsToRender);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 };
 
@@ -115,7 +117,7 @@ export default function getDrawPipeline(gl: GL): RenderPipeline {
     renderTarget: None(),
     initFn,
     renderFn,
-    benchmarkLogging: true,
+    benchmarkLogging: false,
   };
 
   return new RenderPipeline(pipelineOptions);

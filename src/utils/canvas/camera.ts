@@ -1,12 +1,12 @@
 import { NDArray } from 'vectorious';
 import { requires } from '../contracts';
-import { Float32Vector2, Float32Vector3, Matrix2x2, Matrix4, type Matrix4x4 } from 'matrixgl';
+import { Float32Vector2, Float32Vector3, Float32Vector4, Matrix2x2, Matrix4, type Matrix4x4 } from 'matrixgl';
 import { Int32Vector2, add } from '../web/vector';
 import { CanvasState } from './canvas';
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.1;
-const MAX_ZOOM = 10;
+const MAX_ZOOM = 1;
 
 export default class Camera {
   private position: Float32Vector3;
@@ -43,7 +43,7 @@ export default class Camera {
      *     ^
      *     angle = fov / 2
      */
-    this.fov = Math.atan2(canvasAspectRatio / 2, DEFAULT_ZOOM) * 2;
+    this.fov = Math.atan2(screenAspectRatio / 2, DEFAULT_ZOOM - MIN_ZOOM) * 2;
 
     this.rotation = 0;
     this.position = new Float32Vector3(0, 0, DEFAULT_ZOOM);
@@ -145,6 +145,40 @@ export default class Camera {
   log(logger: (s: string) => void = console.log) {
     logger(this.toString());
   }
+
+  mouseToWorld(event: MouseEvent, state: CanvasState): Float32Vector2 {
+     const p = mouseToNDC(event, state);
+
+     /**
+      * Standard NDC coordinates put p in a [-1, 1] range with 
+      * 
+      * LHS = -x = -1
+      * RHS = +x = +1
+      * 
+      * TOP = +y = 1
+      * BOTTOM = -y = -1
+      * 
+      * Now, we define the canvas to have a WIDTH of 'screen aspect ratio' 
+      * and a height of 1
+      * 
+      * This means that...
+      * 
+      * LHS = -x = -aspRatio / 2
+      * RHS = +x = +aspRatio / 2
+      * 
+      * TOP = +y = 0.5
+      * BOTTOM = -y = -0.5
+      * 
+      * Thus we multiply the coordinates by the width and height of the
+      * canvas / 2
+      */
+     const width = this.screenAspectRatio;
+     const height = 1;
+     p.x *= width / 2;
+     p.y *= height / 2;
+
+     return p;
+  }
 }
 
 export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vector2 {
@@ -156,7 +190,7 @@ export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vecto
 export function mouseToNormalized(event: MouseEvent, state: CanvasState): Float32Vector2 {
   const x = (event.clientX - state.canvasRect.left) / state.canvasWidth;
   const y = (event.clientY - state.canvasRect.top) / state.canvasHeight;
-  return new Float32Vector2(x, y);
+  return new Float32Vector2(x, 1.0 - y);
 }
 
 export function mouseToNDC(event: MouseEvent, state: CanvasState): Float32Vector2 {
@@ -165,6 +199,18 @@ export function mouseToNDC(event: MouseEvent, state: CanvasState): Float32Vector
   p.y = (p.y - 0.5) * 2.0;
   return p;
 }
+
+function matMult(m: Matrix4x4, v: Float32Vector4): Float32Vector4 {
+  const b = new Float32Vector4(0, 0, 0, 0);
+  for (let r = 0; r < 4; r++) {
+
+    let val = 0;
+    for (let c = 0; c < 4; c++)
+      val += m.values[r * 4 + c] * v.values[c];
+    b.values[r] = val;
+  }
+  return b;
+} 
 
 function deg2Rads(degrees: number): number {
   return degrees * (Math.PI / 180);
