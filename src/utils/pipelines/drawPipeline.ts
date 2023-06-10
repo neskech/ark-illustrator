@@ -29,7 +29,7 @@ function fillEbo(gl: GL, ebo: Buffer) {
             buf[indexOffset + j] = indices[j]
     }
 
-    ebo.addData(gl, buf);
+    ebo.allocateWithData(gl, buf);
 }
 
 const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
@@ -65,18 +65,24 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
 };
 
 const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ebo) {
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     const pointsToRender = Math.min(MAX_POINTS_PER_FRAME, state.pointBuffer.length);
+    if (pointsToRender == 0) return;
+
+
     const popped = state.pointBuffer.splice(0, pointsToRender);
 
     const buf = new Float32Array(pointsToRender * 6 * VERTEX_SIZE);
     let i = 0;
     for (const p of popped) {
-        const quadVerts = constructQuadSix(p, 1);
+        const quadVerts = constructQuadSix(p, 0.1);
         for (const v of quadVerts) {
             buf[i++] = v.x;
             buf[i++] = v.y;
         }
     }
+
+    vbo.addData(gl, buf);
 
     shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
     shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());

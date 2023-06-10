@@ -13,7 +13,7 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _) {
 
   const vertexData = new Float32Array([0.0, 0.0, 0.3, 0.3, -0.5, 0.3]);
 
-  vbo.addData(gl, vertexData);
+  vbo.allocateWithData(gl, vertexData);
 
   const fragmentSource = `void main() {
                             gl_FragColor = vec4(0, 0, 1, 1);

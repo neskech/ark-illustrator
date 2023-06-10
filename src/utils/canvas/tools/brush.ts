@@ -48,10 +48,10 @@ export class Brush extends Tool {
 
     const hasSpace = canvasState.pointBuffer.length < MAX_POINTS_IN_BUFFER;
     const point = mouseToNDC(event, canvasState);
-    if (hasSpace)
+    if (hasSpace && this.isMouseDown)
       canvasState.pointBuffer.push(point)
 
-    return hasSpace;
+    return hasSpace && this.isMouseDown;
   }
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {

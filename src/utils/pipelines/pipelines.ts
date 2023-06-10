@@ -2,14 +2,17 @@ import { Float32Vector2 } from 'matrixgl';
 import { type GL } from '../web/glUtils';
 import type RenderPipeline from '../web/renderPipeline';
 import getDebugPipeline from './debugPipeline';
+import getDrawPipeline from './drawPipeline';
 
 export interface PipelineMap {
-    debugPipeline: RenderPipeline
+    debugPipeline: RenderPipeline,
+    drawPipeline: RenderPipeline
 }
 
 export default function getPipelineMap(gl: GL): PipelineMap {
     return {
-        debugPipeline: getDebugPipeline(gl)
+        debugPipeline: getDebugPipeline(gl),
+        drawPipeline: getDrawPipeline(gl),
     }
 }
 

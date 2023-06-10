@@ -1,10 +1,5 @@
 import { requires } from '../contracts';
 import {
-  Vector2Base,
-  Vector3Base,
-  Vector4Base,
-} from 'matrixgl/lib/esm/vector_base';
-import {
   Float32Vector2,
   Float32Vector3,
   type Matrix2x2, type Float32Vector4,
@@ -220,6 +215,160 @@ export class List<T extends LinearAlgebra> {
     logger(this.toString());
   }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! BASE CLASSES STOLEN FROM LIB
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+type TypedArrayLike = Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array;
+/**
+ * An interface for vectors.
+ */
+interface Vector<T extends TypedArrayLike> {
+    /**
+     * Returns values of the vector.
+     * @returns {T}
+     */
+    readonly values: T;
+    /**
+     * Returns magnitude of the vector.
+     */
+    readonly magnitude: number;
+    /**
+     * Returns `values` as a string.
+     * @returns {string}
+     */
+    toString(): string;
+}
+/**
+ * An abstract class for vectors.
+ */
+abstract class VectorBase<T extends TypedArrayLike> implements Vector<T> {
+    /**
+     * Values that the vector contains.
+     */
+    protected _values!: T;
+    abstract get values(): T;
+    abstract get magnitude(): number;
+    abstract toString(): string;
+}
+/**
+ * A base abstract class for 2-dimensional vectors.
+ */
+abstract class Vector2Base<T extends TypedArrayLike> extends VectorBase<T> {
+    /**
+     * Returns x value of the vector.
+     * @returns {number}
+     */
+    abstract get x(): number;
+    /**
+     * Returns y value of the vector.
+     * @returns {number}
+     */
+    abstract get y(): number;
+    /**
+     * Set the `value` as new x.
+     * @param {number} value
+     */
+    abstract set x(value: number);
+    /**
+     * Set the `value` as new y.
+     * @param {number} value
+     */
+    abstract set y(value: number);
+}
+/**
+ * A base abstract class for 3-dimensional vectors.
+ */
+abstract class Vector3Base<T extends TypedArrayLike> extends VectorBase<T> {
+    /**
+     * Returns x value of the vector.
+     * @returns {number}
+     */
+    abstract get x(): number;
+    /**
+     * Returns y value of the vector.
+     * @returns {number}
+     */
+    abstract get y(): number;
+    /**
+     * Returns z value of the vector.
+     * @returns {number}
+     */
+    abstract get z(): number;
+    /**
+     * Set the `value` as new x.
+     * @param {number} value
+     */
+    abstract set x(value: number);
+    /**
+     * Set the `value` as new y.
+     * @param {number} value
+     */
+    abstract set y(value: number);
+    /**
+     * Set the `value` as new z.
+     * @param {number} value
+     */
+    abstract set z(value: number);
+}
+/**
+ * A base abstract class for 4-dimensional vectors.
+ */
+abstract class Vector4Base<T extends TypedArrayLike> extends VectorBase<T> {
+    /**
+     * Returns x value of the vector.
+     * @returns {number}
+     */
+    abstract get x(): number;
+    /**
+     * Returns y value of the vector.
+     * @returns {number}
+     */
+    abstract get y(): number;
+    /**
+     * Returns z value of the vector.
+     * @returns {number}
+     */
+    abstract get z(): number;
+    /**
+     * Returns w value of the vector.
+     * @returns {number}
+     */
+    abstract get w(): number;
+    /**
+     * Set the `value` as new x.
+     * @param {number} value
+     */
+    abstract set x(value: number);
+    /**
+     * Set the `value` as new y.
+     * @param {number} value
+     */
+    abstract set y(value: number);
+    /**
+     * Set the `value` as new z.
+     * @param {number} value
+     */
+    abstract set z(value: number);
+    /**
+     * Set the `value` as new w.
+     * @param {number} value
+     */
+    abstract set w(value: number);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! CONCRETE CLASSES
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 export class Int32Vector2 extends Vector2Base<Int32Array> {
   _values: Int32Array;
