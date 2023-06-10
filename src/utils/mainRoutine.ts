@@ -84,7 +84,7 @@ function render() {
 
  // pipelines.debugPipeline.render(gl, state);
   pipelines.drawPipeline.render(gl, state);
-
+  
   window.requestAnimationFrame(render);
 }
 

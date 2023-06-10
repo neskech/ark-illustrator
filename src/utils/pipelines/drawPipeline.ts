@@ -88,21 +88,17 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
     }
   );
 };
-//let hasRendered = false;
-let prevPoint = None<Float32Vector2>()
+
 const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ____) {
   // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   const pointsToRender = Math.min(MAX_POINTS_PER_FRAME, state.pointBuffer.length);
-  if (pointsToRender == 0) { 
-    prevPoint = None();
-    return;
-  }
-//   if (hasRendered) return;
-//   hasRendered = true;
+  if (pointsToRender == 0) return;
+
+
 
   const poppe = state.pointBuffer.splice(0, pointsToRender);
 
-  const popped = prevPoint.map(p => [p, ...poppe]).unwrapOrDefault(poppe);
+  const popped = state.previousDrawnPoint.map(p => [p, ...poppe]).unwrapOrDefault(poppe);
   //const popped = [new Float32Vector2(-0.3, -0.3), new Float32Vector2(-0.3, 0.4), new Float32Vector2(0.3, 0.3)]
   const smoothed = applySmoothing({
     path: popped,
@@ -112,7 +108,7 @@ const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ____
   })
 
 // const smoothed = poppedn;
-  prevPoint = Some(copy(smoothed[smoothed.length - 1]))
+  state.previousDrawnPoint = Some(copy(smoothed[smoothed.length - 1]))
     
 
   const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);

@@ -91,7 +91,6 @@ export default class GLBuffer {
 
   addData(gl: GL, data: ArrayBufferView, dstOffsetBytes = 0, srcOffsetBytes = 0) {
     const target = bufTypeToEnum(gl, this.bufType);
-    const usage = usageToEnum(gl, this.usage);
 
     const endIndex = srcOffsetBytes + data.byteLength;
     if (endIndex >= this.sizeBytes && this.autoResizing)

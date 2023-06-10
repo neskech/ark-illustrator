@@ -1,10 +1,9 @@
 import { requires } from '../../contracts';
-import { assert } from '../../contracts';
 import { Tool, type HandleEventArgs } from './tool';
 import { type BrushSettings } from './settings';
 import { Float32Vector2 } from 'matrixgl';
 import { add, copy, distance, distanceAlong, scale } from '~/utils/web/vector';
-import { mouseToNDC } from '../camera';
+import { None } from '~/utils/func/option';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +32,7 @@ export class Brush extends Tool {
 
     switch (evType) {
       case 'mouseleave':
-        return this.mouseLeaveHandler();
+        return this.mouseLeaveHandler(args);
       case 'mousemove':
         return this.mouseMovedHandler(args, event);
       case 'mouseup':
@@ -57,10 +56,13 @@ export class Brush extends Tool {
   }
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState, settings, presetNumber } = args;
-    canvasState.camera.translatePosition(new Float32Vector2(0.1, 0))
+    const prevPoint = args.canvasState.previousDrawnPoint;
+    const isSome = prevPoint.isSome();
+    if (isSome)
+      args.canvasState.previousDrawnPoint = None();
+
     this.isMouseDown = false;
-    return false;
+    return isSome;
   }
 
   mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
@@ -78,9 +80,15 @@ export class Brush extends Tool {
     return hasSpace && !this.isMouseDown;
   }
 
-  mouseLeaveHandler(): boolean {
+  mouseLeaveHandler(args: HandleEventArgs): boolean {
     this.isMouseDown = false;
-    return false;
+    
+    const prevPoint = args.canvasState.previousDrawnPoint;
+    const isSome = prevPoint.isSome();
+    if (isSome)
+      args.canvasState.previousDrawnPoint = None();
+
+    return isSome;
   }
 
   areValidBrushSettings(b: BrushSettings): boolean {
@@ -172,11 +180,10 @@ function bezierSmoothing(
 
     const start = path[index];
     const end = path[index + pathLengthToSmooth - 1];
-    console.log(start.toString() + ' ' + end.toString())
 
     // move forward by any distance remaining from the last part
     const offset = distanceAlong(start, end, prevDistanceToEndOfPath);
-    console.log(offset)
+   
     add(start, offset);
 
     const pathArr = [];
@@ -189,7 +196,6 @@ function bezierSmoothing(
 
     for (let i = 0; i < numPointsOnLine; i++) {
       const t = (minDistanceBetweenPoints * i) / normalLineDistance;
-      console.log(t)
       newPath.push(NBezier(pathArr, t));
       //newPath.push(distanceAlong(start, end, i * minDistanceBetweenPoints))
 
@@ -201,8 +207,7 @@ function bezierSmoothing(
 
     index += pathLengthToSmooth - 1;
   }
-  path.forEach(v => console.log(v.toString()))
-  console.log(`old ${path.length} new ${newPath.length}`)
+
   return newPath;
 }
 

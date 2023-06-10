@@ -1,25 +1,26 @@
+import { Float32Vector2 } from "matrixgl";
 import Camera from "./camera";
 import type Layer from "./layer";
 import { type Path } from "./tools/brush";
+import { None, Option } from "../func/option";
 
 export interface CanvasState {
     layers: Layer[]
     camera: Camera
-    pointBuffer: Path
-    readonly canvasWidth: number
-    readonly canvasHeight: number
-    readonly canvasRect: DOMRect
+    pointBuffer: Path,
+    previousDrawnPoint: Option<Float32Vector2>,
+    readonly canvas: HTMLCanvasElement
 }
 
 export function getDefaultCanvasState(canvas: HTMLCanvasElement): CanvasState {
     const aspectRatio = canvas.width / canvas.height;
     const screenAspRation = canvas.clientWidth / canvas.clientHeight;
+    alert(`${aspectRatio} ${screenAspRation}`)
     return {
         layers: [],
         camera: new Camera(aspectRatio, screenAspRation),
         pointBuffer: [],
-        canvasWidth: canvas.width,
-        canvasHeight: canvas.height,
-        canvasRect: canvas.getBoundingClientRect()
+        previousDrawnPoint: None(),
+        canvas
     }
 }
