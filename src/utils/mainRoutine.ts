@@ -27,8 +27,8 @@ export function init(canvas: HTMLCanvasElement) {
 
   gl = result.expect('Could not intialize webgl2. Your browser may not support it');
 
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
+  canvas.width = canvas.clientWidth * 2;
+  canvas.height = canvas.clientHeight * 2;
 
   gl.viewport(0, 0, canvas.width, canvas.height);
 

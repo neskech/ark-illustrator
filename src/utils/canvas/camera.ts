@@ -218,8 +218,8 @@ export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vecto
 
 export function mouseToNormalized(event: MouseEvent, state: CanvasState): Float32Vector2 {
   const rect = state.canvas.getBoundingClientRect();
-  const x = (event.clientX - rect.left) / state.canvas.width;
-  const y = (event.clientY - rect.top) / state.canvas.height;
+  const x = (event.clientX - rect.left) / state.canvas.clientWidth;
+  const y = (event.clientY - rect.top) / state.canvas.clientHeight;
   return new Float32Vector2(x, 1.0 - y);
 }
 

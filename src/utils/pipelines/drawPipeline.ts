@@ -7,9 +7,10 @@ import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import { None, Option, Some } from '../func/option';
 import Shader from '../web/shader';
-import { constructQuadIndices, constructQuadSix, constructQuadSixTex } from './pipelines';
-import { NMidpoints, Path, applySmoothing } from '../canvas/tools/brush';
-import { Float32Vector2 } from 'matrixgl';
+import { constructQuadIndices, constructQuadSixTex } from './pipelines';
+import {
+  processPath,
+} from '../canvas/tools/brush';
 import { copy } from '../web/vector';
 
 const MAX_POINTS_PER_FRAME = 500;
@@ -18,6 +19,8 @@ const NUM_INDICES_QUAD = 6;
 const VERTEX_SIZE = 4;
 const SIZE_INTEGER = 4;
 const SIZE_FLOAT = 4;
+
+const MAX_PREV_POINTS = 20;
 
 function fillEbo(gl: GL, ebo: Buffer) {
   const buf = new Uint32Array(MAX_POINTS_PER_FRAME * NUM_INDICES_QUAD);
@@ -32,6 +35,57 @@ function fillEbo(gl: GL, ebo: Buffer) {
 
   ebo.allocateWithData(gl, buf);
 }
+
+// function processPath(p: Path, state: CanvasState, minDist: number): Path {
+//   const numToAppend = p.length;
+//   const delta = MAX_PREV_POINTS - (state.previousPointBuffer.length + numToAppend);
+//   const numToPop = Math.min(0, delta);
+
+//   for (let i = 0; i < numToPop; i++) state.previousPointBuffer.shift();
+
+//   const last = state.previousPointBuffer[state.previousPointBuffer.length - 1]
+//   state.previousPointBuffer.concat(p);
+
+//   const control = state.previousPointBuffer.map(v => [v.x, v.y]);
+//   const interp = new CurveInterpolator(control, {
+//     tension: 0.5
+//   })
+
+//   const u = interp.
+
+//   const midpoints = NMidpoints(state.previousPointBuffer, 2);
+//   const smoothed = applyLibSmoothing({
+//     path: midpoints,
+//     minDistanceBetweenPoints: minDist,
+//     stabilization: 0.5,
+//     interp,
+//     smoothingFn: 'Bezier',
+//     maxPointsToSmooth: MAX_POINTS_PER_FRAME,
+//   });
+//   return smoothed;
+// }
+
+// function processWithoutPrevBuff(p: Path, state: CanvasState, minDist: number): Path {
+//   if (p.length <= 2)
+//     return p;
+
+//   const control = p.map(v => [v.x, v.y]);
+//   const interp = new CurveInterpolator(control, {
+//     tension: 0.1
+//   })
+
+//   const midpoints = NMidpointsLib(interp, 1);
+
+//   const smoothed = applyLibSmoothing({
+//     path: midpoints,
+//     minDistanceBetweenPoints: minDist,
+//     stabilization: 0.1,
+//     interp,
+//     smoothingFn: 'Bezier',
+//     maxPointsToSmooth: MAX_POINTS_PER_FRAME,
+//   });
+//   return smoothed;
+// }
 
 const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
   vao
@@ -94,22 +148,27 @@ const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ____
   const pointsToRender = Math.min(MAX_POINTS_PER_FRAME, state.pointBuffer.length);
   if (pointsToRender == 0) return;
 
-
-
   const poppe = state.pointBuffer.splice(0, pointsToRender);
 
-  const popped = state.previousDrawnPoint.map(p => [p, ...poppe]).unwrapOrDefault(poppe);
-  //const popped = [new Float32Vector2(-0.3, -0.3), new Float32Vector2(-0.3, 0.4), new Float32Vector2(0.3, 0.3)]
-  const smoothed = applySmoothing({
+  const popped = state.previousDrawnPoint
+    .map((p) => [p, ...poppe])
+    .unwrapOrDefault(poppe);
+  // const popped = [
+  //   new Float32Vector2(-0.3, -0.3),
+  //   new Float32Vector2(-0.3, 0.4),
+  //   new Float32Vector2(0.3, 0.3),
+  // ];
+  const smoothed = processPath({
     path: popped,
-    minDistanceBetweenPoints: 0.001,
-    maxPointsToSmooth: MAX_POINTS_PER_FRAME,
-    smoothingFn: 'Bezier',
+    prevPathBuf: state.previousPointBuffer,
+    minDistanceBetween: 0.01,
+    stabilization: 1.0,
+    alpha: 1.0,
+    maxPrevPoints: MAX_PREV_POINTS
   })
 
-// const smoothed = poppedn;
-  state.previousDrawnPoint = Some(copy(smoothed[smoothed.length - 1]))
-    
+  // const smoothed = poppedn;
+  state.previousDrawnPoint = Some(copy(smoothed[smoothed.length - 1]));
 
   const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);
   let i = 0;
@@ -124,7 +183,7 @@ const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ____
   vbo.addData(gl, buf);
 
   shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
-  console.log('model', state.camera.getTransformMatrix())
+  console.log('model', state.camera.getTransformMatrix());
   shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());
   shader.uploadMatrix4x4(gl, 'projection', state.camera.getProjectionMatrix());
   gl.drawArrays(gl.TRIANGLES, 0, 6 * smoothed.length);
