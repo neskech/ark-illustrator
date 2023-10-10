@@ -1,24 +1,39 @@
 import { type GL } from '../web/glUtils';
-import RenderPipeline, {
-  type PipelineData,
-  type PipelineFn,
-} from '../web/renderPipeline';
+import { bindAll, unBindAll } from '../web/renderPipeline';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
-import { None } from '../func/option';
 import Shader from '../web/shader';
+import { type AppState } from '../mainRoutine';
 
-const initFn: PipelineFn = function init(gl, vao, vbo, shader, _) {
-  vao.builder().addAttribute(2, 'float', 'position').build(gl);
+export class DebugPipeline {
+  name: string;
+  vertexArray: VertexArrayObject;
+  vertexBuffer: Buffer;
+  shader: Shader;
 
-  const vertexData = new Float32Array([0.0, 0.0, 0.3, 0.3, -0.5, 0.3]);
+  public constructor(gl: GL) {
+    this.name = 'Standard Draw Pipeline';
+    this.vertexArray = new VertexArrayObject(gl);
+    this.vertexBuffer = new Buffer(gl, {
+      btype: 'VertexBuffer',
+      usage: 'Static Draw',
+    });
+    this.shader = new Shader(gl);
+  }
 
-  vbo.allocateWithData(gl, vertexData);
+  init(gl: GL) {
+    bindAll(gl, this);
 
-  const fragmentSource = `void main() {
+    this.vertexArray.builder().addAttribute(2, 'float', 'position').build(gl);
+
+    const vertexData = new Float32Array([0.0, 0.0, 0.3, 0.3, -0.5, 0.3]);
+
+    this.vertexBuffer.allocateWithData(gl, vertexData);
+
+    const fragmentSource = `void main() {
                             gl_FragColor = vec4(0, 0, 1, 1);
                         }\n`;
-  const vertexSource = `  attribute vec2 a_position;
+    const vertexSource = `  attribute vec2 a_position;
                           uniform mat4 model;
                           uniform mat4 view;
                           uniform mat4 projection;
@@ -28,42 +43,24 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _) {
                             gl_PointSize = 64.0;
                           }\n`;
 
-  shader.constructFromSource(gl, vertexSource, fragmentSource).match(
-    (_) => console.log('debug shader compilation success!'),
-    (e) => {
-      throw new Error(`Could not compile debug shader...\n\n${e}`);
-    }
-  );
-};
+    this.shader.constructFromSource(gl, vertexSource, fragmentSource).match(
+      (_) => console.log('debug shader compilation success!'),
+      (e) => {
+        throw new Error(`Could not compile debug shader...\n\n${e}`);
+      }
+    );
 
-const renderFn: PipelineFn = function render(gl, _, __, shader, state) {
-  shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
-  shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());
-  shader.uploadMatrix4x4(gl, 'projection', state.camera.getProjectionMatrix());
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
-};
+    unBindAll(gl, this);
+  }
 
-export default function getDebugPipeline(gl: GL): RenderPipeline {
-  const vertexArray: VertexArrayObject = new VertexArrayObject(gl);
+  render(gl: GL, state: Readonly<AppState>) {
+    bindAll(gl, this);
 
-  const vertexBuffer: Buffer = new Buffer(gl, {
-    btype: 'VertexBuffer',
-    usage: 'Static Draw',
-  });
+    this.shader.uploadMatrix4x4(gl, 'model', state.canvasState.camera.getTransformMatrix());
+    this.shader.uploadMatrix4x4(gl, 'view', state.canvasState.camera.getViewMatrix());
+    this.shader.uploadMatrix4x4(gl, 'projection', state.canvasState.camera.getProjectionMatrix());
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-  const shader: Shader = new Shader(gl);
-
-  const pipelineOptions: PipelineData = {
-    name: 'Debug Pipeline',
-    vertexArray,
-    vertexBuffer,
-    indexBuffer: None(),
-    shader,
-    renderTarget: None(),
-    initFn,
-    renderFn,
-    benchmarkLogging: false,
-  };
-
-  return new RenderPipeline(pipelineOptions);
+    unBindAll(gl, this);
+  }
 }

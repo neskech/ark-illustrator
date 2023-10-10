@@ -3,11 +3,12 @@ import { Tool, type HandleEventArgs } from './tool';
 import { type BrushSettings } from './settings';
 import { Float32Vector2 } from 'matrixgl';
 import { add, copy, distance, distanceAlong, scale } from '~/utils/web/vector';
-import { None } from '~/utils/func/option';
+import { None, Option } from '~/utils/func/option';
 import { CurveInterpolator, CurveInterpolator2D } from 'curve-interpolator';
 import { Vector } from 'curve-interpolator/dist/src/core/interfaces';
 import { normalize } from '../../web/vector';
 import { get } from 'http';
+import { Event } from '../../func/event';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -20,11 +21,19 @@ import { get } from 'http';
 const MAX_POINTS_IN_BUFFER = 20;
 
 export class Brush extends Tool {
-  isMouseDown: boolean;
+  private isMouseDown: boolean;
+  private points: Float32Vector2[]
+  private prevDrawnPoint: Option<Float32Vector2>
+  onBrushStrokeEnd: Event<Float32Vector2[]>
+  onBrushStrokeContinued: Event<Float32Vector2[]>
 
   constructor() {
     super();
     this.isMouseDown = false;
+    this.onBrushStrokeEnd = new Event()
+    this.onBrushStrokeContinued = new Event()
+    this.points = []
+    this.prevDrawnPoint = None()
   }
 
   handleEvent(args: HandleEventArgs): boolean {
@@ -49,50 +58,63 @@ export class Brush extends Tool {
   }
 
   mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState, settings, presetNumber } = args;
+    const { canvasState } = args;
 
-    const hasSpace = canvasState.pointBuffer.length < MAX_POINTS_IN_BUFFER;
+    const hasSpace = this.points.length < MAX_POINTS_IN_BUFFER;
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    if (hasSpace && this.isMouseDown) canvasState.pointBuffer.push(point);
+    if (hasSpace && this.isMouseDown) this.points.push(point);
+
+    this.onBrushStrokeContinued.invoke(this.points)
 
     return hasSpace && this.isMouseDown;
   }
 
-  mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const prevPoint = args.canvasState.previousDrawnPoint;
-    const isSome = prevPoint.isSome();
-    if (isSome) args.canvasState.previousDrawnPoint = None();
+  mouseUpHandler(_: HandleEventArgs, __: MouseEvent): boolean {
+    const isSome = this.prevDrawnPoint.isSome();
+    this.prevDrawnPoint = None();
+
+    this.onBrushStrokeEnd.invoke(this.points)
 
     this.isMouseDown = false;
     return isSome;
   }
 
   mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState, settings, presetNumber } = args;
+    const { canvasState } = args;
 
-    const hasSpace = canvasState.pointBuffer.length < MAX_POINTS_IN_BUFFER;
+    const hasSpace = this.points.length < MAX_POINTS_IN_BUFFER;
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    if (hasSpace && !this.isMouseDown) canvasState.pointBuffer.push(point);
+    if (hasSpace && !this.isMouseDown) this.points.push(point);
 
     //canvasState.camera.translateZoom(0.1);
+    this.onBrushStrokeContinued.invoke(this.points)
 
     this.isMouseDown = true;
 
     return hasSpace && !this.isMouseDown;
   }
 
-  mouseLeaveHandler(args: HandleEventArgs): boolean {
+  mouseLeaveHandler(_: HandleEventArgs): boolean {
     this.isMouseDown = false;
 
-    const prevPoint = args.canvasState.previousDrawnPoint;
-    const isSome = prevPoint.isSome();
-    if (isSome) args.canvasState.previousDrawnPoint = None();
+    const isSome = this.prevDrawnPoint.isSome();
+    this.prevDrawnPoint = None();
+
+    this.onBrushStrokeEnd.invoke(this.points)
 
     return isSome;
   }
 
   areValidBrushSettings(b: BrushSettings): boolean {
     return 0 <= b.opacity && b.opacity <= 100 && 0 <= b.smoothing && b.smoothing <= 100;
+  }
+
+  subscribeToOnBrushStrokeEnd(f: (p: Float32Vector2[]) => void) {
+    this.onBrushStrokeEnd.subscribe(f)
+  }
+
+  subscribeToOnBrushStrokeContinued(f: (p: Float32Vector2[]) => void) {
+    this.onBrushStrokeContinued.subscribe(f)
   }
 }
 

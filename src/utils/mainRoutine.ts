@@ -2,17 +2,18 @@ import { type CanvasState, getDefaultCanvasState } from './canvas/canvas';
 import { type ToolState, getDefaultToolState, handleEvent } from './canvas/tools/handler';
 import { type GlobalToolSettings, getDefaultSettings } from './canvas/tools/settings';
 import { Option, Some } from './func/option';
-import getPipelineMap, {
-  type PipelineMap,
-  destroyPipelines,
-} from './pipelines/pipelines';
+import { MasterPipeline } from './pipelines/MasterPipeline';
 import { type GL } from './web/glUtils';
 
+export interface AppState {
+  canvasState: CanvasState;
+  settings: GlobalToolSettings;
+  toolState: ToolState;
+}
+
 let gl: GL;
-let state: CanvasState;
-let settings: GlobalToolSettings;
-let toolState: ToolState;
-let pipelines: PipelineMap;
+let appState: AppState;
+let masterPipeline: MasterPipeline;
 let running: boolean;
 
 export function init(canvas: HTMLCanvasElement) {
@@ -32,15 +33,17 @@ export function init(canvas: HTMLCanvasElement) {
 
   gl.viewport(0, 0, canvas.width, canvas.height);
 
-  state = getDefaultCanvasState(canvas);
-  settings = getDefaultSettings();
-  pipelines = getPipelineMap(gl);
-  toolState = getDefaultToolState();
+  appState = {
+    canvasState: getDefaultCanvasState(canvas),
+    settings: getDefaultSettings(),
+    toolState: getDefaultToolState(),
+  };
+
+  masterPipeline = new MasterPipeline(gl);
 
   initEventListeners(canvas);
 
-  //pipelines.debugPipeline.init(gl, state);
-  pipelines.drawPipeline.init(gl, state);
+  masterPipeline.init(gl, appState);
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
@@ -57,11 +60,11 @@ function initEventListeners(canvas: HTMLCanvasElement) {
   events.forEach((e) => {
     canvas.addEventListener(e, (ev) => {
       handleEvent({
-        map: toolState.tools,
+        map: appState.toolState.tools,
         event: ev,
-        currentTool: toolState.currentTool,
-        canvasState: state,
-        settings: settings,
+        currentTool: appState.toolState.currentTool,
+        canvasState: appState.canvasState,
+        settings: appState.settings,
         presetNumber: Some(0),
       });
     });
@@ -78,15 +81,7 @@ export function startRenderLoop() {
 function render() {
   if (!running) return;
 
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-  // gl.clearColor(0, 0, 0, 0);
-  // gl.colorMask(true, true, true, false);
-  // gl.clear(gl.COLOR_BUFFER_BIT);
-
-  // pipelines.debugPipeline.render(gl, state);
-  pipelines.drawPipeline.render(gl, state);
+  masterPipeline.render(gl, appState);
 
   window.requestAnimationFrame(render);
 }
@@ -97,5 +92,5 @@ export function stop() {
 }
 
 function destroy() {
-  destroyPipelines(gl, pipelines);
+  masterPipeline.destroy(gl);
 }

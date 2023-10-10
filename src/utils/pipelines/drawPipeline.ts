@@ -1,17 +1,14 @@
 import { type GL } from '../web/glUtils';
-import RenderPipeline, {
-  type PipelineData,
-  type PipelineFn,
-} from '../web/renderPipeline';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
-import { None, Option, Some } from '../func/option';
+import { Some } from '../func/option';
 import Shader from '../web/shader';
-import { constructQuadIndices, constructQuadSixTex } from './pipelines';
-import {
-  processPath,
-} from '../canvas/tools/brush';
+import { constructQuadIndices, constructQuadSixTex } from './util';
+import { processPath } from '../canvas/tools/brush';
 import { copy } from '../web/vector';
+import { bindAll, unBindAll } from '../web/renderPipeline';
+import { type AppState } from '../mainRoutine';
+import { Float32Vector2 } from 'matrixgl';
 
 const MAX_POINTS_PER_FRAME = 500;
 const NUM_VERTICES_QUAD = 4;
@@ -36,104 +33,40 @@ function fillEbo(gl: GL, ebo: Buffer) {
   ebo.allocateWithData(gl, buf);
 }
 
-// function processPath(p: Path, state: CanvasState, minDist: number): Path {
-//   const numToAppend = p.length;
-//   const delta = MAX_PREV_POINTS - (state.previousPointBuffer.length + numToAppend);
-//   const numToPop = Math.min(0, delta);
-
-//   for (let i = 0; i < numToPop; i++) state.previousPointBuffer.shift();
-
-//   const last = state.previousPointBuffer[state.previousPointBuffer.length - 1]
-//   state.previousPointBuffer.concat(p);
-
-//   const control = state.previousPointBuffer.map(v => [v.x, v.y]);
-//   const interp = new CurveInterpolator(control, {
-//     tension: 0.5
-//   })
-
-//   const u = interp.
-
-//   const midpoints = NMidpoints(state.previousPointBuffer, 2);
-//   const smoothed = applyLibSmoothing({
-//     path: midpoints,
-//     minDistanceBetweenPoints: minDist,
-//     stabilization: 0.5,
-//     interp,
-//     smoothingFn: 'Bezier',
-//     maxPointsToSmooth: MAX_POINTS_PER_FRAME,
-//   });
-//   return smoothed;
-// }
-
-// function processWithoutPrevBuff(p: Path, state: CanvasState, minDist: number): Path {
-//   if (p.length <= 2)
-//     return p;
-
-//   const control = p.map(v => [v.x, v.y]);
-//   const interp = new CurveInterpolator(control, {
-//     tension: 0.1
-//   })
-
-//   const midpoints = NMidpointsLib(interp, 1);
-
-//   const smoothed = applyLibSmoothing({
-//     path: midpoints,
-//     minDistanceBetweenPoints: minDist,
-//     stabilization: 0.1,
-//     interp,
-//     smoothingFn: 'Bezier',
-//     maxPointsToSmooth: MAX_POINTS_PER_FRAME,
-//   });
-//   return smoothed;
-// }
-
-const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
-  vao
-    .builder()
-    .addAttribute(2, 'float', 'position')
-    .addAttribute(2, 'float', 'texCord')
-    .build(gl);
-
-  const indexBuffer = Option.fromNull(ebo).expect(
-    'Index buffer should be defined in init function'
-  );
-  fillEbo(gl, indexBuffer);
-
-  const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * SIZE_FLOAT;
-  vbo.allocateWithData(gl, new Float32Array(verticesSizeBytes));
-
+function initShader(gl: GL, shader: Shader) {
   const fragmentSource = `precision highp float;
-  varying highp vec2 vTextureCoord;
-  
-  float circleShape(vec2 position, float radius) {
-      float dist = distance(position, vec2(0.5));
-      return step(radius, dist);
-  }
-  
-  
-  void main() {
-       vec2 normalized = vTextureCoord;
-       float value = circleShape(normalized, 0.5);
-
-       if (value > 0.0)
-          discard;
-       
-       vec3 color = vec3(1, 0, 0.3);
-       gl_FragColor = vec4(color, 1);
-  }\n`;
-  const vertexSource = `  attribute vec2 a_position;
-                          attribute vec2 aTextureCoord;
-
-                          uniform mat4 model;
-                          uniform mat4 view;
-                          uniform mat4 projection;
-
                           varying highp vec2 vTextureCoord;
                           
+                          float circleShape(vec2 position, float radius) {
+                              float dist = distance(position, vec2(0.5));
+                              return step(radius, dist);
+                          }
+                          
+                          
                           void main() {
-                            gl_Position = projection * view * model * vec4(a_position, 0, 1);
-                            vTextureCoord = aTextureCoord;             
+                              vec2 normalized = vTextureCoord;
+                              float value = circleShape(normalized, 0.5);
+
+                              if (value > 0.0)
+                                  discard;
+                              
+                              vec3 color = vec3(1, 0, 0.3);
+                              gl_FragColor = vec4(color, 1);
                           }\n`;
+
+  const vertexSource = `attribute vec2 a_position;
+                        attribute vec2 aTextureCoord;
+
+                        uniform mat4 model;
+                        uniform mat4 view;
+                        uniform mat4 projection;
+
+                        varying highp vec2 vTextureCoord;
+
+                        void main() {
+                          gl_Position = projection * view * model * vec4(a_position, 0, 1);
+                          vTextureCoord = aTextureCoord;             
+                        }\n`;
 
   shader.constructFromSource(gl, vertexSource, fragmentSource).match(
     (_) => console.log('standard draw shader compilation success!'),
@@ -141,80 +74,94 @@ const initFn: PipelineFn = function init(gl, vao, vbo, shader, _, __, ebo) {
       throw new Error(`Could not compile debug shader...\n\n${e}`);
     }
   );
-};
+}
 
-const renderFn: PipelineFn = function render(gl, _, vbo, shader, state, __, ____) {
-  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-  const pointsToRender = Math.min(MAX_POINTS_PER_FRAME, state.pointBuffer.length);
-  if (pointsToRender == 0) return;
+export class DrawPipeline {
+  name: string;
+  vertexArray: VertexArrayObject;
+  vertexBuffer: Buffer;
+  indexBuffer: Buffer;
+  shader: Shader;
+  points: Float32Vector2[]
+  prevPathBuf: Float32Vector2[]
 
-  const poppe = state.pointBuffer.splice(0, pointsToRender);
-
-  const popped = state.previousDrawnPoint
-    .map((p) => [p, ...poppe])
-    .unwrapOrDefault(poppe);
-  // const popped = [
-  //   new Float32Vector2(-0.3, -0.3),
-  //   new Float32Vector2(-0.3, 0.4),
-  //   new Float32Vector2(0.3, 0.3),
-  // ];
-  const smoothed = processPath({
-    path: popped,
-    prevPathBuf: state.previousPointBuffer,
-    minDistanceBetween: 0.01,
-    stabilization: 1.0,
-    alpha: 1.0,
-    maxPrevPoints: MAX_PREV_POINTS
-  })
-
-  // const smoothed = poppedn;
-  state.previousDrawnPoint = Some(copy(smoothed[smoothed.length - 1]));
-
-  const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);
-  let i = 0;
-  for (const p of smoothed) {
-    const quadVerts = constructQuadSixTex(p, 0.01);
-    for (const v of quadVerts) {
-      buf[i++] = v.x;
-      buf[i++] = v.y;
-    }
+  public constructor(gl: GL) {
+    this.name = 'Standard Draw Pipeline';
+    this.vertexArray = new VertexArrayObject(gl);
+    this.vertexBuffer = new Buffer(gl, {
+      btype: 'VertexBuffer',
+      usage: 'Static Draw',
+    });
+    this.indexBuffer = new Buffer(gl, {
+      btype: 'IndexBuffer',
+      usage: 'Static Draw',
+    });
+    this.shader = new Shader(gl);
+    this.points = []
+    this.prevPathBuf = []
   }
 
-  vbo.addData(gl, buf);
+  init(gl: GL, appState: Readonly<AppState>) {
+    bindAll(gl, this, false);
 
-  shader.uploadMatrix4x4(gl, 'model', state.camera.getTransformMatrix());
-  console.log('model', state.camera.getTransformMatrix());
-  shader.uploadMatrix4x4(gl, 'view', state.camera.getViewMatrix());
-  shader.uploadMatrix4x4(gl, 'projection', state.camera.getProjectionMatrix());
-  gl.drawArrays(gl.TRIANGLES, 0, 6 * smoothed.length);
-};
+    this.vertexArray
+      .builder()
+      .addAttribute(2, 'float', 'position')
+      .addAttribute(2, 'float', 'texCord')
+      .build(gl);
 
-export default function getDrawPipeline(gl: GL): RenderPipeline {
-  const vertexArray: VertexArrayObject = new VertexArrayObject(gl);
+    fillEbo(gl, this.indexBuffer);
 
-  const vertexBuffer: Buffer = new Buffer(gl, {
-    btype: 'VertexBuffer',
-    usage: 'Static Draw',
-  });
+    const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * SIZE_FLOAT;
+    this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
-  const indexBuffer: Buffer = new Buffer(gl, {
-    btype: 'IndexBuffer',
-    usage: 'Static Draw',
-  });
+    initShader(gl, this.shader);
 
-  const shader: Shader = new Shader(gl);
+    appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinued((p) => this.points = p)
+    appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd(_ => {
+      gl.clearColor(0, 0, 0, 0);
+      //gl.colorMask(true, true, true, false);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    })
 
-  const pipelineOptions: PipelineData = {
-    name: 'Standard Draw Pipeline',
-    vertexArray,
-    vertexBuffer,
-    indexBuffer: Some(indexBuffer),
-    shader,
-    renderTarget: None(),
-    initFn,
-    renderFn,
-    benchmarkLogging: false,
-  };
+    unBindAll(gl, this);
+  }
 
-  return new RenderPipeline(pipelineOptions);
+  render(gl: GL, state: Readonly<AppState>) {
+    bindAll(gl, this);
+
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    const pointsToRender = this.points.length
+    if (pointsToRender <= 1) return;
+
+    const smoothed = this.points.splice(0, pointsToRender);
+
+    // const smoothed = processPath({
+    //   path: poppe,
+    //   prevPathBuf: this.prevPathBuf,
+    //   minDistanceBetween: 0.01,
+    //   stabilization: 1.0,
+    //   alpha: 1.0,
+    //   maxPrevPoints: MAX_PREV_POINTS,
+    // });
+
+    const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);
+    let i = 0;
+    for (const p of smoothed) {
+      const quadVerts = constructQuadSixTex(p, 0.01);
+      for (const v of quadVerts) {
+        buf[i++] = v.x;
+        buf[i++] = v.y;
+      }
+    }
+
+    this.vertexBuffer.addData(gl, buf);
+
+    this.shader.uploadMatrix4x4(gl, 'model', state.canvasState.camera.getTransformMatrix());
+    this.shader.uploadMatrix4x4(gl, 'view', state.canvasState.camera.getViewMatrix());
+    this.shader.uploadMatrix4x4(gl, 'projection', state.canvasState.camera.getProjectionMatrix());
+    gl.drawArrays(gl.TRIANGLES, 0, 6 * smoothed.length);
+
+    unBindAll(gl, this);
+  }
 }
