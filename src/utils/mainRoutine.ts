@@ -48,10 +48,10 @@ export function init(canvas: HTMLCanvasElement) {
 
 function initEventListeners(canvas: HTMLCanvasElement) {
   const events: (keyof HTMLElementEventMap)[] = [
-    'mousedown',
-    'mousemove',
-    'mouseup',
-    'mouseleave',
+    'pointerdown',
+    'pointermove',
+    'pointerup',
+    'pointerleave',
     'keydown',
     'keypress',
     'keyup',

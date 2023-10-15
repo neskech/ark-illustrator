@@ -48,7 +48,7 @@ export class Brush extends Tool {
     const preset = args.presetNumber.expect('Brush needs preset number');
     requires(this.areValidBrushSettings(args.settings.brushSettings[preset]));
 
-    const evType = args.eventString.replace('mouse', 'pointer');
+    const evType = args.eventString;
     const event = args.event as PointerEvent;
 
     switch (evType) {
