@@ -1,8 +1,0 @@
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/libglfw3.a
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/include/GLFW/glfw3.h
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/include/GLFW/glfw3native.h
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3Config.cmake
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3ConfigVersion.cmake
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3Targets.cmake
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/cmake/glfw3/glfw3Targets-debug.cmake
-/Users/ness/Projects/Serious/Personal/ark/target/debug/build/glfw-sys-ac7b3c2d1bb8d1b1/out/lib/pkgconfig/glfw3.pc
