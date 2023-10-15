@@ -18,8 +18,11 @@ export class MasterPipeline {
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
-    //initWithErrorWrapper(() => this.debugPipeline.init(gl), this.debugPipeline.name);
-    initWithErrorWrapper(() => this.drawPipeline.init(gl, appState), this.drawPipeline.name);
+    initWithErrorWrapper(() => this.debugPipeline.init(gl, appState), this.debugPipeline.name);
+    //initWithErrorWrapper(() => this.drawPipeline.init(gl, appState), this.drawPipeline.name);
+
+    gl.clearColor(1, 1, 1, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
   }
 
   render(gl: GL, appState: Readonly<AppState>) {
@@ -34,10 +37,10 @@ export class MasterPipeline {
     //   () => this.debugPipeline.render(gl, appState),
     //   this.debugPipeline.name
     // );
-    renderWithErrorWrapper(
-      () => this.drawPipeline.render(gl, appState),
-      this.drawPipeline.name
-    );
+    // renderWithErrorWrapper(
+    //   () => this.drawPipeline.render(gl, appState),
+    //   this.drawPipeline.name
+    // );
   }
 
   destroy(gl: GL) {

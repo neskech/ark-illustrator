@@ -9,6 +9,10 @@ import { Vector } from 'curve-interpolator/dist/src/core/interfaces';
 import { normalize } from '../../web/vector';
 import { get } from 'http';
 import { Event } from '../../func/event';
+import Stabilizer from '../utils/stabilizing/stabilizer';
+import LinearStabilizer from '../utils/stabilizing/linearStabilizer';
+import SmoothedStabilizer from '../utils/stabilizing/smoothStabilizer';
+import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -18,91 +22,104 @@ import { Event } from '../../func/event';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
+export type Point = Float32Vector2
+
 const MAX_POINTS_IN_BUFFER = 20;
 
 export class Brush extends Tool {
   private isMouseDown: boolean;
-  private points: Float32Vector2[]
-  private prevDrawnPoint: Option<Float32Vector2>
+  private stabilizer: Stabilizer
   onBrushStrokeEnd: Event<Float32Vector2[]>
   onBrushStrokeContinued: Event<Float32Vector2[]>
+  onBrushStrokeEndRaw: Event<Float32Vector2[]>
+  onBrushStrokeContinuedRaw: Event<Float32Vector2[]>
 
   constructor() {
     super();
     this.isMouseDown = false;
+    this.stabilizer = new BoxFilterStabilizer()
     this.onBrushStrokeEnd = new Event()
     this.onBrushStrokeContinued = new Event()
-    this.points = []
-    this.prevDrawnPoint = None()
+    this.onBrushStrokeEndRaw = new Event()
+    this.onBrushStrokeContinuedRaw = new Event()
   }
 
   handleEvent(args: HandleEventArgs): boolean {
     const preset = args.presetNumber.expect('Brush needs preset number');
     requires(this.areValidBrushSettings(args.settings.brushSettings[preset]));
 
-    const evType = args.eventString;
-    const event = args.event as MouseEvent;
+    const evType = args.eventString.replace('mouse', 'pointer');
+    const event = args.event as PointerEvent;
 
     switch (evType) {
-      case 'mouseleave':
+      case 'pointerleave':
         return this.mouseLeaveHandler(args);
-      case 'mousemove':
+      case 'pointermove':
         return this.mouseMovedHandler(args, event);
-      case 'mouseup':
+      case 'pointerup':
         return this.mouseUpHandler(args, event);
-      case 'mousedown':
+      case 'pointerdown':
         return this.mouseDownHandler(args, event);
       default:
         return false;
     }
   }
 
-  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState } = args;
+  mouseMovedHandler(args: HandleEventArgs, event: PointerEvent): boolean {
+    const { canvasState, settings, presetNumber } = args;
+    const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
-    const hasSpace = this.points.length < MAX_POINTS_IN_BUFFER;
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    if (hasSpace && this.isMouseDown) this.points.push(point);
+    if (this.isMouseDown) { 
+      this.stabilizer.addPoint(point);
+      this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))
+      this.onBrushStrokeContinuedRaw.invoke(this.stabilizer.getRawCurve(brushSettings))
+    }
 
-    this.onBrushStrokeContinued.invoke(this.points)
-
-    return hasSpace && this.isMouseDown;
+    return this.isMouseDown;
   }
 
-  mouseUpHandler(_: HandleEventArgs, __: MouseEvent): boolean {
-    const isSome = this.prevDrawnPoint.isSome();
-    this.prevDrawnPoint = None();
+  mouseUpHandler(args: HandleEventArgs, __: PointerEvent): boolean {
+    const { settings, presetNumber } = args;
+    const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
-    this.onBrushStrokeEnd.invoke(this.points)
+    this.onBrushStrokeEnd.invoke(this.stabilizer.getProcessedCurve(brushSettings))
+    this.onBrushStrokeEndRaw.invoke(this.stabilizer.getRawCurve(brushSettings))
+    this.stabilizer.reset()
 
     this.isMouseDown = false;
-    return isSome;
+    return false;
   }
 
-  mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState } = args;
+  mouseDownHandler(args: HandleEventArgs, event: PointerEvent): boolean {
+    const { canvasState, settings, presetNumber } = args;
+    const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
-    const hasSpace = this.points.length < MAX_POINTS_IN_BUFFER;
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    if (hasSpace && !this.isMouseDown) this.points.push(point);
+    if (!this.isMouseDown) {
+       this.stabilizer.addPoint(point);
+       this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))
+       //(this.stabilizer as SmoothedStabilizer).getProcessedCurveAsync(brushSettings).then(c => this.onBrushStrokeContinued.invoke(c)).catch(console.error)
+       this.onBrushStrokeContinuedRaw.invoke(this.stabilizer.getRawCurve(brushSettings))
+    }
 
     //canvasState.camera.translateZoom(0.1);
-    this.onBrushStrokeContinued.invoke(this.points)
 
     this.isMouseDown = true;
 
-    return hasSpace && !this.isMouseDown;
+    return !this.isMouseDown;
   }
 
-  mouseLeaveHandler(_: HandleEventArgs): boolean {
+  mouseLeaveHandler(args: HandleEventArgs): boolean {
+    const { settings, presetNumber } = args;
+    const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
+    
+    this.onBrushStrokeEnd.invoke(this.stabilizer.getProcessedCurve(brushSettings))
+    this.onBrushStrokeEndRaw.invoke(this.stabilizer.getRawCurve(brushSettings))
+    this.stabilizer.reset()
+
     this.isMouseDown = false;
-
-    const isSome = this.prevDrawnPoint.isSome();
-    this.prevDrawnPoint = None();
-
-    this.onBrushStrokeEnd.invoke(this.points)
-
-    return isSome;
+    return false;
   }
 
   areValidBrushSettings(b: BrushSettings): boolean {
@@ -115,6 +132,14 @@ export class Brush extends Tool {
 
   subscribeToOnBrushStrokeContinued(f: (p: Float32Vector2[]) => void) {
     this.onBrushStrokeContinued.subscribe(f)
+  }
+
+  subscribeToOnBrushStrokeEndRaw(f: (p: Float32Vector2[]) => void) {
+    this.onBrushStrokeEndRaw.subscribe(f)
+  }
+
+  subscribeToOnBrushStrokeContinuedRaw(f: (p: Float32Vector2[]) => void) {
+    this.onBrushStrokeContinuedRaw.subscribe(f)
   }
 }
 

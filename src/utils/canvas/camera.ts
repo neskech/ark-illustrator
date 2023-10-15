@@ -159,7 +159,7 @@ export default class Camera {
     logger(this.toString());
   }
 
-  mouseToWorld(event: MouseEvent, state: CanvasState): Float32Vector2 {
+  mouseToWorld(event: PointerEvent, state: CanvasState): Float32Vector2 {
     const p = mouseToNDC(event, state);
 
     /**
@@ -189,8 +189,6 @@ export default class Camera {
     p.x *= width / 2;
     p.y *= CANVAS_HEIGHT / 2;
 
-    console.log(this.mulVecByMVP(p).toString());
-
     return p;
   }
 
@@ -216,14 +214,14 @@ export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vecto
   return new Int32Vector2(x, y);
 }
 
-export function mouseToNormalized(event: MouseEvent, state: CanvasState): Float32Vector2 {
+export function mouseToNormalized(event: PointerEvent, state: CanvasState): Float32Vector2 {
   const rect = state.canvas.getBoundingClientRect();
   const x = (event.clientX - rect.left) / state.canvas.clientWidth;
   const y = (event.clientY - rect.top) / state.canvas.clientHeight;
   return new Float32Vector2(x, 1.0 - y);
 }
 
-export function mouseToNDC(event: MouseEvent, state: CanvasState): Float32Vector2 {
+export function mouseToNDC(event: PointerEvent, state: CanvasState): Float32Vector2 {
   const p = mouseToNormalized(event, state);
   p.x = (p.x - 0.5) * 2.0;
   p.y = (p.y - 0.5) * 2.0;

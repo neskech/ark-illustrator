@@ -10,14 +10,12 @@ import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
 import { Float32Vector2 } from 'matrixgl';
 
-const MAX_POINTS_PER_FRAME = 500;
+const MAX_POINTS_PER_FRAME = 50000;
 const NUM_VERTICES_QUAD = 4;
 const NUM_INDICES_QUAD = 6;
 const VERTEX_SIZE = 4;
 const SIZE_INTEGER = 4;
 const SIZE_FLOAT = 4;
-
-const MAX_PREV_POINTS = 20;
 
 function fillEbo(gl: GL, ebo: Buffer) {
   const buf = new Uint32Array(MAX_POINTS_PER_FRAME * NUM_INDICES_QUAD);
@@ -119,7 +117,7 @@ export class DrawPipeline {
 
     appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinued((p) => this.points = p)
     appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd(_ => {
-      gl.clearColor(0, 0, 0, 0);
+      gl.clearColor(1, 1, 1, 1);
       //gl.colorMask(true, true, true, false);
       gl.clear(gl.COLOR_BUFFER_BIT);
     })
@@ -146,6 +144,7 @@ export class DrawPipeline {
     // });
 
     const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);
+    
     let i = 0;
     for (const p of smoothed) {
       const quadVerts = constructQuadSixTex(p, 0.01);
@@ -160,6 +159,7 @@ export class DrawPipeline {
     this.shader.uploadMatrix4x4(gl, 'model', state.canvasState.camera.getTransformMatrix());
     this.shader.uploadMatrix4x4(gl, 'view', state.canvasState.camera.getViewMatrix());
     this.shader.uploadMatrix4x4(gl, 'projection', state.canvasState.camera.getProjectionMatrix());
+
     gl.drawArrays(gl.TRIANGLES, 0, 6 * smoothed.length);
 
     unBindAll(gl, this);
