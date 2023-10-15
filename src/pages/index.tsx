@@ -4,7 +4,7 @@ import { Box } from '@mui/system';
 
 const Home: NextPage = () => {
   return (
-    <Box className="h-screen w-screen">
+    <Box className="h-screen w-screen touch-none">
       <Editor />
     </Box>
   );
