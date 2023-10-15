@@ -1,14 +1,11 @@
 import { type GL } from '../web/glUtils';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
-import { Some } from '../func/option';
 import Shader from '../web/shader';
 import { constructQuadIndices, constructQuadSixTex } from './util';
-import { processPath } from '../canvas/tools/brush';
-import { copy } from '../web/vector';
 import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
-import { Float32Vector2 } from 'matrixgl';
+import { type Float32Vector2 } from 'matrixgl';
 
 const MAX_POINTS_PER_FRAME = 50000;
 const NUM_VERTICES_QUAD = 4;
@@ -128,21 +125,10 @@ export class DrawPipeline {
   render(gl: GL, state: Readonly<AppState>) {
     bindAll(gl, this);
 
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     const pointsToRender = this.points.length
     if (pointsToRender <= 1) return;
 
     const smoothed = this.points.splice(0, pointsToRender);
-
-    // const smoothed = processPath({
-    //   path: poppe,
-    //   prevPathBuf: this.prevPathBuf,
-    //   minDistanceBetween: 0.01,
-    //   stabilization: 1.0,
-    //   alpha: 1.0,
-    //   maxPrevPoints: MAX_PREV_POINTS,
-    // });
-
     const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);
     
     let i = 0;

@@ -7,11 +7,9 @@ import { type BrushSettings } from "../../tools/settings";
 
 export default class LinearStabilizer implements Stabilizer {
     private currentPoints: Point[]
-    private cachedCurve: Point[]
 
     constructor() {
         this.currentPoints = []
-        this.cachedCurve = []
     }
 
     addPoint(p: Point) {
@@ -36,7 +34,6 @@ export default class LinearStabilizer implements Stabilizer {
 
     reset() {
         this.currentPoints = []
-        this.cachedCurve = [] 
     }
     
     private assertValid() {

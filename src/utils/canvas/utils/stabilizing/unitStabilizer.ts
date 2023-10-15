@@ -1,17 +1,13 @@
 import type Stabilizer from "./stabilizer";
 import { type Point } from "../../tools/brush";
 import { assert } from "~/utils/contracts";
-import { add, copy, scale, sub } from "~/utils/web/vector";
-import { normalize } from '../../../web/vector';
 import { type BrushSettings } from "../../tools/settings";
 
 export default class UnitStabilizer implements Stabilizer {
     private currentPoints: Point[]
-    private cachedCurve: Point[]
 
     constructor() {
         this.currentPoints = []
-        this.cachedCurve = []
     }
 
     addPoint(p: Point) {
@@ -22,7 +18,7 @@ export default class UnitStabilizer implements Stabilizer {
         return this.currentPoints
     }
 
-    getProcessedCurveWithPoints(points: Point[], spacing: number): Point[] {
+    getProcessedCurveWithPoints(points: Point[]): Point[] {
         return points
     }
 
@@ -32,7 +28,6 @@ export default class UnitStabilizer implements Stabilizer {
 
     reset() {
         this.currentPoints = []
-        this.cachedCurve = [] 
     }
     
     private assertValid() {

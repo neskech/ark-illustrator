@@ -122,8 +122,8 @@ export class DebugPipeline {
 
     appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinuedRaw(
       (p) => {
-          this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(p, 0)
-          this.linearPoints = this.linearStab.getProcessedCurveWithPoints(p, 0.005)
+          this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(p, appState.settings.brushSettings[0])
+          this.linearPoints = this.linearStab.getProcessedCurveWithPoints(p)
 
           gl.clearColor(1, 1, 1, 1);
           gl.clear(gl.COLOR_BUFFER_BIT);
