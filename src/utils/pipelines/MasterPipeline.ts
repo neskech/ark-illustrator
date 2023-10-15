@@ -18,8 +18,8 @@ export class MasterPipeline {
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
-    initWithErrorWrapper(() => this.debugPipeline.init(gl, appState), this.debugPipeline.name);
-    //initWithErrorWrapper(() => this.drawPipeline.init(gl, appState), this.drawPipeline.name);
+    //initWithErrorWrapper(() => this.debugPipeline.init(gl, appState), this.debugPipeline.name);
+    initWithErrorWrapper(() => this.drawPipeline.init(gl, appState), this.drawPipeline.name);
 
     gl.clearColor(1, 1, 1, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
