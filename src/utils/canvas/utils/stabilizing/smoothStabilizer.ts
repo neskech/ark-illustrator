@@ -1,24 +1,23 @@
 import type Stabilizer from './stabilizer';
-import { type Point } from '../../tools/brush';
+import { type BrushPoint, newPoint, type BrushSettings } from '../../tools/brush';
 import { assert } from '~/utils/contracts';
-import { type BrushSettings } from '../../tools/settings';
 import { CurveInterpolator } from 'curve-interpolator';
 import { Float32Vector2 } from 'matrixgl';
 
 export default class SmoothedStabilizer implements Stabilizer {
-  private currentPoints: Point[];
-  private cachedCurve: Point[];
+  private currentPoints: BrushPoint[];
+  private cachedCurve: BrushPoint[];
 
   constructor() {
     this.currentPoints = [];
     this.cachedCurve = [];
   }
 
-  addPoint(p: Point) {
+  addPoint(p: BrushPoint) {
     this.currentPoints.push(p);
   }
 
-  getProcessedCurve(_: Readonly<BrushSettings>): Point[] {
+  getProcessedCurve(_: Readonly<BrushSettings>): BrushPoint[] {
     const processed = addPointsCartmollInterpolation(this.currentPoints, 0.5, 0.2, 0.005);
 
     this.assertValid();
@@ -27,15 +26,15 @@ export default class SmoothedStabilizer implements Stabilizer {
   }
 
   getProcessedCurveWithPoints(
-    points: Point[],
+    points: BrushPoint[],
     tension: number,
     alpha: number,
     spacing: number
-  ): Point[] {
+  ): BrushPoint[] {
     return addPointsCartmollInterpolation(points, tension, alpha, spacing);
   }
 
-  getRawCurve(): Point[] {
+  getRawCurve(): BrushPoint[] {
     return this.currentPoints;
   }
 
@@ -50,14 +49,14 @@ export default class SmoothedStabilizer implements Stabilizer {
 }
 
 function addPointsCartmollInterpolation(
-  rawCurve: Point[],
+  rawCurve: BrushPoint[],
   tension: number,
   alpha: number,
   spacing: number
-): Point[] {
+): BrushPoint[] {
   if (rawCurve.length <= 1) return rawCurve;
 
-  const points = rawCurve.map((p) => [p.x, p.y]);
+  const points = rawCurve.map((p) => [p.position.x, p.position.y]);
   const interpolator = new CurveInterpolator(points, {
     tension,
     alpha,
@@ -66,11 +65,11 @@ function addPointsCartmollInterpolation(
   const curveDist = interpolator.getLengthAt(1);
   const numSteps = Math.ceil(curveDist / spacing);
 
-  const output: Point[] = [];
+  const output: BrushPoint[] = [];
   for (let i = 0; i < numSteps; i++) {
     const parameter = Math.min(1, (spacing * i) / curveDist);
     const point = interpolator.getPointAt(parameter);
-    output.push(new Float32Vector2(point[0], point[1]));
+    output.push(newPoint(new Float32Vector2(point[0], point[1]), 1));
   }
 
   return output;

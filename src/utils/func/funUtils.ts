@@ -101,6 +101,8 @@ export const lessThanEqual = (a: number) => (b: number) => a >= b;
 export const equal = (a: number) => (b: number) => a === b;
 export const notEqual = (a: number) => (b: number) => a !== b;
 export const multipleOf = (a: number) => (b: number) => a % b === 0;
+export const min = (a: number) => (b: number) => Math.min(a, b)
+export const max = (a: number) => (b: number) => Math.max(a, b)
 export const plus = (a: number) => (b: number) => a + b;
 export const plusStr = (a: string) => (b: string) => a + b;
 export const sub = (a: number) => (b: number) => b - a;

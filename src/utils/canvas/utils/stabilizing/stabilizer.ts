@@ -1,10 +1,9 @@
-import { type Point } from "../../tools/brush";
-import { type BrushSettings } from "../../tools/settings";
+import { type BrushPoint, type BrushSettings } from '../../tools/brush';
 
 export default interface Stabilizer {
-    addPoint: (p: Point) => void,
-    getProcessedCurve: (settings: Readonly<BrushSettings>) => Point[]
-    getRawCurve: (settings: Readonly<BrushSettings>) => Point[]
+    addPoint: (p: BrushPoint) => void,
+    getProcessedCurve: (settings: Readonly<BrushSettings>) => BrushPoint[]
+    getRawCurve: (settings: Readonly<BrushSettings>) => BrushPoint[]
     reset: () => void
 }
 

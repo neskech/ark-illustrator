@@ -5,7 +5,7 @@ import Shader from '../web/shader';
 import { constructQuadIndices, constructQuadSixTex } from './util';
 import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
-import { type Float32Vector2 } from 'matrixgl';
+import { type BrushPoint, getSizeGivenPressure } from '../canvas/tools/brush';
 
 const MAX_POINTS_PER_FRAME = 50000;
 const NUM_VERTICES_QUAD = 4;
@@ -77,8 +77,6 @@ export class DrawPipeline {
   vertexBuffer: Buffer;
   indexBuffer: Buffer;
   shader: Shader;
-  points: Float32Vector2[]
-  prevPathBuf: Float32Vector2[]
 
   public constructor(gl: GL) {
     this.name = 'Standard Draw Pipeline';
@@ -92,8 +90,6 @@ export class DrawPipeline {
       usage: 'Static Draw',
     });
     this.shader = new Shader(gl);
-    this.points = []
-    this.prevPathBuf = []
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
@@ -112,28 +108,31 @@ export class DrawPipeline {
 
     initShader(gl, this.shader);
 
-    appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinued((p) => this.points = p)
+    appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinued((p) => this.render(gl, p, appState))
     appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd(_ => {
       gl.clearColor(1, 1, 1, 1);
-      //gl.colorMask(true, true, true, false);
       gl.clear(gl.COLOR_BUFFER_BIT);
     })
 
     unBindAll(gl, this);
   }
 
-  render(gl: GL, state: Readonly<AppState>) {
+  render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
     bindAll(gl, this);
 
-    const pointsToRender = this.points.length
-    if (pointsToRender <= 1) return;
+    if (points.length == 0) return;
 
-    const smoothed = this.points.splice(0, pointsToRender);
-    const buf = new Float32Array(smoothed.length * 6 * VERTEX_SIZE);
+    gl.clearColor(1, 1, 1, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const buf = new Float32Array(points.length * 6 * VERTEX_SIZE);
+
+    const brushSettings = appState.settings.brushSettings[0]
     
     let i = 0;
-    for (const p of smoothed) {
-      const quadVerts = constructQuadSixTex(p, 0.01);
+    for (const p of points) {
+      const size = getSizeGivenPressure(brushSettings, p.pressure)
+      const quadVerts = constructQuadSixTex(p.position, size);
       for (const v of quadVerts) {
         buf[i++] = v.x;
         buf[i++] = v.y;
@@ -142,11 +141,11 @@ export class DrawPipeline {
 
     this.vertexBuffer.addData(gl, buf);
 
-    this.shader.uploadMatrix4x4(gl, 'model', state.canvasState.camera.getTransformMatrix());
-    this.shader.uploadMatrix4x4(gl, 'view', state.canvasState.camera.getViewMatrix());
-    this.shader.uploadMatrix4x4(gl, 'projection', state.canvasState.camera.getProjectionMatrix());
+    this.shader.uploadMatrix4x4(gl, 'model', appState.canvasState.camera.getTransformMatrix());
+    this.shader.uploadMatrix4x4(gl, 'view', appState.canvasState.camera.getViewMatrix());
+    this.shader.uploadMatrix4x4(gl, 'projection', appState.canvasState.camera.getProjectionMatrix());
 
-    gl.drawArrays(gl.TRIANGLES, 0, 6 * smoothed.length);
+    gl.drawArrays(gl.TRIANGLES, 0, 6 * points.length);
 
     unBindAll(gl, this);
   }

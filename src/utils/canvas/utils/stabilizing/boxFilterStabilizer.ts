@@ -1,11 +1,11 @@
 import type Stabilizer from './stabilizer';
-import { type Point } from '../../tools/brush';
+import { type BrushPoint, newPoint, type BrushSettings } from '../../tools/brush';
 import { assert, requires } from '~/utils/contracts';
 import { add, copy, scale, sub } from '~/utils/web/vector';
-import { type BrushSettings } from '../../tools/settings';
 import { Float32Vector2 } from 'matrixgl';
 import { CurveInterpolator } from 'curve-interpolator';
 import { getSpacingFromBrushSettings } from './stabilizer';
+import { incrementalLog,trackRuntime } from '~/utils/misc/benchmarking';
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
@@ -59,16 +59,16 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
 interface Cache {
   weightsCache: number[];
   cachedSmoothing: number;
-  runningSumPointCache: Point[];
+  runningSumPointCache: Float32Vector2[];
   previousRawCurveLength: number;
   sampleExpWeight: (i: number, d: number) => number;
-  sampleAvgWeight: (i: number) => Point;
+  sampleAvgWeight: (i: number) => Float32Vector2;
 }
 
 export default class BoxFilterStabilizer implements Stabilizer {
-  private currentPoints: Point[];
+  private currentPoints: BrushPoint[];
   private cache: Cache;
-  private cachedCurve: Point[];
+  private cachedCurve: BrushPoint[];
 
   constructor() {
     this.currentPoints = [];
@@ -90,11 +90,11 @@ export default class BoxFilterStabilizer implements Stabilizer {
     };
   }
 
-  addPoint(p: Point) {
+  addPoint(p: BrushPoint) {
     this.currentPoints.push(p);
   }
 
-  getProcessedCurve(settings: Readonly<BrushSettings>): Point[] {
+  getProcessedCurve(settings: Readonly<BrushSettings>): BrushPoint[] {
     const processed = process(this.currentPoints, settings, this.cache);
     this.assertValid();
 
@@ -102,13 +102,13 @@ export default class BoxFilterStabilizer implements Stabilizer {
   }
 
   getProcessedCurveWithPoints(
-    points: Point[],
+    points: BrushPoint[],
     settings: Readonly<BrushSettings>
-  ): Point[] {
-    return process(points, settings, this.cache);
+  ): BrushPoint[] {
+    return process_(points, settings, this.cache) as BrushPoint[];
   }
 
-  getRawCurve(): Point[] {
+  getRawCurve(): BrushPoint[] {
     return this.currentPoints;
   }
 
@@ -123,10 +123,10 @@ export default class BoxFilterStabilizer implements Stabilizer {
 }
 
 function process(
-  rawCurve: Point[],
+  rawCurve: BrushPoint[],
   settings: Readonly<BrushSettings>,
   cache: Cache
-): Point[] {
+): BrushPoint[] {
   if (rawCurve.length <= 2) return rawCurve;
 
   const smoothing = getSmoothingValueFromStabilization(settings.stabilization);
@@ -144,8 +144,16 @@ function process(
     smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
   }
 
+  return boxed
   return addPointsCartmollInterpolation(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
 }
+
+const process_ = trackRuntime(process, {
+    name: 'process',
+    logFrequency: incrementalLog(500),
+    tenPercentHigh: true,
+    tenPercentLow: true
+})
 
 /**
  * The box filter (or blur) in image processing is a method of averaging over a range of pixels. In particular, given an
@@ -194,11 +202,11 @@ function process(
  *
  */
 function boxFilterExpwa(
-  curve: Point[],
+  curve: BrushPoint[],
   radius: number,
   decayFactor: number,
   distFromEnd: number
-): Point[] {
+): BrushPoint[] {
   if (curve.length <= 1) return curve;
 
   const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(n, min));
@@ -217,21 +225,21 @@ function boxFilterExpwa(
   for (let i = 0; i < curve.length - 1; i++) {
     const p = curve[i];
 
-    const avg = scale(copy(p), weight(i, 0));
+    const avg = scale(copy(p.position), weight(i, 0));
 
     for (let r = 1; r <= radius; r++) {
       const lIdx = clamp(i - r, 0, curve.length - 1);
       const rIdx = clamp(i + r, 0, curve.length - 1);
 
       const scaling = weight(i, r);
-      const left = scale(copy(curve[lIdx]), scaling);
-      const right = scale(copy(curve[rIdx]), scaling);
+      const left = scale(copy(curve[lIdx].position), scaling);
+      const right = scale(copy(curve[rIdx].position), scaling);
 
       add(avg, left);
       add(avg, right);
     }
 
-    newPoints.push(avg);
+    newPoints.push(newPoint(avg, curve[i].pressure));
   }
 
   return newPoints;
@@ -250,7 +258,7 @@ function calcFactorExp(i: number, d: number, k: number, r: number, e: number) {
   return numerator / denom;
 }
 
-function smoothEndpoints(boxedCurve: Point[], ogStart: Point, ogEnd: Point) {
+function smoothEndpoints(boxedCurve: BrushPoint[], ogStart: BrushPoint, ogEnd: BrushPoint) {
   boxedCurve.push(ogEnd);
 
   if (boxedCurve.length >= 3) {
@@ -289,14 +297,15 @@ function cartmullRom1D(
 }
 
 function carmullRom2D(
-  p1: Point,
-  p2: Point,
-  p3: Point,
-  p4: Point,
+  p1: BrushPoint,
+  p2: BrushPoint,
+  p3: BrushPoint,
+  p4: BrushPoint,
   samples: number
-): Point[] {
-  const [x1, x2, x3, x4] = cartmullRom1D(p1.x, p2.x, p3.x, p4.x);
-  const [y1, y2, y3, y4] = cartmullRom1D(p1.y, p2.y, p3.y, p4.y);
+): BrushPoint[] {
+  const [x1, x2, x3, x4] = cartmullRom1D(p1.position.x, p2.position.x, p3.position.x, p4.position.x);
+  const [y1, y2, y3, y4] = cartmullRom1D(p1.position.y, p2.position.y, p3.position.y, p4.position.y);
+  const [pp1, pp2, pp3, pp4] = cartmullRom1D(p1.pressure, p2.pressure, p3.pressure, p4.pressure);
 
   const results = [];
   for (let i = 0; i < samples; i++) {
@@ -307,20 +316,21 @@ function carmullRom2D(
       x1 + x2 * t + x3 * t2 + x4 * t3,
       y1 + y2 * t + y3 * t2 + y4 * t3
     );
-    results.push(pos);
+    const pressure = pp1 + pp2 * t + pp3 * t2 + pp4 * t3
+    results.push(newPoint(pos, pressure));
   }
   return results;
 }
 
 function addPointsCartmollInterpolation(
-  rawCurve: Point[],
+  rawCurve: BrushPoint[],
   tension: number,
   alpha: number,
   spacing: number
-): Point[] {
+): BrushPoint[] {
   if (rawCurve.length <= 1) return rawCurve;
 
-  const points = rawCurve.map((p) => [p.x, p.y]);
+  const points = rawCurve.map((p) => [p.position.x, p.position.y]);
   const interpolator = new CurveInterpolator(points, {
     tension,
     alpha,
@@ -329,17 +339,17 @@ function addPointsCartmollInterpolation(
   const curveDist = interpolator.getLengthAt(1);
   const numSteps = Math.ceil(curveDist / spacing);
 
-  const output: Point[] = [];
+  const output: BrushPoint[] = [];
   for (let i = 0; i < numSteps; i++) {
     const parameter = Math.min(1, (spacing * i) / curveDist);
     const point = interpolator.getPointAt(parameter);
-    output.push(new Float32Vector2(point[0], point[1]));
+    output.push(newPoint(new Float32Vector2(point[0], point[1]), 1));
   }
 
   return output;
 }
 
-function updateCache(weightsCache: Cache, newSmoothing: number, rawCurve: Point[]) {
+function updateCache(weightsCache: Cache, newSmoothing: number, rawCurve: BrushPoint[]) {
   if (weightsCache.cachedSmoothing == newSmoothing) return;
 
   weightsCache.cachedSmoothing = newSmoothing;
@@ -365,7 +375,7 @@ function updateCache(weightsCache: Cache, newSmoothing: number, rawCurve: Point[
       : new Float32Vector2(0, 0);
 
   for (let i = weightsCache.previousRawCurveLength; i < rawCurve.length; i++) {
-    runningSum = add(copy(runningSum), rawCurve[i]);
+    runningSum = add(copy(runningSum), rawCurve[i].position);
     weightsCache.runningSumPointCache.push(runningSum);
   }
 
@@ -379,7 +389,7 @@ function getSmoothingValueFromStabilization(stabilization: number): number {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function boxFilter(curve: Point[], radius: number): Point[] {
+function boxFilter(curve: Float32Vector2[], radius: number): Float32Vector2[] {
   if (curve.length <= 1) return curve;
 
   function clamp(n: number, min: number, max: number) {
@@ -407,7 +417,7 @@ function boxFilter(curve: Point[], radius: number): Point[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function addEndpoints(curve: Point[], numToAdd: number): Point[] {
+function addEndpoints(curve: BrushPoint[], numToAdd: number): BrushPoint[] {
   const results = [];
   for (let i = 0; i < curve.length - 1; i++) {
     const p0 = i > 0 ? curve[i - 1] : curve[i];
@@ -422,13 +432,13 @@ function addEndpoints(curve: Point[], numToAdd: number): Point[] {
     if (samples > 0) {
       results.push(...carmullRom2D(p0, p1, p2, p3, samples));
     }
-    results.push(copy(p2));
+    results.push(p2);
   }
   return results;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function addEndpoints2(curve: Point[], numToAdd: number): Point[] {
+function addEndpoints2(curve: BrushPoint[], numToAdd: number): BrushPoint[] {
   const newShit = [...curve];
   if (curve.length >= 3) {
     // const start = carmullRom2D(newShit[0], newShit[0], newShit[1], newShit[2], numToAdd)

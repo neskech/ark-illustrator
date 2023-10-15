@@ -1,28 +1,27 @@
 import type Stabilizer from "./stabilizer";
-import { type Point } from "../../tools/brush";
+import { type BrushPoint, type BrushSettings } from '../../tools/brush';
 import { assert } from "~/utils/contracts";
-import { type BrushSettings } from "../../tools/settings";
 
 export default class UnitStabilizer implements Stabilizer {
-    private currentPoints: Point[]
+    private currentPoints: BrushPoint[]
 
     constructor() {
         this.currentPoints = []
     }
 
-    addPoint(p: Point) {
+    addPoint(p: BrushPoint) {
        this.currentPoints.push(p)
     }
 
-    getProcessedCurve(_: Readonly<BrushSettings>): Point[] {
+    getProcessedCurve(_: Readonly<BrushSettings>): BrushPoint[] {
         return this.currentPoints
     }
 
-    getProcessedCurveWithPoints(points: Point[]): Point[] {
+    getProcessedCurveWithPoints(points: BrushPoint[]): BrushPoint[] {
         return points
     }
 
-    getRawCurve(): Point[] {
+    getRawCurve(): BrushPoint[] {
         return this.currentPoints
     }
 

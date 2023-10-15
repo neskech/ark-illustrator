@@ -1,3 +1,4 @@
+import { requires } from '../contracts';
 import { None, Option, Some } from './option';
 
 export function tabulate<A>(n: number, fn: (i: number) => A): A[] {
@@ -82,4 +83,14 @@ export function dropWhile<A>(a: A[], fn: (a: A) => boolean): A[] {
   const arr: A[] = [];
   for (let j = i; j < a.length; j++) arr.push(a[j]);
   return arr;
+}
+
+export function min(a: number[]): number{
+  requires(a.length > 0)
+  return a.reduce((a, b) => Math.min(a, b), Infinity)
+}
+
+export function max(a: number[]): number{
+  requires(a.length > 0)
+  return a.reduce((a, b) => Math.max(a, b), -Infinity)
 }

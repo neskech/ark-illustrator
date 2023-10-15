@@ -5,12 +5,9 @@ import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
 import { type AppState, } from '../mainRoutine';
 import { constructQuadIndices, constructQuadSixTex } from './util';
-import { Float32Vector2 } from 'matrixgl';
-import LinearStabilizer from '../canvas/utils/stabilizing/linearStabilizer';
-import SmoothedStabilizer from '../canvas/utils/stabilizing/smoothStabilizer';
-import { Apps } from '@mui/icons-material';
 import BoxFilterStabilizer from '../canvas/utils/stabilizing/boxFilterStabilizer';
 import UnitStabilizer from '../canvas/utils/stabilizing/unitStabilizer';
+import { type BrushPoint } from '../canvas/tools/brush';
 
 const MAX_POINTS_PER_FRAME = 50000;
 const NUM_VERTICES_QUAD = 4;
@@ -82,8 +79,8 @@ export class DebugPipeline {
   vertexBuffer: Buffer;
   indexBuffer: Buffer;
   shader: Shader;
-  linearPoints: Float32Vector2[];
-  smoothedPoints: Float32Vector2[];
+  linearPoints: BrushPoint[];
+  smoothedPoints: BrushPoint[];
   linearStab = new UnitStabilizer()
   smoothedStab = new BoxFilterStabilizer()
   currentBuf: 'linear' | 'smoothed' = 'smoothed'
@@ -143,7 +140,7 @@ export class DebugPipeline {
     unBindAll(gl, this);
   }
 
-  render(gl: GL, pointsToRender: Float32Vector2[], state: Readonly<AppState>) {
+  render(gl: GL, pointsToRender: BrushPoint[], state: Readonly<AppState>) {
     bindAll(gl, this);
 
 
@@ -153,7 +150,7 @@ export class DebugPipeline {
     
     let i = 0;
     for (const p of pointsToRender) {
-      const quadVerts = constructQuadSixTex(p, 0.01);
+      const quadVerts = constructQuadSixTex(p.position, 0.01);
       for (const v of quadVerts) {
         buf[i++] = v.x;
         buf[i++] = v.y;

@@ -1,10 +1,47 @@
 import { requires } from '../../contracts';
 import { Tool, type HandleEventArgs } from './tool';
-import { type BrushSettings } from './settings';
 import { type Float32Vector2 } from 'matrixgl';
 import { Event } from '../../func/event';
 import type Stabilizer from '../utils/stabilizing/stabilizer';
 import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
+import { type BezierFunction, getLinearBezier } from '~/utils/misc/bezierFunction';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! BRUSH SETTINGS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export interface BrushSettings {
+  size: number;
+  opacity: number;
+  stabilization: number;
+  spacing: 'auto' | number;
+  minSize: number,
+  maxSize: number
+  pressureSettings: BezierFunction;
+}
+
+export function defaultBrushSettings(): BrushSettings {
+  return {
+      size: 0.01,
+      opacity: 1.0,
+      stabilization: 0.5,
+      spacing: 0.005,
+      minSize: 0.1,
+      maxSize: 1.0,
+      pressureSettings: getLinearBezier()
+  }
+} 
+
+export function getSizeGivenPressure(settings: Readonly<BrushSettings>, pressure: number): number {
+  const min = settings.size * settings.minSize
+  const max = settings.size * settings.maxSize
+  const range = max - min
+  return range * pressure + min
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -14,15 +51,23 @@ import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export type Point = Float32Vector2
+export interface BrushPoint {
+  position: Float32Vector2
+  pressure: number
+}
+
+export const newPoint = (pos: Float32Vector2, pressure: number): BrushPoint => ({
+  position: pos,
+  pressure
+})
 
 export class Brush extends Tool {
   private isMouseDown: boolean;
   private stabilizer: Stabilizer
-  onBrushStrokeEnd: Event<Float32Vector2[]>
-  onBrushStrokeContinued: Event<Float32Vector2[]>
-  onBrushStrokeEndRaw: Event<Float32Vector2[]>
-  onBrushStrokeContinuedRaw: Event<Float32Vector2[]>
+  onBrushStrokeEnd: Event<BrushPoint[]>
+  onBrushStrokeContinued: Event<BrushPoint[]>
+  onBrushStrokeEndRaw: Event<BrushPoint[]>
+  onBrushStrokeContinuedRaw: Event<BrushPoint[]>
 
   constructor() {
     super();
@@ -66,8 +111,9 @@ export class Brush extends Tool {
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
     const point = canvasState.camera.mouseToWorld(event, canvasState);
+    const brushPoint = newPoint(point, brushSettings.pressureSettings.sampleY(event.pressure))
     if (this.isMouseDown) { 
-      this.stabilizer.addPoint(point);
+      this.stabilizer.addPoint(brushPoint);
       this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))
       this.onBrushStrokeContinuedRaw.invoke(this.stabilizer.getRawCurve(brushSettings))
     }
@@ -92,8 +138,9 @@ export class Brush extends Tool {
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
     const point = canvasState.camera.mouseToWorld(event, canvasState);
+    const brushPoint = newPoint(point, brushSettings.pressureSettings.sampleY(event.pressure))
     if (!this.isMouseDown) {
-       this.stabilizer.addPoint(point);
+       this.stabilizer.addPoint(brushPoint);
        this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))
        this.onBrushStrokeContinuedRaw.invoke(this.stabilizer.getRawCurve(brushSettings))
     }
@@ -120,19 +167,19 @@ export class Brush extends Tool {
     return 0 <= b.opacity && b.opacity <= 100 && 0 <= b.stabilization && b.stabilization <= 1;
   }
 
-  subscribeToOnBrushStrokeEnd(f: (p: Float32Vector2[]) => void) {
+  subscribeToOnBrushStrokeEnd(f: (p: BrushPoint[]) => void) {
     this.onBrushStrokeEnd.subscribe(f)
   }
 
-  subscribeToOnBrushStrokeContinued(f: (p: Float32Vector2[]) => void) {
+  subscribeToOnBrushStrokeContinued(f: (p: BrushPoint[]) => void) {
     this.onBrushStrokeContinued.subscribe(f)
   }
 
-  subscribeToOnBrushStrokeEndRaw(f: (p: Float32Vector2[]) => void) {
+  subscribeToOnBrushStrokeEndRaw(f: (p: BrushPoint[]) => void) {
     this.onBrushStrokeEndRaw.subscribe(f)
   }
 
-  subscribeToOnBrushStrokeContinuedRaw(f: (p: Float32Vector2[]) => void) {
+  subscribeToOnBrushStrokeContinuedRaw(f: (p: BrushPoint[]) => void) {
     this.onBrushStrokeContinuedRaw.subscribe(f)
   }
 }
