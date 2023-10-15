@@ -8,7 +8,7 @@ import {
   type Matrix4x4,
 } from 'matrixgl';
 import { Int32Vector2, add } from '../web/vector';
-import { CanvasState } from './canvas';
+import { type CanvasState } from './canvas';
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.1;

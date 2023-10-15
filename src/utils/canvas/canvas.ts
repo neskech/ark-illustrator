@@ -1,8 +1,5 @@
-import { Float32Vector2 } from "matrixgl";
 import Camera from "./camera";
 import type Layer from "./layer";
-import { type Path } from "./tools/brush";
-import { None, Option } from "../func/option";
 
 export interface CanvasState {
     layers: Layer[]
