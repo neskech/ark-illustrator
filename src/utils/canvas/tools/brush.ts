@@ -26,11 +26,11 @@ export interface BrushSettings {
 
 export function defaultBrushSettings(): BrushSettings {
   return {
-      size: 0.01,
+      size: 0.09,
       opacity: 1.0,
       stabilization: 0.5,
       spacing: 0.005,
-      minSize: 0.1,
+      minSize: 0.05,
       maxSize: 1.0,
       pressureSettings: getLinearBezier()
   }
