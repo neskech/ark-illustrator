@@ -574,6 +574,10 @@ export function distanceSquared(a: Float32Vector2, b: Float32Vector2): number {
   return dx * dx + dy * dy;
 }
 
+export function equals(a: Float32Vector2, b: Float32Vector2, error = 0.00001): boolean {
+  return Math.abs(a.x - b.x) <= error && Math.abs(a.y - b.y) <= error
+}
+
 export function angle(a: Float32Vector2): number {
   return Math.atan2(a.y, a.x);
 }

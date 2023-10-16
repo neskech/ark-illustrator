@@ -5,6 +5,7 @@ import { Event } from '../../func/event';
 import type Stabilizer from '../utils/stabilizing/stabilizer';
 import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
 import { type BezierFunction, getLinearBezier } from '~/utils/misc/bezierFunction';
+import BoxFilterStabilizer2 from '../utils/stabilizing/boxFilterStabillizer2';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -26,10 +27,10 @@ export interface BrushSettings {
 
 export function defaultBrushSettings(): BrushSettings {
   return {
-      size: 0.09,
+      size: 0.008,
       opacity: 1.0,
       stabilization: 0.5,
-      spacing: 0.005,
+      spacing: 0.01,
       minSize: 0.05,
       maxSize: 1.0,
       pressureSettings: getLinearBezier()

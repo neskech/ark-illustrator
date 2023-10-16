@@ -7,7 +7,7 @@ import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
 import { type BrushPoint, getSizeGivenPressure } from '../canvas/tools/brush';
 
-const MAX_POINTS_PER_FRAME = 50000;
+export const MAX_POINTS_PER_FRAME = 500;
 const NUM_VERTICES_QUAD = 4;
 const NUM_INDICES_QUAD = 6;
 const VERTEX_SIZE = 4;
@@ -128,7 +128,7 @@ export class DrawPipeline {
     const buf = new Float32Array(points.length * 6 * VERTEX_SIZE);
 
     const brushSettings = appState.settings.brushSettings[0]
-    
+
     let i = 0;
     for (const p of points) {
       const size = getSizeGivenPressure(brushSettings, p.pressure)
