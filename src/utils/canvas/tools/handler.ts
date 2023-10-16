@@ -1,4 +1,5 @@
 import { Brush } from './brush';
+import { GlobalToolSettings } from './settings';
 import { type EventString, type HandleEventArgs } from './tool';
 
 export type ToolMap = {
@@ -11,10 +12,10 @@ export interface ToolState {
   currentTool: ToolType;
 }
 
-export function getDefaultToolState(): ToolState {
+export function getDefaultToolState(settings: Readonly<GlobalToolSettings>): ToolState {
   return {
     tools: {
-      brush: new Brush(),
+      brush: new Brush(settings),
     },
     currentTool: 'brush',
   };

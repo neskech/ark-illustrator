@@ -8,6 +8,7 @@ import { constructQuadIndices, constructQuadSixTex } from './util';
 import BoxFilterStabilizer from '../canvas/utils/stabilizing/boxFilterStabilizer';
 import UnitStabilizer from '../canvas/utils/stabilizing/unitStabilizer';
 import { type BrushPoint } from '../canvas/tools/brush';
+import SmoothedStabilizer from '../canvas/utils/stabilizing/smoothStabilizer';
 
 const MAX_POINTS_PER_FRAME = 50000;
 const NUM_VERTICES_QUAD = 4;
@@ -82,7 +83,7 @@ export class DebugPipeline {
   linearPoints: BrushPoint[];
   smoothedPoints: BrushPoint[];
   linearStab = new UnitStabilizer()
-  smoothedStab = new BoxFilterStabilizer()
+  smoothedStab = new SmoothedStabilizer()
   currentBuf: 'linear' | 'smoothed' = 'smoothed'
 
   public constructor(gl: GL) {
@@ -119,7 +120,7 @@ export class DebugPipeline {
 
     appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinuedRaw(
       (p) => {
-          this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(p, appState.settings.brushSettings[0])
+          this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(p, 1, 1, 1)
           this.linearPoints = this.linearStab.getProcessedCurveWithPoints(p)
 
           gl.clearColor(1, 1, 1, 1);

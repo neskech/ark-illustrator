@@ -79,16 +79,20 @@ export default class BoxFilterStabilizer implements Stabilizer {
   private currentPoints: BrushPoint[];
   private numPoints: number;
   private cache: Cache;
+  private maxSize: number
 
-  constructor() {
-    this.currentPoints = new Array(MAX_SIZE_RAW_BRUSH_POINT_ARRAY).map((_) =>
+  constructor(settings: Readonly<BrushSettings>) {
+    this.maxSize = Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(settings) * 0.5)
+    //TODO: Add mutation observer on the s
+
+    this.currentPoints = new Array(this.maxSize).map((_) =>
       newPoint(new Float32Vector2(0, 0), 0)
     );
     this.numPoints = 0;
     this.cache = {
       weightsCache: [],
       cachedSmoothing: -1,
-      runningSumPointCache: new Array(MAX_SIZE_RAW_BRUSH_POINT_ARRAY).map(
+      runningSumPointCache: new Array(this.maxSize).map(
         (_) => new Float32Vector2(0, 0)
       ),
       previousRawCurveLength: 0,
@@ -98,11 +102,11 @@ export default class BoxFilterStabilizer implements Stabilizer {
   addPoint(p: BrushPoint) {
     this.currentPoints[this.numPoints] = p;
     this.numPoints += 1;
-    if (this.numPoints == MAX_SIZE_RAW_BRUSH_POINT_ARRAY) this.handleOverflow();
+    if (this.numPoints == this.maxSize) this.handleOverflow();
   }
 
   getProcessedCurve(settings: Readonly<BrushSettings>): BrushPoint[] {
-    requires(MAX_SIZE_RAW_BRUSH_POINT_ARRAY > settings.stabilization * 2 + 1);
+    requires(this.maxSize > settings.stabilization * 2 + 1);
     const processed = process_(
       this.currentPoints,
       this.numPoints,
@@ -133,13 +137,13 @@ export default class BoxFilterStabilizer implements Stabilizer {
   private handleOverflow() {
     updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints)
 
-    const deleted = shiftDeleteElements(this.currentPoints, DELETE_FACTOR);
+    const deleted = shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
     this.numPoints -= deleted;
 
     assert(this.numPoints > 0 && deleted > 0);
 
     const sumOfAll = this.cache.runningSumPointCache[deleted - 1];
-    shiftDeleteElements(this.cache.runningSumPointCache, DELETE_FACTOR);
+    shiftDeleteElements(this.cache.runningSumPointCache, DELETE_FACTOR, this.maxSize);
 
     for (let i = 0; i < this.numPoints; i++) sub(this.cache.runningSumPointCache[i], sumOfAll);
   }
@@ -174,7 +178,7 @@ function process(
     smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
   }
 
-  return boxed;
+ // return boxed;
   return addPointsCartmollInterpolation(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
 }
 

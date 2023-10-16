@@ -1,10 +1,6 @@
 import { type GL } from '../web/glUtils';
 import { DrawPipeline } from './drawPipeline';
-import {
-  destroyAll,
-  initWithErrorWrapper,
-  renderWithErrorWrapper,
-} from '../web/renderPipeline';
+import { destroyAll, initWithErrorWrapper, renderWithErrorWrapper } from '../web/renderPipeline';
 import { DebugPipeline } from './debugPipeline';
 import { type AppState } from '../mainRoutine';
 
@@ -23,12 +19,13 @@ export class MasterPipeline {
 
     gl.clearColor(1, 1, 1, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
 
   render(gl: GL, appState: Readonly<AppState>) {
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
     // gl.clearColor(0, 0, 0, 0);
     // gl.colorMask(true, true, true, false);
     // gl.clear(gl.COLOR_BUFFER_BIT);

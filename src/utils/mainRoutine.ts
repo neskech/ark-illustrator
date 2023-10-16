@@ -33,10 +33,11 @@ export function init(canvas: HTMLCanvasElement) {
 
   gl.viewport(0, 0, canvas.width, canvas.height);
 
+  const settings = getDefaultSettings()
   appState = {
     canvasState: getDefaultCanvasState(canvas),
-    settings: getDefaultSettings(),
-    toolState: getDefaultToolState(),
+    settings,
+    toolState: getDefaultToolState(settings),
   };
 
   masterPipeline = new MasterPipeline(gl);

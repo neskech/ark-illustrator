@@ -2,12 +2,21 @@ import { type GL } from '../web/glUtils';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
-import { constructQuadIndices, constructQuadSixTex } from './util';
+import {
+  constructLinesSixPressureNormal,
+  constructQuadIndices,
+  constructQuadSixPressureNormal,
+  constructQuadSixPressureNormalUV,
+  constructQuadSixTex,
+} from './util';
 import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
 import { type BrushPoint, getSizeGivenPressure } from '../canvas/tools/brush';
+import { assert } from '../contracts';
+import { Float32Vector2 } from 'matrixgl';
+import Texture from '../web/texture';
 
-export const MAX_POINTS_PER_FRAME = 500;
+export const MAX_POINTS_PER_FRAME = 1000;
 const NUM_VERTICES_QUAD = 4;
 const NUM_INDICES_QUAD = 6;
 const VERTEX_SIZE = 4;
@@ -32,21 +41,12 @@ function initShader(gl: GL, shader: Shader) {
   const fragmentSource = `precision highp float;
                           varying highp vec2 vTextureCoord;
                           
-                          float circleShape(vec2 position, float radius) {
-                              float dist = distance(position, vec2(0.5));
-                              return step(radius, dist);
-                          }
+                          uniform sampler2D tex;
                           
                           
                           void main() {
-                              vec2 normalized = vTextureCoord;
-                              float value = circleShape(normalized, 0.5);
-
-                              if (value > 0.0)
-                                  discard;
-                              
-                              vec3 color = vec3(1, 0, 0.3);
-                              gl_FragColor = vec4(color, 1);
+                             //gl_FragColor = vec4(vTextureCoord, 1, 1);//texture2D(tex, vTextureCoord);
+                             gl_FragColor = texture2D(tex, vTextureCoord);
                           }\n`;
 
   const vertexSource = `attribute vec2 a_position;
@@ -77,6 +77,7 @@ export class DrawPipeline {
   vertexBuffer: Buffer;
   indexBuffer: Buffer;
   shader: Shader;
+  brushTexture: Texture;
 
   public constructor(gl: GL) {
     this.name = 'Standard Draw Pipeline';
@@ -90,6 +91,18 @@ export class DrawPipeline {
       usage: 'Static Draw',
     });
     this.shader = new Shader(gl);
+    this.brushTexture = new Texture(gl, {
+      wrapX: 'Repeat',
+      wrapY: 'Repeat',
+      magFilter: 'Linear',
+      minFilter: 'Linear',
+      format: 'RGBA',
+    });
+    this.brushTexture.allocateFromImageUrl(
+      gl,
+      'https://cdn.discordapp.com/attachments/612361044110868480/1163576886761369751/watercolor-brush-texture-5.png?ex=6540146c&is=652d9f6c&hm=a25b453b0bc79a59f3112e84aa3129586c14868864f1a9bc2144e22816eae94f&',
+      false
+    );
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
@@ -108,11 +121,13 @@ export class DrawPipeline {
 
     initShader(gl, this.shader);
 
-    appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinued((p) => this.render(gl, p, appState))
-    appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd(_ => {
+    appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinued((p) =>
+      this.render(gl, p, appState)
+    );
+    appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       gl.clearColor(1, 1, 1, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
-    })
+    });
 
     unBindAll(gl, this);
   }
@@ -121,18 +136,30 @@ export class DrawPipeline {
     bindAll(gl, this);
 
     if (points.length == 0) return;
+    assert(points.length < MAX_POINTS_PER_FRAME);
 
     gl.clearColor(1, 1, 1, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     const buf = new Float32Array(points.length * 6 * VERTEX_SIZE);
 
-    const brushSettings = appState.settings.brushSettings[0]
+    const brushSettings = appState.settings.brushSettings[0];
 
     let i = 0;
-    for (const p of points) {
-      const size = getSizeGivenPressure(brushSettings, p.pressure)
-      const quadVerts = constructQuadSixTex(p.position, size);
+    let prevNormal: Float32Vector2 | null = null;
+    for (let j = 0; j < points.length - 1; j++) {
+      const uvStart = j / ((points.length - 1) / 1)
+      const uvEnd = (j + 1) / ((points.length - 1) / 1)
+
+      const [p, quadVerts] = constructQuadSixPressureNormalUV(
+        points[j],
+        points[j + 1],
+        brushSettings,
+        prevNormal,
+        uvStart,
+        uvEnd
+      ); //constructLinesSixPressureNormal(points[j], points[j + 1], brushSettings, prevNormal);
+      prevNormal = p;
       for (const v of quadVerts) {
         buf[i++] = v.x;
         buf[i++] = v.y;
@@ -143,9 +170,18 @@ export class DrawPipeline {
 
     this.shader.uploadMatrix4x4(gl, 'model', appState.canvasState.camera.getTransformMatrix());
     this.shader.uploadMatrix4x4(gl, 'view', appState.canvasState.camera.getViewMatrix());
-    this.shader.uploadMatrix4x4(gl, 'projection', appState.canvasState.camera.getProjectionMatrix());
+    this.shader.uploadMatrix4x4(
+      gl,
+      'projection',
+      appState.canvasState.camera.getProjectionMatrix()
+    );
+
+    this.brushTexture.bind(gl);
+    this.shader.uploadTexture(gl, 'tex', this.brushTexture);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6 * points.length);
+
+    this.brushTexture.unbind(gl);
 
     unBindAll(gl, this);
   }

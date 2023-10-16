@@ -11,6 +11,7 @@ import {
   type GL,
   type Color,
   colorTypeToPacked,
+  checkError,
 } from "./glUtils";
 import { Err, Ok, type Result, type Unit, unit } from "../func/result";
 
@@ -221,6 +222,8 @@ export default class Texture {
         texelType,
         img
       );
+
+      checkError(gl, 'texImage2D');
     }
 
     img.onload = () => {
@@ -232,6 +235,7 @@ export default class Texture {
     };
 
     img.src = url;
+    img.crossOrigin = 'anonymous'
   }
 
   allocateFromSubFramebuffer(gl: GL, options: CopySubTextureOptions) {

@@ -5,7 +5,7 @@ import { Event } from '../../func/event';
 import type Stabilizer from '../utils/stabilizing/stabilizer';
 import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
 import { type BezierFunction, getLinearBezier } from '~/utils/misc/bezierFunction';
-import BoxFilterStabilizer2 from '../utils/stabilizing/boxFilterStabillizer2';
+import { GlobalToolSettings } from './settings';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -27,10 +27,10 @@ export interface BrushSettings {
 
 export function defaultBrushSettings(): BrushSettings {
   return {
-      size: 0.008,
+      size: 0.03,
       opacity: 1.0,
       stabilization: 0.5,
-      spacing: 0.01,
+      spacing: 0.005,
       minSize: 0.05,
       maxSize: 1.0,
       pressureSettings: getLinearBezier()
@@ -70,10 +70,10 @@ export class Brush extends Tool {
   onBrushStrokeEndRaw: Event<BrushPoint[]>
   onBrushStrokeContinuedRaw: Event<BrushPoint[]>
 
-  constructor() {
+  constructor(settings: Readonly<GlobalToolSettings>) {
     super();
     this.isMouseDown = false;
-    this.stabilizer = new BoxFilterStabilizer()
+    this.stabilizer = new BoxFilterStabilizer(settings.brushSettings[0])
     this.onBrushStrokeEnd = new Event()
     this.onBrushStrokeContinued = new Event()
     this.onBrushStrokeEndRaw = new Event()

@@ -1,4 +1,6 @@
 import { Float32Vector2 } from "matrixgl";
+import { BrushPoint, BrushSettings, getSizeGivenPressure } from '../canvas/tools/brush';
+import { add, copy, displacement, normalize, scale } from "../web/vector";
 
 type FourSizeArray = [Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2]
 export function constructQuad(position: Float32Vector2, width: number, height: number): FourSizeArray{
@@ -63,6 +65,136 @@ export function constructQuadSixTex(position: Float32Vector2, scale: number): Fl
         new Float32Vector2(1, 1),
     ]
 } 
+
+
+export function constructQuadSixPressureNormal(start: BrushPoint, end: BrushPoint, settings: Readonly<BrushSettings>, prevNormal: Float32Vector2 | null, s: number): [Float32Vector2, Float32Vector2[]] {
+    const sizeTop =  getSizeGivenPressure(settings, end.pressure)   
+    const sizeBottom = getSizeGivenPressure(settings, start.pressure)   
+
+    const disp = displacement(start.position, end.position)
+    const normal = normalize(new Float32Vector2(disp.y, -disp.x))
+
+    const normalBottom = prevNormal ?? scale(copy(normal), sizeBottom)
+    const normalTop = scale(normal, sizeTop)
+
+    return [normalTop, [
+        //top right
+        add(copy(end.position), scale(copy(normalTop), -1)),
+        new Float32Vector2(1 * s, 1 * s),
+
+        //top left
+        add(copy(end.position), normalTop),
+        new Float32Vector2(0, 1 * s),
+
+        //bottom left
+        add(copy(start.position), normalBottom),
+        new Float32Vector2(0, 0),
+
+        //bottom left
+        add(copy(start.position), normalBottom),
+        new Float32Vector2(0, 0),
+
+        //bottom right
+        add(copy(start.position), scale(copy(normalBottom), -1)),
+        new Float32Vector2(1 * s, 0),
+
+        //top right
+        add(copy(end.position), scale(copy(normalTop), -1)),
+        new Float32Vector2(1 * s, 1 * s),
+    ]]
+}
+
+export function constructQuadSixPressureNormalUV(start: BrushPoint, end: BrushPoint, settings: Readonly<BrushSettings>, prevNormal: Float32Vector2 | null, uvStart: number, uvEnd: number): [Float32Vector2, Float32Vector2[]] {
+    const sizeTop =  getSizeGivenPressure(settings, end.pressure)   
+    const sizeBottom = getSizeGivenPressure(settings, start.pressure)   
+
+    const disp = displacement(start.position, end.position)
+    const normal = normalize(new Float32Vector2(disp.y, -disp.x))
+
+    const normalBottom = prevNormal ?? scale(copy(normal), sizeBottom)
+    const normalTop = scale(normal, sizeTop)
+
+    return [normalTop, [
+        //top right
+        add(copy(end.position), scale(copy(normalTop), -1)),
+        new Float32Vector2(1, uvEnd),
+
+        //top left
+        add(copy(end.position), normalTop),
+        new Float32Vector2(0, uvEnd),
+
+        //bottom left
+        add(copy(start.position), normalBottom),
+        new Float32Vector2(0, uvStart),
+
+        //bottom left
+        add(copy(start.position), normalBottom),
+        new Float32Vector2(0, uvStart),
+
+        //bottom right
+        add(copy(start.position), scale(copy(normalBottom), -1)),
+        new Float32Vector2(1, uvStart),
+
+        //top right
+        add(copy(end.position), scale(copy(normalTop), -1)),
+        new Float32Vector2(1, uvEnd),
+    ]]
+}
+
+
+export function constructLinesSixPressureNormal(start: BrushPoint, end: BrushPoint, settings: Readonly<BrushSettings>, prevNormal: Float32Vector2 | null): [Float32Vector2, Float32Vector2[]] {
+    const sizeTop =  getSizeGivenPressure(settings, end.pressure)   
+    const sizeBottom = getSizeGivenPressure(settings, start.pressure)   
+
+    const disp = displacement(start.position, end.position)
+    const normal = normalize(new Float32Vector2(disp.y, -disp.x))
+
+    const normalBottom = prevNormal ?? scale(copy(normal), sizeBottom)
+    const normalTop = scale(normal, sizeTop)
+
+    return [normalTop, [
+        //top left
+        add(copy(end.position), normalTop),
+        new Float32Vector2(0, 1),
+
+        //top right
+        add(copy(end.position), scale(copy(normalTop), -1)),
+        new Float32Vector2(1, 1),
+
+
+
+
+        //bottom left
+        add(copy(start.position), normalBottom),
+        new Float32Vector2(0, 0),
+
+        //bottom right
+        add(copy(start.position), scale(copy(normalBottom), -1)),
+        new Float32Vector2(1, 0),
+
+
+
+
+        //bottom left
+        add(copy(start.position), normalBottom),
+        new Float32Vector2(0, 0),
+
+        //top left
+        add(copy(end.position), normalTop),
+        new Float32Vector2(0, 1),
+
+
+
+        //bottom right
+        add(copy(start.position), scale(copy(normalBottom), -1)),
+        new Float32Vector2(1, 0),
+
+        //top right
+        add(copy(end.position), scale(copy(normalTop), -1)),
+        new Float32Vector2(1, 1),
+    ]]
+}
+
 
 
 type SixSizeArray = [number, number, number, number, number, number]
