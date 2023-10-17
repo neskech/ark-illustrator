@@ -9,7 +9,7 @@ import {
 import { type AppState } from '~/utils/mainRoutine';
 import { add, copy, midpoint, scale } from '~/utils/web/vector';
 import { assert } from '~/utils/contracts';
-import { equals } from '~/utils/func/arrayUtils';
+import { equalsNoOrder } from '~/utils/func/arrayUtils';
 
 const PAN_FACTOR = 1;
 
@@ -50,16 +50,19 @@ export default class PanGesture implements Gesture {
   private tryInitialize(positions: PointerPos[], appState: AppState) {
     const isInit = this.isInitialized();
 
+    console.log('init status:', isInit, positions)
+
     if (isInit && positions.length == 2) {
       this.originPosition1 = copy(positions[0].pos);
       this.originPosition2 = copy(positions[1].pos);
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originCameraPos = appState.canvasState.camera.getPosition();
+      console.log("IM IN BABYYYYYYYYYY!!!!!!!!!!!!!!!")
       assert(this.isInitialized());
     }
 
-    const samePointerIDs = equals(
+    const samePointerIDs = equalsNoOrder(
       positions.map((p) => p.id),
       [this.pointerId1, this.pointerId2]
     );
@@ -67,6 +70,7 @@ export default class PanGesture implements Gesture {
   }
 
   private deInitialize() {
+    console.log("OH NOO!!!!!")
     this.originPosition1 = new Float32Vector2(-1, -1);
     this.originPosition2 = new Float32Vector2(-1, -1);
     this.pointerId1 = -1;

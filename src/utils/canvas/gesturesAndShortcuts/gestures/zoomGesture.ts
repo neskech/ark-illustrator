@@ -2,7 +2,7 @@ import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
 import { type AppState } from '~/utils/mainRoutine';
 import { distanceSquared } from '~/utils/web/vector';
 import { assert } from '~/utils/contracts';
-import { equals } from '~/utils/func/arrayUtils';
+import { equalsNoOrder } from '~/utils/func/arrayUtils';
 
 const ZOOM_FACTOR = 1;
 
@@ -44,7 +44,7 @@ export default class ZoomGesture implements Gesture {
       assert(this.isInitialized());
     }
 
-    const samePointerIDs = equals(
+    const samePointerIDs = equalsNoOrder(
       positions.map((p) => p.id),
       [this.pointerId1, this.pointerId2]
     );

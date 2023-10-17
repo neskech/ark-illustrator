@@ -3,7 +3,7 @@ import { type AppState } from '~/utils/mainRoutine';
 import { angle } from '~/utils/web/vector';
 import { assert } from '~/utils/contracts';
 import { displacement } from '../../../web/vector';
-import { equals } from '~/utils/func/arrayUtils';
+import { equalsNoOrder } from '~/utils/func/arrayUtils';
 
 const ROTATION_FACTOR = 1;
 
@@ -45,7 +45,7 @@ export default class RotationGesture implements Gesture {
       assert(this.isInitialized());
     }
 
-    const samePointerIDs = equals(
+    const samePointerIDs = equalsNoOrder(
       positions.map((p) => p.id),
       [this.pointerId1, this.pointerId2]
     );

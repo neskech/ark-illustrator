@@ -18,19 +18,17 @@ export function find<A>(a: A[], fn: (a: A, i?: number) => boolean): Option<A> {
 }
 
 export function numberSatisfying<A>(a: A[], fn: (a: A, i?: number) => boolean): number {
-  let numSatistfy = 0
+  let numSatistfy = 0;
   for (const elem of a) {
-    if (fn(elem))
-      numSatistfy += 1
+    if (fn(elem)) numSatistfy += 1;
   }
-  return numSatistfy
+  return numSatistfy;
 }
 
-export function equals<A>(a: A[], b: A[]): boolean {
-  if (a.length != b.length)
-    return false
+export function equalsNoOrder<A>(a: A[], b: A[]): boolean {
+  if (a.length != b.length) return false;
 
-  return a.every((el, i) => b[i] === el)
+  return a.every((el) => b.indexOf(el) != -1);
 }
 
 export function indexOf<A>(a: A[], el: A, fromIndex?: number): Option<number> {
@@ -101,12 +99,12 @@ export function dropWhile<A>(a: A[], fn: (a: A) => boolean): A[] {
   return arr;
 }
 
-export function min(a: number[]): number{
-  requires(a.length > 0)
-  return a.reduce((a, b) => Math.min(a, b), Infinity)
+export function min(a: number[]): number {
+  requires(a.length > 0);
+  return a.reduce((a, b) => Math.min(a, b), Infinity);
 }
 
-export function max(a: number[]): number{
-  requires(a.length > 0)
-  return a.reduce((a, b) => Math.max(a, b), -Infinity)
+export function max(a: number[]): number {
+  requires(a.length > 0);
+  return a.reduce((a, b) => Math.max(a, b), -Infinity);
 }
