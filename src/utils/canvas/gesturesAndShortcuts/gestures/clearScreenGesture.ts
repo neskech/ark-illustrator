@@ -22,16 +22,19 @@ export default class ClearScreenGesture implements Gesture {
 
   fingerTapped(positions: PointerPos[], _: AppState): boolean {
     if (!this.isInitialized()) {
+        console.log("CANNOT INIT")
       this.tryInitialize(positions);
       return false;
     }
 
     if (!this.isValidInput(positions)) {
+        console.log("NPT TWO WUH OH")
       this.deInitialize();
       return false;
     }
 
     const now = new Date().getTime()
+    console.log("WE GOT THE DELAY AND ITS", now - this.lastTapTime)
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
         this.tapCount += 1
         if (this.tapCount == 2) {
