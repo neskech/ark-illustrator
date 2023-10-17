@@ -17,18 +17,8 @@ function Editor() {
     }, []);
 
     return (
-        <Box className='w-full h-full flex flex-row bg-pink-700'> 
-            <Box className='w-[25%] h-full bg-slate-700'> 
-                
-            </Box>
-
-            <Box className='w-[50%] h-full bg-yellow-400 flex flex-col justify-center items-center'> 
+        <Box className='w-full h-full flex flex-row'> 
                 <Canvas ref={canvas}/> 
-            </Box>
-            
-            <Box className='w-[25%] h-full bg-blue-600'> 
-                 <RightBar/>
-            </Box>
         </Box>
     );
 }

@@ -11,7 +11,7 @@ import { Int32Vector2, add, copy } from '../web/vector';
 import { type CanvasState } from './canvas';
 
 const DEFAULT_ZOOM = 1;
-const MIN_ZOOM = 0.03;
+const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 10;
 
 const CANVAS_HEIGHT = 1.0;

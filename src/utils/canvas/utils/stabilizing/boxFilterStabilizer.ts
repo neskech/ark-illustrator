@@ -70,6 +70,8 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
  */
 const DELETE_FACTOR = 1 / 4;
 
+const LOOK_AHEAD = 3
+
 interface Cache {
   weightsCache: number[];
   cachedSmoothing: number;
@@ -140,9 +142,9 @@ export default class BoxFilterStabilizer implements Stabilizer {
     updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints);
 
     const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
-    
-    const shavedOff = this.currentPoints.slice(0, numDeleted)
-    const processed = process(shavedOff, numDeleted, settings, this.cache)
+
+    const shavedOff = this.currentPoints.slice(0, numDeleted + LOOK_AHEAD)
+    const processed = process(shavedOff, numDeleted + LOOK_AHEAD, settings, this.cache)
     this.onBrushStrokeCutoff.invoke(processed)
 
     shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);

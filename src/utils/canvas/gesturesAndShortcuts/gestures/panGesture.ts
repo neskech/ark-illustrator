@@ -34,6 +34,8 @@ export default class PanGesture implements Gesture {
       return false;
     }
 
+    alert('heya')
+
     const originalMid = midpoint(this.originPosition1, this.originPosition2);
     const newMid = midpoint(positions[0].pos, positions[1].pos);
     const deltaVector = getFingerDelta(newMid, originalMid, appState);

@@ -12,7 +12,7 @@ const MIDDLE_MOUSE_WHICH = 2;
 
 const PAN_SCALING = 1.0;
 const ROTATION_SCALING = 80.0;
-const ZOOM_SCALING = 0.001;
+const ZOOM_SCALING = 0.005;
 
 export default class ShortcutHandler {
   private isMiddleMouseHeldDown: number;
@@ -78,11 +78,11 @@ export default class ShortcutHandler {
   handleMouseDown(mouseEvent: PointerEvent): boolean {
     switch (mouseEvent.button) {
       case LEFT_MOUSE:
-        this.isLeftMouseHeldDown += 2;
+        this.isLeftMouseHeldDown += 1;
       case MIDDLE_MOUSE:
-        this.isMiddleMouseHeldDown += mouseEvent.which == MIDDLE_MOUSE_WHICH ? 2 : 0;
+        this.isMiddleMouseHeldDown += mouseEvent.which == MIDDLE_MOUSE_WHICH ? 1 : 0;
       case RIGHT_MOUSE:
-        this.isRightMouseHeldDown += 2;
+        this.isRightMouseHeldDown += 1;
     }
     
     return false
