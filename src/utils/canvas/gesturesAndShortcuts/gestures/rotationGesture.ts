@@ -25,7 +25,7 @@ export default class RotationGesture implements Gesture {
     }
 
     if (!this.isValidInput(positions)) {
-        console.log("OPH NOOOO OH FUCK")
+        console.log("OPH NOOOO OH FUCK OH GOOBLY RICK", JSON.stringify(positions), this.pointerId1, this.pointerId2)
         this.deInitialize()
         return false
     }
