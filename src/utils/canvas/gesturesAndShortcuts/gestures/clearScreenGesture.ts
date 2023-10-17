@@ -67,7 +67,7 @@ export default class ClearScreenGesture implements Gesture {
     const v1 = this.tapCount != -1
     const now = new Date().getTime()
     const delta = now - this.lastTapTime
-    const v2 = this.lastTapTime != -1 || delta < TAP_DELAY_MILLIS
+    const v2 = this.lastTapTime != -1 && delta < TAP_DELAY_MILLIS
     console.log("WUH WOH NOW ITS BAD", delta < TAP_DELAY_MILLIS, delta, TAP_DELAY_MILLIS)
     return v1 && v2;
   }
