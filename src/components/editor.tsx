@@ -1,8 +1,7 @@
 import { Box } from "@mui/material";
-import RightBar from "./rightBar";
 import Canvas from './canvas';
 import { useEffect, useRef } from "react";
-import { init, startRenderLoop } from "~/utils/mainRoutine";
+import { init } from "~/utils/mainRoutine";
 
 function Editor() {
     const canvas = useRef<HTMLCanvasElement>(null);
@@ -11,7 +10,6 @@ function Editor() {
         if (canvas.current) {
             console.log('init!')
             init(canvas.current)
-            startRenderLoop();
         }
         
     }, []);

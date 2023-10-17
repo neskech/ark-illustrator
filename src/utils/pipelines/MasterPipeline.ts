@@ -25,6 +25,14 @@ export class MasterPipeline {
     initWithErrorWrapper(() => this.strokePreviewPipeline.init(gl, appState), this.strokePreviewPipeline.name);
     initWithErrorWrapper(() => this.worldPipeline.init(gl, appState), this.worldPipeline.name);
 
+    appState.onAppStateMutated.subscribe(() => {
+      this.render(gl, appState)
+    }, true)
+
+    appState.inputState.gestures.subscribeToOnScreenClearGesture(() => {
+      this.canvasPipeline.fillFramebufferWithWhite(gl)
+    })
+
     clearScreen(gl)
 
     gl.disable(gl.DEPTH_TEST);

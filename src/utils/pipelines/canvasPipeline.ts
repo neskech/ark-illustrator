@@ -84,7 +84,7 @@ export class CanvasPipeline {
       format: 'RGBA',
     });
     this.hasDoneInitialRender = false;
-    this.fillFramebufferWithColor(gl);
+    this.fillFramebufferWithWhite(gl);
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
@@ -151,7 +151,7 @@ export class CanvasPipeline {
     return this.frameBuffer;
   }
 
-  private fillFramebufferWithColor(gl: GL) {
+  fillFramebufferWithWhite(gl: GL) {
     this.frameBuffer.bind(gl);
     clearScreen(gl, 1, 1, 1, 1);
     this.frameBuffer.unBind(gl);

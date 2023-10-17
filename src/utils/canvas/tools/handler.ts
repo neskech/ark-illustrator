@@ -47,14 +47,18 @@ export function handleEvent({
   const tool = map[currentTool];
   const evStr: EventString = event.type as EventString; //TODO: pain point
 
-  tool.handleEvent({
+  let dirty = false
+
+  dirty = tool.handleEvent({
     event,
     appState,
     eventString: evStr,
     settings,
     presetNumber,
-  });
+  }) || dirty;
 
-  gestures.handleEvent(event, appState, evStr);
-  shortcuts.handleEvent(event, appState, evStr);
+  dirty = gestures.handleEvent(event, appState, evStr) || dirty;
+  dirty = shortcuts.handleEvent(event, appState, evStr) || dirty;
+
+  if (dirty) appState.onAppStateMutated.invoke()
 }

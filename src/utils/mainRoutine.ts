@@ -1,6 +1,7 @@
 import { type CanvasState, getDefaultCanvasState } from './canvas/canvas';
 import { type InputState, getDefaultToolState, handleEvent } from './canvas/tools/handler';
 import { type GlobalToolSettings, getDefaultSettings } from './canvas/tools/settings';
+import { Event } from './func/event';
 import { Option, Some } from './func/option';
 import { MasterPipeline } from './pipelines/MasterPipeline';
 import { type GL } from './web/glUtils';
@@ -9,12 +10,12 @@ export interface AppState {
   canvasState: CanvasState;
   settings: GlobalToolSettings;
   inputState: InputState;
+  onAppStateMutated: Event<void>
 }
 
 let gl: GL;
 let appState: AppState;
 let masterPipeline: MasterPipeline;
-let running: boolean;
 
 export function init(canvas: HTMLCanvasElement) {
   if (gl) return;
@@ -38,6 +39,7 @@ export function init(canvas: HTMLCanvasElement) {
     canvasState: getDefaultCanvasState(canvas),
     settings,
     inputState: getDefaultToolState(settings),
+    onAppStateMutated: new Event()
   };
 
   masterPipeline = new MasterPipeline(gl, appState);
@@ -75,23 +77,8 @@ function initEventListeners(canvas: HTMLCanvasElement) {
   });
 }
 
-export function startRenderLoop() {
-  if (running) return;
-
-  running = true;
-  render();
-}
-
-function render() {
-  if (!running) return;
-
-  masterPipeline.render(gl, appState);
-
-  window.requestAnimationFrame(render);
-}
 
 export function stop() {
-  running = false;
   destroy();
 }
 

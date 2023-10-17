@@ -21,7 +21,7 @@ export default class ZoomGesture implements Gesture {
 
   fingerMoved(positions: PointerPos[], appState: AppState): boolean {
     if (!this.isInitialized()) {
-      this.tryInitialize(positions);
+      this.tryInitialize(positions, appState);
       return false;
     }
 
@@ -41,11 +41,12 @@ export default class ZoomGesture implements Gesture {
     return false;
   }
 
-  private tryInitialize(positions: PointerPos[]) {
+  private tryInitialize(positions: PointerPos[], appState: AppState) {
     if (positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalDistance = distance(positions[0].pos, positions[1].pos);
+      this.originalZoom = appState.canvasState.camera.getZoomLevel()
       assert(this.isInitialized());
     }
 

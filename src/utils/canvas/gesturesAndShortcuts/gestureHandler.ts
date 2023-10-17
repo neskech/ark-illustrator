@@ -7,14 +7,18 @@ import { type PointerPos, type Gesture } from './gestures/gesture';
 import PanGesture from './gestures/panGesture';
 import RotationGesture from './gestures/rotationGesture';
 import ZoomGesture from './gestures/zoomGesture';
+import { Event } from '~/utils/func/event';
+import ClearScreenGesture from './gestures/clearScreenGesture';
 
 export default class GestureHandler {
   private pointerPositions: PointerPos[];
   private gestures: Gesture[];
+  private onScreenClearGesture: Event<void>
 
   constructor() {
     this.pointerPositions = [];
-    this.gestures = [new PanGesture(), new RotationGesture(), new ZoomGesture()];
+    this.onScreenClearGesture = new Event()
+    this.gestures = [new PanGesture(), new RotationGesture(), new ZoomGesture(), new ClearScreenGesture(this.onScreenClearGesture)];
   }
 
   handleEvent(event: CanvasEvent, appState: AppState, eventType: EventString) {
@@ -67,5 +71,9 @@ export default class GestureHandler {
     }
 
     return false;
+  }
+
+  subscribeToOnScreenClearGesture(f: () => void, hasPriority = false) {
+    this.onScreenClearGesture.subscribe(f, hasPriority)
   }
 }

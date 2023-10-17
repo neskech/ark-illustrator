@@ -222,6 +222,10 @@ export default class Camera {
   getPosition(): Float32Vector2 {
     return copy(this.position)
   }
+
+  getZoomLevel(): number {
+    return this.position.z
+  }
 }
 
 export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vector2 {
