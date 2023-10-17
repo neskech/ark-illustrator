@@ -178,8 +178,8 @@ function process(
     smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
   }
 
-   return boxed;
-  //return addPointsCartmollInterpolation(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
+   //return boxed;
+  return addPointsCartmollInterpolation3D(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
 }
 
 const process_ = trackRuntime(process, {
@@ -389,6 +389,33 @@ function addPointsCartmollInterpolation(
   return output;
 }
 
+function addPointsCartmollInterpolation3D(
+  rawCurve: BrushPoint[],
+  tension: number,
+  alpha: number,
+  spacing: number
+): BrushPoint[] {
+  if (rawCurve.length <= 1) return rawCurve;
+
+  const points = rawCurve.map((p) => [p.position.x, p.position.y, p.pressure]);
+  const interpolator = new CurveInterpolator(points, {
+    tension,
+    alpha,
+  });
+
+  const curveDist = interpolator.getLengthAt(1);
+  const numSteps = Math.ceil(curveDist / spacing);
+
+  const output: BrushPoint[] = [];
+  for (let i = 0; i < numSteps; i++) {
+    const parameter = Math.min(1, (spacing * i) / curveDist);
+    const point = interpolator.getPointAt(parameter);
+    output.push(newPoint(new Float32Vector2(point[0], point[1]), point[2]!));
+  }
+
+  return output;
+}
+
 function updateCache(
   weightsCache: Cache,
   newSmoothing: number,
@@ -455,6 +482,7 @@ function sampleAvgWeight(cache: Cache, i: number): Float32Vector2 {
 
   return scale(sum, 1 / (2 * cache.cachedSmoothing + 1));
 }
+
 
 function getSmoothingValueFromStabilization(stabilization: number): number {
   requires(0 <= stabilization && stabilization <= 1);
