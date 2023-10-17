@@ -52,14 +52,12 @@ export default class ZoomGesture implements Gesture {
   }
 
   private isValidInput(positions: PointerPos[]): boolean {
-    const validPositions = areValidPositions(...positions.map(p => p.pos))
-    const validPointerIDs = areValidPointerIDs(...positions.map(p => p.id))
     const samePointerIDs = equalsNoOrder(
         positions.map((p) => p.id),
         [this.pointerId1, this.pointerId2]
     );
     const goodLength = positions.length == 2
-    return validPositions && validPointerIDs && samePointerIDs && goodLength
+    return samePointerIDs && goodLength
   }
 
 

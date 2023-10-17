@@ -35,7 +35,7 @@ export default class PanGesture implements Gesture {
     }
 
     if (!this.isValidInput(positions)) {
-        console.log("NOOOOO HOW COULD THIS BE!!!", JSON.stringify(positionsj))
+        console.log("NOOOOO HOW COULD THIS BE!!!", JSON.stringify(positions))
         this.deInitialize()
         return false
     }
