@@ -3,7 +3,7 @@ import { type AppState } from '~/utils/mainRoutine';
 import { assert } from '~/utils/contracts';
 import { type Event } from '~/utils/func/event';
 
-const TAP_DELAY_MILLIS = 200
+const TAP_DELAY_MILLIS = 1000
 
 export default class ClearScreenGesture implements Gesture {
   private tapCount: number
@@ -24,7 +24,6 @@ export default class ClearScreenGesture implements Gesture {
     if (!this.isInitialized()) {
         console.log("CANNOT INIT")
       this.tryInitialize(positions);
-      return false;
     }
 
     if (!this.isValidInput(positions)) {
@@ -49,7 +48,7 @@ export default class ClearScreenGesture implements Gesture {
 
   private tryInitialize(positions: PointerPos[]) {
     if (positions.length == 2) {
-      this.tapCount = -1
+      this.tapCount = 0
       this.lastTapTime = new Date().getTime()
       assert(this.isInitialized());
     }
@@ -67,7 +66,9 @@ export default class ClearScreenGesture implements Gesture {
 
   private isInitialized(): boolean {
     const v1 = this.tapCount != -1
-    const v2 = this.lastTapTime != -1
+    const now = new Date().getTime()
+    const delta = now - this.lastTapTime
+    const v2 = this.lastTapTime != -1 || delta < TAP_DELAY_MILLIS
     return v1 && v2;
   }
 }
