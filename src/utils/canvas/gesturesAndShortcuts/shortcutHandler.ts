@@ -11,7 +11,7 @@ const MIDDLE_MOUSE = 1;
 const MIDDLE_MOUSE_WHICH = 2;
 
 const PAN_SCALING = 1.0;
-const ROTATION_SCALING = 80.0;
+const ROTATION_SCALING = 100.0;
 const ZOOM_SCALING = 0.005;
 
 export default class ShortcutHandler {
@@ -41,6 +41,8 @@ export default class ShortcutHandler {
         return this.handleMouseMove(event as PointerEvent, appState);
       case 'keydown':
         return this.handleKeyDown(event as KeyboardEvent);
+      case 'keyup':
+        return this.handleKeyUp(event as KeyboardEvent);
       default:
         return false
     }
@@ -72,7 +74,7 @@ export default class ShortcutHandler {
     this.mousePosition.x = mouseEvent.clientX;
     this.mousePosition.y = mouseEvent.clientY;
 
-    return isCurrPositionValid && this.isMiddleMouseHeldDown > 0
+    return isCurrPositionValid && (this.isAltKeyDown || this.isMiddleMouseHeldDown > 0)
   }
 
   handleMouseDown(mouseEvent: PointerEvent): boolean {
@@ -102,8 +104,12 @@ export default class ShortcutHandler {
   }
 
   handleKeyDown(keyEvent: KeyboardEvent): boolean {
-    this.isAltKeyDown = keyEvent.altKey;
+    this.isAltKeyDown = keyEvent.key == 'Alt';
+    return false
+  }
 
+  handleKeyUp(_: KeyboardEvent): boolean {
+    this.isAltKeyDown = false;
     return false
   }
 }

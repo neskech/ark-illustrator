@@ -50,7 +50,7 @@ export function init(canvas: HTMLCanvasElement) {
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
-  const events: (keyof HTMLElementEventMap)[] = [
+  const canvasEvents: (keyof HTMLElementEventMap)[] = [
     'pointerdown',
     'pointermove',
     'pointerup',
@@ -61,8 +61,29 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     'keyup',
   ];
 
-  events.forEach((e) => {
+  canvasEvents.forEach((e) => {
     canvas.addEventListener(e, (ev) => {
+      handleEvent({
+        map: appState.inputState.tools,
+        event: ev,
+        gestures: appState.inputState.gestures,
+        shortcuts: appState.inputState.shortcuts,
+        currentTool: appState.inputState.currentTool,
+        appState: appState,
+        settings: appState.settings,
+        presetNumber: Some(0),
+      });
+    });
+  });
+
+  const globalEvents: (keyof HTMLElementEventMap)[] = [
+    'keydown',
+    'keypress',
+    'keyup',
+  ]
+
+  globalEvents.forEach((e) => {
+    document.addEventListener(e, (ev) => {
       handleEvent({
         map: appState.inputState.tools,
         event: ev,
