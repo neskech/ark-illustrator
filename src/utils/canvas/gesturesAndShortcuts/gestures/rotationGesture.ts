@@ -20,20 +20,17 @@ export default class RotationGesture implements Gesture {
 
   fingerMoved(positions: PointerPos[], appState: AppState): boolean {
     if (!this.isInitialized()) {
-      console.log("OOPY DOOPY TRYING TO INIT WITH POS LENGTH", positions.length, JSON.stringify(positions))
       this.tryInitialize(positions);
       return false;
     }
 
     if (!this.isValidInput(positions)) {
-        console.log("OPH NOOOO OH FUCK OH GOOBLY RICK", JSON.stringify(positions), this.pointerId1, this.pointerId2)
         this.deInitialize()
         return false
     }
 
     const newAngle = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
-    const rotation = this.originalRotation - newAngle;
-    console.log("WE GOT EM HERE BABY!!!!!", newAngle, rotation, rotation * ROTATION_FACTOR)
+    const rotation = newAngle - this.originalRotation;
     appState.canvasState.camera.setRotation(rotation * ROTATION_FACTOR);
 
     return true;
@@ -48,7 +45,6 @@ export default class RotationGesture implements Gesture {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalRotation = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
-      console.log("IM IN BABBY!!!!!", this.originalRotation)
       assert(this.isInitialized());
     }
   }
