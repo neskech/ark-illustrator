@@ -17,7 +17,7 @@ function Editor() {
     }, []);
 
     return (
-        <Box className='w-full h-full flex flex-row'> 
+        <Box className='w-full h-full flex flex-row select-none'> 
                 <Canvas ref={canvas}/> 
         </Box>
     );
