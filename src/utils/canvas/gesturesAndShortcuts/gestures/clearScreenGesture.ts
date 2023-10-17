@@ -28,7 +28,6 @@ export default class ClearScreenGesture implements Gesture {
 
     if (!this.isValidInput(positions)) {
         console.log("NPT TWO WUH OH")
-      this.deInitialize();
       return false;
     }
 
