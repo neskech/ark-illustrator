@@ -19,10 +19,12 @@ const CANVAS_HEIGHT = 1.0;
 export default class Camera {
   private position: Float32Vector3;
   private rotation: number;
-  private fov: number;
+  private fovY: number;
+  private fovX: number;
   private zNear: number;
   private zFar: number;
   private screenAspectRatio: number;
+  private canvasAspectRatio: number
 
   constructor(canvasAspectRatio: number, screenAspectRatio: number) {
     requires(canvasAspectRatio > 0 && screenAspectRatio > 0);
@@ -33,12 +35,12 @@ export default class Camera {
      * the camera (edges of canvas are perfectly on the edges
      * of the canvas)
      *
-     * In t his coordinate space, the canvas is 1 x 1 in dimensions.
+     * In this coordinate space, the canvas is 1 x 1 in dimensions.
      * We scale the width by the aspect ratio, making it
      * aspect_ratio x 1 in dimensions
      *
      * We take the fov, the angle on the horizontal axis of the
-     * camera fustrum. Aspect ration / 2 is the front of this
+     * camera fustrum. Aspect ratio / 2 is the front of this
      * triangle, with default zoom z = 1 being the left.
      * Looks something like this
      *
@@ -51,11 +53,13 @@ export default class Camera {
      *     ^
      *     angle = fov / 2
      */
-    this.fov = Math.atan2(CANVAS_HEIGHT / 2, DEFAULT_ZOOM) * 2;
+    this.fovY = Math.atan2(CANVAS_HEIGHT / 2, DEFAULT_ZOOM) * 2;
+    this.fovX = Math.atan2(screenAspectRatio / 2, DEFAULT_ZOOM) * 2;
 
     this.rotation = 0;
     this.position = new Float32Vector3(0, 0, DEFAULT_ZOOM);
     this.screenAspectRatio = screenAspectRatio;
+    this.canvasAspectRatio = canvasAspectRatio
 
     /**
      * If we zoom in farther than zNear, the canvas
@@ -104,14 +108,15 @@ export default class Camera {
     const lookAtPos = new Float32Vector3(this.position.x, this.position.y, 0);
     const theta = deg2Rads(this.rotation);
     const upVector = new Float32Vector3(-Math.sin(theta), Math.cos(theta), 0);
+    //this.position.z = DEFAULT_ZOOM + 0.5
 
     return Matrix4.lookAt(this.position, lookAtPos, upVector);
   }
 
   getProjectionMatrix(): Matrix4x4 {
     return Matrix4.perspective({
-      fovYRadian: this.fov,
-      aspectRatio: this.screenAspectRatio,
+      fovYRadian:  this.fovY,
+      aspectRatio: this.canvasAspectRatio,
       near: this.zNear,
       far: this.zFar,
     });
@@ -120,7 +125,12 @@ export default class Camera {
   getTransformMatrix(): Matrix4x4 {
     return Matrix4.identity()
       .translate(this.position.x, this.position.y, 0)
-      .rotateZ(deg2Rads(this.rotation));
+  }
+
+  getTransformMatrixWithRotation(): Matrix4x4 {
+    return Matrix4.identity()
+      .translate(this.position.x, this.position.y, 0)
+      .rotateZ(deg2Rads(this.rotation))
   }
 
   private getRotationMatrix(): Matrix2x2 {
@@ -144,7 +154,8 @@ export default class Camera {
     return `Camera Object --\n
             Position: ${this.position.toString()}\n
             Rotation: ${this.rotation}\n
-            Fov: ${this.fov}\n
+            FovY: ${this.fovY}\n
+            FovX: ${this.fovX}\n
             zNear: ${this.zNear}\n
             zFar: ${this.zFar}\n\n
 
@@ -161,7 +172,7 @@ export default class Camera {
 
   mouseToWorld(event: PointerEvent, state: CanvasState): Float32Vector2 {
     const p = mouseToNDC(event, state);
-
+    
     /**
      * Standard NDC coordinates put p in a [-1, 1] range with
      *
@@ -170,40 +181,40 @@ export default class Camera {
      *
      * TOP = +y = 1
      * BOTTOM = -y = -1
-     *
-     * Now, we define the canvas to have a WIDTH of 'screen aspect ratio'
-     * and a height of 1
-     *
-     * This means that...
-     *
-     * LHS = -x = -aspRatio / 2
-     * RHS = +x = +aspRatio / 2
-     *
-     * TOP = +y = 0.5
-     * BOTTOM = -y = -0.5
-     *
-     * Thus we multiply the coordinates by the width and height of the
-     * canvas / 2
      */
-    const width = this.screenAspectRatio;
-    p.x *= width / 2;
-    p.y *= CANVAS_HEIGHT / 2;
+    const z = this.position.z
+    const width = z * Math.tan(this.fovX / 2);
+    const height = z * Math.tan(this.fovY / 2)
+    p.x *= width;
+    p.y *= height;
 
-    return p;
+    const rotated = this.rotateVectorToBasis(p)
+    rotated.x += this.position.x
+    rotated.y += this.position.y
+    const projected = this.mulVecByProjection(rotated)
+
+    return projected;
   }
 
   getAspRatio(): number {
     return this.screenAspectRatio;
   }
 
-  getMVP(): Matrix4x4 {
+  getMV(): Matrix4x4 {
     return this.getProjectionMatrix()
       .mulByMatrix4(this.getViewMatrix())
-      .mulByMatrix4(this.getTransformMatrix());
   }
 
-  mulVecByMVP(v: Float32Vector2): Float32Vector2 {
-    return matMult(this.getMVP(), new Float32Vector4(v.x, v.y, 0, 0));
+  mulVecByMV(v: Float32Vector2): Float32Vector2 {
+    return matMult(this.getMV(), new Float32Vector4(v.x, v.y, 0, 0));
+  }
+
+  mulVecByTransform(v: Float32Vector2): Float32Vector2 {
+    return matMult(this.getTransformMatrixWithRotation(), new Float32Vector4(v.x, v.y, 0, 0))
+  }
+
+  mulVecByProjection(v: Float32Vector2): Float32Vector2 {
+    return matMult(this.getProjectionMatrix(), new Float32Vector4(v.x, v.y, 0, 0))
   }
 }
 

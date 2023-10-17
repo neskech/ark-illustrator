@@ -3,22 +3,25 @@ import { DrawPipeline } from './drawPipeline';
 import { destroyAll, initWithErrorWrapper, renderWithErrorWrapper } from '../web/renderPipeline';
 import { DebugPipeline } from './debugPipeline';
 import { type AppState } from '../mainRoutine';
+import { clearScreen } from './util';
+import { WorldPipeline } from './worldPipeline';
 
 export class MasterPipeline {
   private drawPipeline: DrawPipeline;
+  private worldPipeline: WorldPipeline
   private debugPipeline: DebugPipeline;
 
   constructor(gl: GL, appState: Readonly<AppState>) {
     this.drawPipeline = new DrawPipeline(gl, appState);
+    this.worldPipeline = new WorldPipeline(gl)
     this.debugPipeline = new DebugPipeline(gl);
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
-    //initWithErrorWrapper(() => this.debugPipeline.init(gl, appState), this.debugPipeline.name);
     initWithErrorWrapper(() => this.drawPipeline.init(gl, appState), this.drawPipeline.name);
+    initWithErrorWrapper(() => this.worldPipeline.init(gl, appState), this.worldPipeline.name);
 
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    clearScreen(gl)
 
     gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
@@ -26,18 +29,13 @@ export class MasterPipeline {
   }
 
   render(gl: GL, appState: Readonly<AppState>) {
-    // gl.clearColor(0, 0, 0, 0);
-    // gl.colorMask(true, true, true, false);
-    // gl.clear(gl.COLOR_BUFFER_BIT);
+     const frameBuffer = this.drawPipeline.getFrameBuffer()
+     const canvasTexture = frameBuffer.getTextureAttachment()
 
-    // renderWithErrorWrapper(
-    //   () => this.debugPipeline.render(gl, appState),
-    //   this.debugPipeline.name
-    // );
-    // renderWithErrorWrapper(
-    //   () => this.drawPipeline.render(gl, appState),
-    //   this.drawPipeline.name
-    // );
+    renderWithErrorWrapper(
+      () => this.worldPipeline.render(gl, canvasTexture, appState),
+      this.drawPipeline.name
+    );
   }
 
   destroy(gl: GL) {
@@ -45,3 +43,4 @@ export class MasterPipeline {
     destroyAll(gl, this.drawPipeline);
   }
 }
+

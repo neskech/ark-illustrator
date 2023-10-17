@@ -37,7 +37,7 @@ export function defaultBrushSettings(): BrushSettings {
       minOpacity: 0.1,
       maxOpacity: 0.9,
       stabilization: 0.5,
-      spacing: 0.003,
+      spacing: 0.05,
       pressureSizeSettings: getLinearBezier(),
       pressureOpacitySettings: getLinearBezier()
   }

@@ -1,6 +1,7 @@
 import { Float32Vector2 } from "matrixgl";
 import { type BrushPoint, type BrushSettings, getOpacityGivenPressure, getSizeGivenPressure } from '../canvas/tools/brush';
 import { add, copy, displacement, normalize, scale } from "../web/vector";
+import { GL } from "../web/glUtils";
 
 type FourSizeArray = [Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2]
 export function constructQuad(position: Float32Vector2, width: number, height: number): FourSizeArray{
@@ -251,4 +252,10 @@ export function emplaceQuads(buffer: Float32Array, curve: BrushPoint[], settings
       }
 
     }
+}
+
+export function clearScreen(gl: GL, r = 1, g = 1, b = 1, a = 1) {
+    gl.clearColor(r, g, b, a);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
 }

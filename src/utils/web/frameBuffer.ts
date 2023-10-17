@@ -109,6 +109,7 @@ export default class FrameBuffer {
       magFilter: options.magFilter,
       format: options.format,
     })
+    this.attachedTexture.allocateEmpty(gl, options.width, options.height)
     this.attachTexture(gl)
   }
 
@@ -161,6 +162,9 @@ export default class FrameBuffer {
 
   private attachTexture(gl: GL) {
     const mipMapLevels = 0;
+
+    this.bind(gl)
+    this.attachedTexture.bind(gl)
     glOpErr(
       gl,
       gl.framebufferTexture2D.bind(gl),
@@ -170,6 +174,14 @@ export default class FrameBuffer {
       this.attachedTexture.getId().innerId(),
       mipMapLevels
     );
+
+      
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
+      throw new Error("Could not create framebuffer!")
+    }
+
+    this.attachedTexture.unBind(gl)
+    this.unBind(gl)
 
     this.assertOkStatus(gl);
   }
@@ -213,6 +225,10 @@ export default class FrameBuffer {
 
   getHeight() {
     return this.height;
+  }
+
+  getTextureAttachment(): Texture {
+    return this.attachedTexture
   }
 
   destroy(gl: GL) {

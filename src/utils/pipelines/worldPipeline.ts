@@ -3,15 +3,15 @@ import { bindAll, unBindAll } from '../web/renderPipeline';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
-import { type AppState } from '../mainRoutine';
+import { type AppState, } from '../mainRoutine';
 import type Texture from '../web/texture';
-import { constructQuadSixWidthHeightTexture } from './util';
+import { clearScreen, constructQuadSixWidthHeightTexture } from './util';
 import { Float32Vector2 } from 'matrixgl';
 
 const CANVAS_ORIGIN = new Float32Vector2(0, 0)
 
 const SIZE_VERTEX = 4
-const NUM_VERTEX_QUAD = 4
+const NUM_VERTEX_QUAD = 6
 
 function initShader(gl: GL, shader: Shader) {
   const fragmentSource = `precision highp float;
@@ -21,6 +21,7 @@ function initShader(gl: GL, shader: Shader) {
                           
                           void main() {
                             gl_FragColor = texture2D(canvas, vTextureCoord);
+                            //gl_FragColor = vec4(1, 0.5, 1, 1);
                           }\n`;
 
 const vertexSource = `attribute vec2 a_position;
@@ -33,7 +34,7 @@ const vertexSource = `attribute vec2 a_position;
                       varying highp vec2 vTextureCoord;
 
                       void main() {
-                        gl_Position = projection * view * model * vec4(a_position, 0, 1);
+                        gl_Position = projection * view * vec4(a_position, 0, 1);
                         vTextureCoord = aTextureCoord;     
                       }\n`;
 
@@ -50,6 +51,7 @@ export class WorldPipeline {
   vertexArray: VertexArrayObject;
   vertexBuffer: Buffer;
   shader: Shader;
+  rot = 0
 
   public constructor(gl: GL) {
     this.name = 'Standard Draw Pipeline';
@@ -62,6 +64,8 @@ export class WorldPipeline {
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
+    initShader(gl, this.shader)
+
     bindAll(gl, this);
 
     this.vertexArray
@@ -70,13 +74,11 @@ export class WorldPipeline {
     .addAttribute(2, 'float', 'texCord')
     .build(gl);
 
-    initShader(gl, this.shader)
-
     const w = appState.canvasState.canvas.width
     const h = appState.canvasState.canvas.height
     const aspectRatio = w / h
 
-    const quadVerts = constructQuadSixWidthHeightTexture(CANVAS_ORIGIN, aspectRatio, 1)
+    const quadVerts = constructQuadSixWidthHeightTexture(CANVAS_ORIGIN, aspectRatio / 2, 0.5)
     const quadBuffer = new Float32Array(quadVerts.length * SIZE_VERTEX);
 
     let i = 0;
@@ -94,7 +96,9 @@ export class WorldPipeline {
     bindAll(gl, this);
 
     canvasTexture.bind(gl)
+    clearScreen(gl, 0, 0.05, 0.1, 1)
 
+   appState.canvasState.camera.setRotation(45)
     this.shader.uploadTexture(gl, 'canvas', canvasTexture)
     this.shader.uploadMatrix4x4(gl, 'model', appState.canvasState.camera.getTransformMatrix());
     this.shader.uploadMatrix4x4(gl, 'view', appState.canvasState.camera.getViewMatrix());

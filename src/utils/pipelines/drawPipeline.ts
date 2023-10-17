@@ -3,6 +3,7 @@ import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
 import {
+  clearScreen,
   constructLinesSixPressureNormal,
   constructQuadIndices,
   constructQuadSixPressureNormal,
@@ -12,7 +13,11 @@ import {
 } from './util';
 import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
-import { type BrushPoint, getSizeGivenPressure, getOpacityGivenPressure } from '../canvas/tools/brush';
+import {
+  type BrushPoint,
+  getSizeGivenPressure,
+  getOpacityGivenPressure,
+} from '../canvas/tools/brush';
 import { assert } from '../contracts';
 import { Float32Vector2, Float32Vector3, Matrix4 } from 'matrixgl';
 import Texture from '../web/texture';
@@ -20,9 +25,9 @@ import FrameBuffer from '../web/frameBuffer';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 
-const DISTANCE_FROM_CANVAS = 10
-const ZNEAR = 0.001
-const ZFAR = 20
+const DISTANCE_FROM_CANVAS = 10;
+const ZNEAR = 0.001;
+const ZFAR = 20;
 
 const NUM_VERTICES_QUAD = 6;
 const NUM_INDICES_QUAD = 6;
@@ -78,7 +83,7 @@ function initShader(gl: GL, shader: Shader) {
                         varying highp float v_opacity;
 
                         void main() {
-                          gl_Position = projection * view * model * vec4(a_position, 0, 1);
+                          gl_Position = vec4(a_position, 0, 1);
                           vTextureCoord = aTextureCoord;     
                           v_opacity = a_opacity;        
                         }\n`;
@@ -98,7 +103,7 @@ export class DrawPipeline {
   indexBuffer: Buffer;
   shader: Shader;
   brushTexture: Texture;
-  frameBuffer: FrameBuffer
+  frameBuffer: FrameBuffer;
 
   public constructor(gl: GL, appState: Readonly<AppState>) {
     this.name = 'Standard Draw Pipeline';
@@ -137,7 +142,7 @@ export class DrawPipeline {
       magFilter: 'Linear',
       minFilter: 'Linear',
       format: 'RGBA',
-    })
+    });
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
@@ -161,39 +166,33 @@ export class DrawPipeline {
       this.render(gl, p, appState)
     );
     appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
-      gl.clearColor(0, 0, 0, 1);
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      clearScreen(gl);
     });
 
     unBindAll(gl, this);
   }
 
   render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
+    if (points.length == 0) return;
+
     bindAll(gl, this);
 
-    this.frameBuffer.bind(gl)
+    this.frameBuffer.bind(gl);
 
-    if (points.length == 0) return;
-    assert(points.length < MAX_POINTS_PER_FRAME);
-
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    clearScreen(gl);
 
     const buf = new Float32Array(points.length * 6 * VERTEX_SIZE);
 
     const brushSettings = appState.settings.brushSettings[0];
-    emplaceQuads(buf, points, brushSettings)
+    emplaceQuads(buf, points, brushSettings);
 
     this.vertexBuffer.addData(gl, buf);
 
-    this.shader.uploadMatrix4x4(gl, 'model', appState.canvasState.camera.getTransformMatrix());
-    this.shader.uploadMatrix4x4(gl, 'view', appState.canvasState.camera.getViewMatrix());
-    this.shader.uploadMatrix4x4(
-      gl,
-      'projection',
-      appState.canvasState.camera.getProjectionMatrix()
-    );
-    this.shader.uploadFloat(gl, 'flow', 0.5)
+    const width = appState.canvasState.canvas.width
+    const height = appState.canvasState.canvas.height
+    this.shader.uploadMatrix4x4(gl, 'view', this.getViewMatrix());
+    this.shader.uploadMatrix4x4(gl, 'projection', this.getProjectionMatrix(width, height));
+    this.shader.uploadFloat(gl, 'flow', 0.5);
 
     this.brushTexture.bind(gl);
     this.shader.uploadTexture(gl, 'tex', this.brushTexture);
@@ -201,32 +200,32 @@ export class DrawPipeline {
     gl.drawArrays(gl.TRIANGLES, 0, 6 * points.length);
 
     this.brushTexture.unBind(gl);
-    this.frameBuffer.unBind(gl)
+    this.frameBuffer.unBind(gl);
 
     unBindAll(gl, this);
   }
 
   getFrameBuffer(): FrameBuffer {
-    return this.frameBuffer
+    return this.frameBuffer;
   }
-  
+
   private getViewMatrix() {
-      const eye = new Float32Vector3(0, 0, 0)
-      const lookAtPos = new Float32Vector3(0, 0, DISTANCE_FROM_CANVAS);
-      const upVector = new Float32Vector3(0, 1, 0);
-  
-      return Matrix4.lookAt(eye, lookAtPos, upVector);
+    const eye = new Float32Vector3(0, 0, 0);
+    const lookAtPos = new Float32Vector3(0, 0, DISTANCE_FROM_CANVAS);
+    const upVector = new Float32Vector3(0, 1, 0);
+
+    return Matrix4.lookAt(eye, lookAtPos, upVector);
   }
 
   private getProjectionMatrix(width: number, height: number) {
-    const aspectRatio = width / height
+    const aspectRatio = width / height;
     return Matrix4.orthographic({
       top: 1,
       bottom: -1,
       left: -aspectRatio,
       right: aspectRatio,
       near: ZNEAR,
-      far: ZFAR
-    })
+      far: ZFAR,
+    });
   }
 }

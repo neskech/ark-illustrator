@@ -1,31 +1,24 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import Jimp from "jimp";
-import { assert, requires } from "../contracts";
-import { unreachable } from "../func/funUtils";
-import { None, Option, Some } from "../func/option";
-import type FrameBuffer from "./frameBuffer";
-import { type ReadPixelOptions } from "./frameBuffer";
-import {
-  GLObject,
-  glOpErr,
-  type GL,
-  type Color,
-  colorTypeToPacked,
-  checkError,
-} from "./glUtils";
-import { Err, Ok, type Result, type Unit, unit } from "../func/result";
+import Jimp from 'jimp';
+import { assert, requires } from '../contracts';
+import { unreachable } from '../func/funUtils';
+import { None, Option, Some } from '../func/option';
+import type FrameBuffer from './frameBuffer';
+import { type ReadPixelOptions } from './frameBuffer';
+import { GLObject, glOpErr, type GL, type Color, colorTypeToPacked, checkError } from './glUtils';
+import { Err, Ok, type Result, type Unit, unit } from '../func/result';
 
-type TextureFilter = "Linear" | "Nearest";
-type TextureWrap = "Clamp To Edge" | "Repeat" | "Mirrored Repeat";
-type Format = "RGBA" | "RGB" | "ALPHA";
+type TextureFilter = 'Linear' | 'Nearest';
+type TextureWrap = 'Clamp To Edge' | 'Repeat' | 'Mirrored Repeat';
+type Format = 'RGBA' | 'RGB' | 'ALPHA';
 
 function formatToEnum(gl: GL, f: Format): GLenum {
   switch (f) {
-    case "RGBA":
+    case 'RGBA':
       return gl.RGBA;
-    case "RGB":
+    case 'RGB':
       return gl.RGB;
-    case "ALPHA":
+    case 'ALPHA':
       return gl.ALPHA;
     default:
       return unreachable();
@@ -34,9 +27,9 @@ function formatToEnum(gl: GL, f: Format): GLenum {
 
 function textureFilterToEnum(gl: GL, t: TextureFilter): GLenum {
   switch (t) {
-    case "Linear":
+    case 'Linear':
       return gl.LINEAR;
-    case "Nearest":
+    case 'Nearest':
       return gl.NEAREST;
     default:
       return unreachable();
@@ -45,11 +38,11 @@ function textureFilterToEnum(gl: GL, t: TextureFilter): GLenum {
 
 function textureWrapToEnum(gl: GL, t: TextureWrap): GLenum {
   switch (t) {
-    case "Clamp To Edge":
+    case 'Clamp To Edge':
       return gl.CLAMP_TO_EDGE;
-    case "Repeat":
+    case 'Repeat':
       return gl.REPEAT;
-    case "Mirrored Repeat":
+    case 'Mirrored Repeat':
       return gl.MIRRORED_REPEAT;
     default:
       return unreachable();
@@ -85,7 +78,7 @@ export default class Texture {
   constructor(gl: GL, options: TextureOptions) {
     const bId = Option.fromNull(glOpErr(gl, gl.createTexture.bind(gl)));
     const gId = bId.expect(`Couldn't create texture with options ${options}`);
-    this.id = new GLObject(gId, "texture");
+    this.id = new GLObject(gId, 'texture');
 
     this.options = options;
     this.setTextureParams(gl);
@@ -157,13 +150,9 @@ export default class Texture {
     this.unBind(gl);
   }
 
-  allocateFromPixels(
-    gl: GL,
-    width: number,
-    height: number,
-    data: ArrayBufferView,
-    offset = 0
-  ) {
+  allocateFromPixels(gl: GL, width: number, height: number, data: ArrayBufferView, offset = 0) {
+    this.bind(gl);
+
     const mipMapLevels = 0; //something to consider for future
     const border = 0;
 
@@ -181,17 +170,30 @@ export default class Texture {
       data,
       offset
     );
+
+    this.unBind(gl);
   }
 
-  allocateEmpty(gl: GL, width: number, height: number, clearColor: Color) {
+  allocateEmpty(gl: GL, width: number, height: number) {
     this.setDimensions(width, height);
 
-    const packedColor = colorTypeToPacked(clearColor);
-    const pixels = new Uint32Array(width * height);
+    this.bind(gl);
 
-    for (let i = 0; i < width * height; i++) pixels[i] = packedColor;
+    const mipMapLevels = 0;
+    const border = 0;
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      mipMapLevels,
+      formatToEnum(gl, this.options.format),
+      width,
+      height,
+      border,
+      formatToEnum(gl, this.options.format),
+      gl.UNSIGNED_BYTE,
+      null
+    );
 
-    this.allocateFromPixels(gl, width, height, pixels);
+    this.unBind(gl);
   }
 
   allocateFromImageUrl(gl: GL, url: string, preload = true) {
@@ -214,14 +216,7 @@ export default class Texture {
       const mipMapLevels = 0;
       const texelType = gl.UNSIGNED_BYTE;
 
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        mipMapLevels,
-        format,
-        format,
-        texelType,
-        img
-      );
+      gl.texImage2D(gl.TEXTURE_2D, mipMapLevels, format, format, texelType, img);
 
       checkError(gl, 'texImage2D');
     }
@@ -235,7 +230,7 @@ export default class Texture {
     };
 
     img.src = url;
-    img.crossOrigin = 'anonymous'
+    img.crossOrigin = 'anonymous';
   }
 
   allocateFromSubFramebuffer(gl: GL, options: CopySubTextureOptions) {
@@ -322,24 +317,21 @@ export default class Texture {
     try {
       const img = await Jimp.create(w, h);
       for (let i = 0; i < w * h; i++) {
-
         const red = pixelBuf[i];
         const blue = pixelBuf[i + 1];
         const green = pixelBuf[i + 2];
         const alpha = pixelBuf[i + 3];
 
-        img.bitmap.data[i] =  (alpha << 24) | (green << 16) | (blue << 8) | red;
+        img.bitmap.data[i] = (alpha << 24) | (green << 16) | (blue << 8) | red;
       }
 
       await img.writeAsync(filePath);
       return Ok(unit);
-
     } catch (err) {
-       const errMsg = `Failed to write texture to ${filePath}\n
-                       Texture Information: ${this.toString()}\n`
-       if (err instanceof Error)
-         return Err(`${errMsg}\n\nThe error: ${err.message}`)
-       return Err(errMsg);
+      const errMsg = `Failed to write texture to ${filePath}\n
+                       Texture Information: ${this.toString()}\n`;
+      if (err instanceof Error) return Err(`${errMsg}\n\nThe error: ${err.message}`);
+      return Err(errMsg);
     }
   }
 
@@ -373,8 +365,8 @@ export default class Texture {
 
   toString(): string {
     return `Texture Object --\n
-            Width: ${this.width.map(t => `${t}`).unwrapOrDefault('unspecified')}\n
-            Height: ${this.height.map(t => `${t}`).unwrapOrDefault('unspecified')}\n
+            Width: ${this.width.map((t) => `${t}`).unwrapOrDefault('unspecified')}\n
+            Height: ${this.height.map((t) => `${t}`).unwrapOrDefault('unspecified')}\n
             Wrapping Behavior X: ${this.options.wrapX}\n
             Wrapping Behavior Y: ${this.options.wrapY}\n
             Mag Filter: ${this.options.magFilter}\n
