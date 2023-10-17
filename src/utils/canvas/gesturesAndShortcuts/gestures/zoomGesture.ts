@@ -52,6 +52,7 @@ export default class ZoomGesture implements Gesture {
   }
 
   private deInitialize() {
+    console.log("NOOOOO!!!! WHY THE FUCK DID YOU DO THAT!!!!!!!!!!")
     this.pointerId1 = -1;
     this.pointerId2 = -1;
     this.originalDistance = Infinity;
