@@ -33,7 +33,7 @@ export default class PanGesture implements Gesture {
       this.tryInitialize(positions, appState);
       return false;
     }
-
+    console.log("PAN INIT!!!")
     if (!this.isValidInput(positions)) {
         console.log("NOOOOO HOW COULD THIS BE!!!", JSON.stringify(positions))
         this.deInitialize()
@@ -56,7 +56,8 @@ export default class PanGesture implements Gesture {
   private tryInitialize(positions: PointerPos[], appState: AppState) {
     const isInit = this.isInitialized();
 
-    if (!isInit && this.isValidInput(positions)) {
+    if (!isInit && positions.length == 2) {
+      console.log("VALID INPUTT!!!")
       this.originPosition1 = copy(positions[0].pos);
       this.originPosition2 = copy(positions[1].pos);
       this.pointerId1 = positions[0].id;
