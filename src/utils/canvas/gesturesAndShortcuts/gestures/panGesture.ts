@@ -50,9 +50,9 @@ export default class PanGesture implements Gesture {
   private tryInitialize(positions: PointerPos[], appState: AppState) {
     const isInit = this.isInitialized();
 
-    console.log('init status:', isInit, positions)
+    console.log('init status:', isInit, JSON.stringify(positions))
 
-    if (isInit && positions.length == 2) {
+    if (!isInit && positions.length == 2) {
       this.originPosition1 = copy(positions[0].pos);
       this.originPosition2 = copy(positions[1].pos);
       this.pointerId1 = positions[0].id;

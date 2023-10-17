@@ -37,7 +37,7 @@ export default class ZoomGesture implements Gesture {
   private tryInitialize(positions: PointerPos[]) {
     const isInit = this.isInitialized();
 
-    if (isInit && positions.length == 2) {
+    if (!isInit && positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalDistance = distanceSquared(positions[0].pos, positions[1].pos);
@@ -52,7 +52,6 @@ export default class ZoomGesture implements Gesture {
   }
 
   private deInitialize() {
-    console.log("NOOOOO!!!! WHY THE FUCK DID YOU DO THAT!!!!!!!!!!")
     this.pointerId1 = -1;
     this.pointerId2 = -1;
     this.originalDistance = Infinity;
