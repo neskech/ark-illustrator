@@ -4,7 +4,7 @@ import { distanceSquared } from '~/utils/web/vector';
 import { assert } from '~/utils/contracts';
 import { equalsNoOrder } from '~/utils/func/arrayUtils';
 
-const ZOOM_FACTOR = 1;
+const ZOOM_FACTOR = 20;
 
 export default class ZoomGesture implements Gesture {
   private pointerId1: number;
@@ -30,6 +30,7 @@ export default class ZoomGesture implements Gesture {
 
     const newDistance = distanceSquared(positions[0].pos, positions[1].pos);
     const deltaDistance = this.originalDistance - newDistance;
+    console.log("OH MY BIG DISTY WISTYY AWWDHGWD EEHHEHEHEHHE", newDistance, deltaDistance, this.originalDistance)
     appState.canvasState.camera.setZoom(deltaDistance * ZOOM_FACTOR);
 
     return true;
@@ -46,6 +47,7 @@ export default class ZoomGesture implements Gesture {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalDistance = distanceSquared(positions[0].pos, positions[1].pos);
+      console.log("DISTANCE TIME!!!!!", this.originalDistance)
       assert(this.isInitialized());
     }
 

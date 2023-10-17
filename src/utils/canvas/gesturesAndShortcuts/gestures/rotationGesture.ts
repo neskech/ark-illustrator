@@ -25,12 +25,13 @@ export default class RotationGesture implements Gesture {
     }
 
     if (!this.isValidInput(positions)) {
+        console.log("OPH NOOOO OH FUCK")
         this.deInitialize()
         return false
     }
 
-    const newAngle = angle(displacement(positions[0].pos, positions[1].pos));
-    const rotation = rad2Deg(this.originalRotation - newAngle);
+    const newAngle = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
+    const rotation = this.originalRotation - newAngle;
     console.log("WE GOT EM HERE BABY!!!!!", newAngle, rotation, rotation * ROTATION_FACTOR)
     appState.canvasState.camera.setRotation(rotation * ROTATION_FACTOR);
 
@@ -47,7 +48,7 @@ export default class RotationGesture implements Gesture {
     if (!isInit && positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
-      this.originalRotation = angle(displacement(positions[0].pos, positions[1].pos));
+      this.originalRotation = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
       console.log("IM IN BABBY!!!!!", this.originalRotation)
       assert(this.isInitialized());
     }
