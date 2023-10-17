@@ -88,7 +88,7 @@ export default class ShortcutHandler {
     return false
   }
 
-  handleMouseUp(mouseEvent: MouseEvent): boolean {
+  handleMouseUp(mouseEvent: PointerEvent): boolean {
     switch (mouseEvent.button) {
       case LEFT_MOUSE:
         this.isLeftMouseHeldDown -= 1;

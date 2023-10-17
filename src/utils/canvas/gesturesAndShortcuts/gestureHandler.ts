@@ -22,42 +22,50 @@ export default class GestureHandler {
 
     switch (eventType) {
       case 'pointerdown':
-        this.handlePointerDown(event, appState);
+        return this.handlePointerDown(event, appState);
       case 'pointerup':
-        this.handlePointerUp(event);
+        return this.handlePointerUp(event);
       case 'pointermove':
-        this.handlePointerMove(event, appState);
+        return this.handlePointerMove(event, appState);
     }
   }
 
-  handlePointerDown(event: PointerEvent, appState: AppState) {
+  handlePointerDown(event: PointerEvent, appState: AppState): boolean {
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
-    console.log('down', event.pointerId)
     this.pointerPositions.push({
       pos: new Float32Vector2(event.clientX, event.clientY),
       id: event.pointerId,
     });
 
-    for (const gesture of this.gestures) gesture.fingerTapped(this.pointerPositions, appState);
+    let dirty = false
+    for (const gesture of this.gestures) {
+      dirty = dirty || gesture.fingerTapped(this.pointerPositions, appState);
+    }
+    return dirty
   }
 
-  handlePointerMove(event: PointerEvent, appState: AppState) {
+  handlePointerMove(event: PointerEvent, appState: AppState): boolean {
     find(this.pointerPositions, (p) => p.id == event.pointerId).map((p) => {
       p.pos.x = event.clientX;
       p.pos.y = event.clientY;
     });
 
-    for (const gesture of this.gestures) gesture.fingerMoved(this.pointerPositions, appState);
+    let dirty = false
+    for (const gesture of this.gestures) {
+      dirty = dirty || gesture.fingerMoved(this.pointerPositions, appState);
+    }
+    return dirty
   }
 
-  handlePointerUp(event: PointerEvent) {
-    console.log('up', event.pointerId)
+  handlePointerUp(event: PointerEvent): boolean {
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
       if (event.pointerId == id) {
         this.pointerPositions.splice(i, 1);
-        return;
+        return false;
       }
     }
+
+    return false;
   }
 }
