@@ -39,7 +39,7 @@ export default class GestureHandler {
 
     let dirty = false
     for (const gesture of this.gestures) {
-      dirty = dirty || gesture.fingerTapped(this.pointerPositions, appState);
+      dirty = gesture.fingerTapped(this.pointerPositions, appState) || dirty;
     }
     return dirty
   }
@@ -52,7 +52,7 @@ export default class GestureHandler {
 
     let dirty = false
     for (const gesture of this.gestures) {
-      dirty = dirty || gesture.fingerMoved(this.pointerPositions, appState);
+      dirty = gesture.fingerMoved(this.pointerPositions, appState) || dirty;
     }
     return dirty
   }
