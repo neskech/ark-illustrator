@@ -178,8 +178,8 @@ function process(
     smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
   }
 
- // return boxed;
-  return addPointsCartmollInterpolation(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
+   return boxed;
+  //return addPointsCartmollInterpolation(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
 }
 
 const process_ = trackRuntime(process, {
