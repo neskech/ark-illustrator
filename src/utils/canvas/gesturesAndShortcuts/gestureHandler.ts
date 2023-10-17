@@ -23,7 +23,8 @@ export default class GestureHandler {
 
   handleEvent(event: CanvasEvent, appState: AppState, eventType: EventString) {
     if (!(event instanceof PointerEvent)) return;
-
+    if (event.pointerType != 'touch') return
+    
     switch (eventType) {
       case 'pointerdown':
         return this.handlePointerDown(event, appState);
