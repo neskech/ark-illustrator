@@ -8,8 +8,8 @@ export class MasterPipeline {
   private drawPipeline: DrawPipeline;
   private debugPipeline: DebugPipeline;
 
-  constructor(gl: GL) {
-    this.drawPipeline = new DrawPipeline(gl);
+  constructor(gl: GL, appState: Readonly<AppState>) {
+    this.drawPipeline = new DrawPipeline(gl, appState);
     this.debugPipeline = new DebugPipeline(gl);
   }
 

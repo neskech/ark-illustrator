@@ -40,7 +40,7 @@ export function init(canvas: HTMLCanvasElement) {
     toolState: getDefaultToolState(settings),
   };
 
-  masterPipeline = new MasterPipeline(gl);
+  masterPipeline = new MasterPipeline(gl, appState);
 
   initEventListeners(canvas);
 

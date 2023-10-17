@@ -8,15 +8,22 @@ import {
   constructQuadSixPressureNormal,
   constructQuadSixPressureNormalUV,
   constructQuadSixTex,
+  emplaceQuads,
 } from './util';
 import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
 import { type BrushPoint, getSizeGivenPressure, getOpacityGivenPressure } from '../canvas/tools/brush';
 import { assert } from '../contracts';
-import { Float32Vector2 } from 'matrixgl';
+import { Float32Vector2, Float32Vector3, Matrix4 } from 'matrixgl';
 import Texture from '../web/texture';
+import FrameBuffer from '../web/frameBuffer';
 
 export const MAX_POINTS_PER_FRAME = 10000;
+
+const DISTANCE_FROM_CANVAS = 10
+const ZNEAR = 0.001
+const ZFAR = 20
+
 const NUM_VERTICES_QUAD = 6;
 const NUM_INDICES_QUAD = 6;
 const VERTEX_SIZE = 5;
@@ -91,9 +98,11 @@ export class DrawPipeline {
   indexBuffer: Buffer;
   shader: Shader;
   brushTexture: Texture;
+  frameBuffer: FrameBuffer
 
-  public constructor(gl: GL) {
+  public constructor(gl: GL, appState: Readonly<AppState>) {
     this.name = 'Standard Draw Pipeline';
+
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
@@ -103,7 +112,9 @@ export class DrawPipeline {
       btype: 'IndexBuffer',
       usage: 'Static Draw',
     });
+
     this.shader = new Shader(gl);
+
     this.brushTexture = new Texture(gl, {
       wrapX: 'Repeat',
       wrapY: 'Repeat',
@@ -116,6 +127,17 @@ export class DrawPipeline {
       'https://cdn.discordapp.com/attachments/612361044110868480/1163576886761369751/watercolor-brush-texture-5.png?ex=6540146c&is=652d9f6c&hm=a25b453b0bc79a59f3112e84aa3129586c14868864f1a9bc2144e22816eae94f&',
       false
     );
+
+    this.frameBuffer = new FrameBuffer(gl, {
+      width: appState.canvasState.canvas.width,
+      height: appState.canvasState.canvas.height,
+      target: 'Regular',
+      wrapX: 'Repeat',
+      wrapY: 'Repeat',
+      magFilter: 'Linear',
+      minFilter: 'Linear',
+      format: 'RGBA',
+    })
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
@@ -149,6 +171,8 @@ export class DrawPipeline {
   render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
     bindAll(gl, this);
 
+    this.frameBuffer.bind(gl)
+
     if (points.length == 0) return;
     assert(points.length < MAX_POINTS_PER_FRAME);
 
@@ -158,26 +182,7 @@ export class DrawPipeline {
     const buf = new Float32Array(points.length * 6 * VERTEX_SIZE);
 
     const brushSettings = appState.settings.brushSettings[0];
-
-    let i = 0;
-    for (let j = 0; j < points.length; j++) {
-
-      const quadVerts = constructQuadSixTex(points[j].position, getSizeGivenPressure(brushSettings, points[j].pressure))
-      const opacity = getOpacityGivenPressure(brushSettings, points[j].pressure)
-
-      for (let k = 0; k < quadVerts.length; k+=2) {
-        const pos = quadVerts[k]
-        const tex = quadVerts[k + 1]
-
-        buf[i++] = pos.x;
-        buf[i++] = pos.y;
-        buf[i++] = tex.x;
-        buf[i++] = tex.y;
-        buf[i++] = opacity
-
-      }
-
-    }
+    emplaceQuads(buf, points, brushSettings)
 
     this.vertexBuffer.addData(gl, buf);
 
@@ -195,8 +200,33 @@ export class DrawPipeline {
 
     gl.drawArrays(gl.TRIANGLES, 0, 6 * points.length);
 
-    this.brushTexture.unbind(gl);
+    this.brushTexture.unBind(gl);
+    this.frameBuffer.unBind(gl)
 
     unBindAll(gl, this);
+  }
+
+  getFrameBuffer(): FrameBuffer {
+    return this.frameBuffer
+  }
+  
+  private getViewMatrix() {
+      const eye = new Float32Vector3(0, 0, 0)
+      const lookAtPos = new Float32Vector3(0, 0, DISTANCE_FROM_CANVAS);
+      const upVector = new Float32Vector3(0, 1, 0);
+  
+      return Matrix4.lookAt(eye, lookAtPos, upVector);
+  }
+
+  private getProjectionMatrix(width: number, height: number) {
+    const aspectRatio = width / height
+    return Matrix4.orthographic({
+      top: 1,
+      bottom: -1,
+      left: -aspectRatio,
+      right: aspectRatio,
+      near: ZNEAR,
+      far: ZFAR
+    })
   }
 }

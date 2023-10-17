@@ -2,7 +2,8 @@ import { requires } from '../contracts';
 import { unreachable } from '../func/funUtils';
 import { Option } from '../func/option';
 import { type GL, GLObject, glOpErr } from './glUtils';
-import type Texture from './texture';
+import Texture from './texture';
+import { TextureOptions } from './texture';
 
 type FrameBufferTarget = 'Regular' | 'Draw' | 'Read';
 type Filter = 'Linear' | 'Nearest';
@@ -80,24 +81,35 @@ export interface BlitOptions {
   filter: Filter;
 }
 
-export interface FrameBufferOptions {
+export type FrameBufferOptions = {
   target: FrameBufferTarget;
   width: number;
   height: number;
-}
+} & TextureOptions
 export default class FrameBuffer {
   private id: GLObject<WebGLFramebuffer>;
   private target: FrameBufferTarget;
   private width: number;
   private height: number;
+  private attachedTexture: Texture
 
-  constructor(gl: GL, { target, width, height }: FrameBufferOptions) {
+  constructor(gl: GL, options: FrameBufferOptions) {
     const fId = Option.fromNull(glOpErr(gl, gl.createFramebuffer.bind(gl)));
-    const fgId = fId.expect("Couldn't create vertex buffer");
+    const fgId = fId.expect("Couldn't create frame buffer");
     this.id = new GLObject(fgId);
-    this.target = target;
-    this.width = width;
-    this.height = height;
+    this.target = options.target;
+    this.width = options.width;
+    this.height = options.height;
+    this.attachedTexture = new Texture(gl, {
+      width: options.width,
+      height: options.height,
+      wrapX: options.wrapX,
+      wrapY: options.wrapY,
+      minFilter: options.minFilter,
+      magFilter: options.magFilter,
+      format: options.format,
+    })
+    this.attachTexture(gl)
   }
 
   assertOkStatus(gl: GL) {
@@ -147,11 +159,7 @@ export default class FrameBuffer {
     readBuffer.assertOkStatus(gl);
   }
 
-  attachTexture(gl: GL, texture: Texture) {
-    requires(
-      this.width == texture.getWidth() && this.height == texture.getHeight()
-    );
-
+  private attachTexture(gl: GL) {
     const mipMapLevels = 0;
     glOpErr(
       gl,
@@ -159,7 +167,7 @@ export default class FrameBuffer {
       targetToEnum(gl, this.target),
       gl.COLOR_ATTACHMENT0,
       gl.TEXTURE_2D,
-      texture.getId().innerId(),
+      this.attachedTexture.getId().innerId(),
       mipMapLevels
     );
 

@@ -154,7 +154,7 @@ export default class Texture {
       textureWrapToEnum(gl, this.options.wrapY)
     );
 
-    this.unbind(gl);
+    this.unBind(gl);
   }
 
   allocateFromPixels(
@@ -229,7 +229,7 @@ export default class Texture {
     img.onload = () => {
       this.bind(gl);
       glOpErr(gl, allocateFromImg);
-      this.unbind(gl);
+      this.unBind(gl);
 
       this.setDimensions(img.width, img.height);
     };
@@ -279,7 +279,7 @@ export default class Texture {
       border
     );
 
-    this.unbind(gl);
+    this.unBind(gl);
   }
 
   readPixelsViaFramebuffer(
@@ -298,7 +298,7 @@ export default class Texture {
     frameBuffer.readPixelsTo(gl, options, pixelBuf);
 
     if (handleBinding) {
-      this.unbind(gl);
+      this.unBind(gl);
       frameBuffer.unBind(gl);
     }
   }
@@ -347,7 +347,7 @@ export default class Texture {
     glOpErr(gl, gl.bindTexture.bind(gl), gl.TEXTURE_2D, this.id.innerId());
   }
 
-  unbind(gl: GL) {
+  unBind(gl: GL) {
     glOpErr(gl, gl.bindTexture.bind(gl), gl.TEXTURE_2D, null);
   }
 

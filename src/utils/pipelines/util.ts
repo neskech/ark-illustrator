@@ -1,5 +1,5 @@
 import { Float32Vector2 } from "matrixgl";
-import { BrushPoint, BrushSettings, getSizeGivenPressure } from '../canvas/tools/brush';
+import { type BrushPoint, type BrushSettings, getOpacityGivenPressure, getSizeGivenPressure } from '../canvas/tools/brush';
 import { add, copy, displacement, normalize, scale } from "../web/vector";
 
 type FourSizeArray = [Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2]
@@ -33,6 +33,29 @@ export function constructQuadSix(position: Float32Vector2, scale: number): SixSi
         new Float32Vector2(position.x + w, position.y - h),
 
         new Float32Vector2(position.x + w, position.y + h),
+    ]
+} 
+
+export function constructQuadSixWidthHeightTexture(position: Float32Vector2, width: number, height: number): Float32Vector2[] {
+    return [
+        //bottom left
+        new Float32Vector2(position.x + width, position.y + height),
+        new Float32Vector2(1, 1),
+        //top left
+        new Float32Vector2(position.x - width, position.y + height),
+        new Float32Vector2(0, 1),
+        //top right
+        new Float32Vector2(position.x - width, position.y - height),
+        new Float32Vector2(0, 0),
+        //bottom right
+        new Float32Vector2(position.x - width, position.y - height),
+        new Float32Vector2(0, 0),
+        //bottom right
+        new Float32Vector2(position.x + width, position.y - height),
+        new Float32Vector2(1, 0),
+        //top right
+        new Float32Vector2(position.x + width, position.y + height),
+        new Float32Vector2(1, 1),
     ]
 } 
 
@@ -163,7 +186,6 @@ export function constructLinesSixPressureNormal(start: BrushPoint, end: BrushPoi
 
 
 
-
         //bottom left
         add(copy(start.position), normalBottom),
         new Float32Vector2(0, 0),
@@ -171,7 +193,6 @@ export function constructLinesSixPressureNormal(start: BrushPoint, end: BrushPoi
         //bottom right
         add(copy(start.position), scale(copy(normalBottom), -1)),
         new Float32Vector2(1, 0),
-
 
 
 
@@ -196,7 +217,6 @@ export function constructLinesSixPressureNormal(start: BrushPoint, end: BrushPoi
 }
 
 
-
 type SixSizeArray = [number, number, number, number, number, number]
 export function constructQuadIndices(offset: number): SixSizeArray {
     return [
@@ -209,4 +229,26 @@ export function constructQuadIndices(offset: number): SixSizeArray {
         2 + offset,
         1 + offset
     ]
+}
+
+export function emplaceQuads(buffer: Float32Array, curve: BrushPoint[], settings: Readonly<BrushSettings>) {
+    let i = 0;
+
+    for (const p of curve) {
+      const size = getSizeGivenPressure(settings, p.pressure)
+      const opacity = getOpacityGivenPressure(settings, p.pressure)
+      const quadVerts = constructQuadSixTex(p.position, size)
+
+      for (let k = 0; k < quadVerts.length; k+=2) {
+        const pos = quadVerts[k]
+        const tex = quadVerts[k + 1]
+
+        buffer[i++] = pos.x;
+        buffer[i++] = pos.y;
+        buffer[i++] = tex.x;
+        buffer[i++] = tex.y;
+        buffer[i++] = opacity
+      }
+
+    }
 }
