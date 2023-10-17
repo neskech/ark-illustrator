@@ -57,15 +57,16 @@ function initShader(gl: GL, shader: Shader) {
   );
 }
 
-export class StrokePreviewPipeline {
+export class CanvasPipeline {
   name: string;
   vertexArray: VertexArrayObject;
   vertexBuffer: Buffer;
   shader: Shader;
   frameBuffer: FrameBuffer;
+  hasDoneInitialRender: boolean;
 
   public constructor(gl: GL, appState: Readonly<AppState>) {
-    this.name = 'Stroke Preview Pipeline';
+    this.name = 'Canvas Pipeline';
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
@@ -82,6 +83,7 @@ export class StrokePreviewPipeline {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
+    this.hasDoneInitialRender = false;
     this.fillFramebufferWithColor(gl);
   }
 
@@ -108,45 +110,41 @@ export class StrokePreviewPipeline {
   render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
     if (points.length == 0) return;
 
-    const brushSettings = appState.settings.brushSettings[0];
-    gl.blendFunc(gl.ONE, gl.ZERO);
-
     bindAll(gl, this);
     this.shader.use(gl);
     this.frameBuffer.bind(gl);
-    brushSettings.texture.unwrap().bind(gl);
-
-    clearScreen(gl, 0, 0, 0, 0);
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
+
+    const brushSettings = appState.settings.brushSettings[0];
     emplaceQuads(buf, points, brushSettings);
 
     this.vertexBuffer.addData(gl, buf);
 
     this.shader.uploadFloat(gl, 'flow', brushSettings.flow);
 
-    this.shader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap());
+    brushSettings.texture.map((t) => t.bind(gl));
+    brushSettings.texture.map((t) => this.shader.uploadTexture(gl, 'tex', t));
 
     gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
 
+    brushSettings.texture.map((t) => t.unBind(gl));
     this.frameBuffer.unBind(gl);
-    brushSettings.texture.unwrap().unBind(gl);
+
+    this.hasDoneInitialRender = true;
 
     this.shader.stopUsing(gl);
     unBindAll(gl, this);
-
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
 
   setupEvents(gl: GL, appState: Readonly<AppState>) {
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeContinued((p) =>
-      this.render(gl, p, appState)
-    );
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
-      this.frameBuffer.bind(gl);
-      clearScreen(gl, 0, 0, 0, 0);
-      this.frameBuffer.unBind(gl);
-    }, true);
+    appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((p) => {
+      this.render(gl, p, appState);
+    });
+
+    appState.inputState.tools['brush'].subscribeToOnBrushStrokeCutoff((p) => {
+      this.render(gl, p, appState);
+    });
   }
 
   getFrameBuffer(): FrameBuffer {

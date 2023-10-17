@@ -6,10 +6,12 @@ import { Float32Vector2 } from 'matrixgl';
 import { CurveInterpolator } from 'curve-interpolator';
 import {
   MAX_SIZE_RAW_BRUSH_POINT_ARRAY,
+  getNumDeletedElementsFromDeleteFactor,
   getSpacingFromBrushSettings,
   shiftDeleteElements,
 } from './stabilizer';
 import { incrementalLog, trackRuntime } from '~/utils/misc/benchmarking';
+import { type Event } from '~/utils/func/event';
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
@@ -79,30 +81,30 @@ export default class BoxFilterStabilizer implements Stabilizer {
   private currentPoints: BrushPoint[];
   private numPoints: number;
   private cache: Cache;
-  private maxSize: number
+  private maxSize: number;
+  private onBrushStrokeCutoff: Event<BrushPoint[]>;
 
-  constructor(settings: Readonly<BrushSettings>) {
-    this.maxSize = Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(settings) * 0.5)
+  constructor(settings: Readonly<BrushSettings>, onBrushStrokeCutoff: Event<BrushPoint[]>) {
+    this.maxSize = Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(settings) * 0.5);
     //TODO: Add mutation observer on the s
 
-    this.currentPoints = new Array(this.maxSize).map((_) =>
-      newPoint(new Float32Vector2(0, 0), 0)
-    );
+    this.currentPoints = new Array(this.maxSize).map((_) => newPoint(new Float32Vector2(0, 0), 0));
     this.numPoints = 0;
+
     this.cache = {
       weightsCache: [],
       cachedSmoothing: -1,
-      runningSumPointCache: new Array(this.maxSize).map(
-        (_) => new Float32Vector2(0, 0)
-      ),
+      runningSumPointCache: new Array(this.maxSize).map((_) => new Float32Vector2(0, 0)),
       previousRawCurveLength: 0,
     };
+
+    this.onBrushStrokeCutoff = onBrushStrokeCutoff;
   }
 
-  addPoint(p: BrushPoint) {
+  addPoint(p: BrushPoint, settings: Readonly<BrushSettings>) {
     this.currentPoints[this.numPoints] = p;
     this.numPoints += 1;
-    if (this.numPoints == this.maxSize) this.handleOverflow();
+    if (this.numPoints == this.maxSize) this.handleOverflow(settings);
   }
 
   getProcessedCurve(settings: Readonly<BrushSettings>): BrushPoint[] {
@@ -134,15 +136,21 @@ export default class BoxFilterStabilizer implements Stabilizer {
     this.cache.previousRawCurveLength = 0;
   }
 
-  private handleOverflow() {
-    updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints)
+  private handleOverflow(settings: Readonly<BrushSettings>) {
+    updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints);
 
-    const deleted = shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
-    this.numPoints -= deleted;
+    const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
+    
+    const shavedOff = this.currentPoints.slice(0, numDeleted)
+    const processed = process(shavedOff, numDeleted, settings, this.cache)
+    this.onBrushStrokeCutoff.invoke(processed)
 
-    assert(this.numPoints > 0 && deleted > 0);
+    shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
+    this.numPoints -= numDeleted;
 
-    const sumOfAll = this.cache.runningSumPointCache[deleted - 1];
+    assert(this.numPoints > 0 && numDeleted > 0);
+
+    const sumOfAll = this.cache.runningSumPointCache[numDeleted - 1];
     shiftDeleteElements(this.cache.runningSumPointCache, DELETE_FACTOR, this.maxSize);
 
     for (let i = 0; i < this.numPoints; i++) sub(this.cache.runningSumPointCache[i], sumOfAll);
@@ -178,7 +186,7 @@ function process(
     smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
   }
 
-   //return boxed;
+  //return boxed;
   return addPointsCartmollInterpolation3D(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
 }
 
@@ -362,6 +370,7 @@ function carmullRom2D(
   return results;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function addPointsCartmollInterpolation(
   rawCurve: BrushPoint[],
   tension: number,
@@ -410,6 +419,7 @@ function addPointsCartmollInterpolation3D(
   for (let i = 0; i < numSteps; i++) {
     const parameter = Math.min(1, (spacing * i) / curveDist);
     const point = interpolator.getPointAt(parameter);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     output.push(newPoint(new Float32Vector2(point[0], point[1]), point[2]!));
   }
 
@@ -448,6 +458,7 @@ function updateCache(
   weightsCache.previousRawCurveLength = rawCurveLength;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function sampleExpWeight(cache: Cache, i: number, d: number): number {
   return cache.weightsCache[i * (cache.cachedSmoothing + 1) + d];
 }
@@ -482,7 +493,6 @@ function sampleAvgWeight(cache: Cache, i: number): Float32Vector2 {
 
   return scale(sum, 1 / (2 * cache.cachedSmoothing + 1));
 }
-
 
 function getSmoothingValueFromStabilization(stabilization: number): number {
   requires(0 <= stabilization && stabilization <= 1);

@@ -13,19 +13,17 @@ export interface RenderPipeline {
   renderTarget?: FrameBuffer;
 }
 
-export function bindAll(gl: GL, pipeline: RenderPipeline, withShader=true) {
+export function bindAll(gl: GL, pipeline: RenderPipeline) {
   pipeline.vertexArray.bind(gl);
   pipeline.vertexBuffer.bind(gl);
   pipeline.indexBuffer?.bind(gl)
-  if (withShader) pipeline.shader.use(gl)
   pipeline.renderTarget?.bind(gl)
 }
 
-export function unBindAll(gl: GL, pipeline: RenderPipeline, withShader=true) {
+export function unBindAll(gl: GL, pipeline: RenderPipeline) {
   pipeline.vertexArray.unBind(gl);
   pipeline.vertexBuffer.unBind(gl);
   pipeline.indexBuffer?.unBind(gl)
-  if (withShader) pipeline.shader.stopUsing(gl)
   pipeline.renderTarget?.unBind(gl)
 }
 

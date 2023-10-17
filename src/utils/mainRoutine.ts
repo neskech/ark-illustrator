@@ -1,5 +1,5 @@
 import { type CanvasState, getDefaultCanvasState } from './canvas/canvas';
-import { type ToolState, getDefaultToolState, handleEvent } from './canvas/tools/handler';
+import { type InputState, getDefaultToolState, handleEvent } from './canvas/tools/handler';
 import { type GlobalToolSettings, getDefaultSettings } from './canvas/tools/settings';
 import { Option, Some } from './func/option';
 import { MasterPipeline } from './pipelines/MasterPipeline';
@@ -8,7 +8,7 @@ import { type GL } from './web/glUtils';
 export interface AppState {
   canvasState: CanvasState;
   settings: GlobalToolSettings;
-  toolState: ToolState;
+  inputState: InputState;
 }
 
 let gl: GL;
@@ -33,11 +33,11 @@ export function init(canvas: HTMLCanvasElement) {
 
   gl.viewport(0, 0, canvas.width, canvas.height);
 
-  const settings = getDefaultSettings()
+  const settings = getDefaultSettings(gl);
   appState = {
     canvasState: getDefaultCanvasState(canvas),
     settings,
-    toolState: getDefaultToolState(settings),
+    inputState: getDefaultToolState(settings),
   };
 
   masterPipeline = new MasterPipeline(gl, appState);
@@ -53,6 +53,7 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     'pointermove',
     'pointerup',
     'pointerleave',
+    'wheel',
     'keydown',
     'keypress',
     'keyup',
@@ -61,10 +62,12 @@ function initEventListeners(canvas: HTMLCanvasElement) {
   events.forEach((e) => {
     canvas.addEventListener(e, (ev) => {
       handleEvent({
-        map: appState.toolState.tools,
+        map: appState.inputState.tools,
         event: ev,
-        currentTool: appState.toolState.currentTool,
-        canvasState: appState.canvasState,
+        gestures: appState.inputState.gestures,
+        shortcuts: appState.inputState.shortcuts,
+        currentTool: appState.inputState.currentTool,
+        appState: appState,
         settings: appState.settings,
         presetNumber: Some(0),
       });

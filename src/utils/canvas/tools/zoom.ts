@@ -34,17 +34,17 @@ export class Zoom extends Tool {
   }
 
   mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState, settings, presetNumber } = args;
+    const { appState: canvasState, settings, presetNumber } = args;
     return false;
   }
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState, settings, presetNumber } = args;
+    const { appState: canvasState, settings, presetNumber } = args;
     return false;
   }
 
   mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { canvasState, settings, presetNumber } = args;
+    const { appState: canvasState, settings, presetNumber } = args;
     return false;
   }
 
@@ -60,4 +60,3 @@ export class Zoom extends Tool {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-

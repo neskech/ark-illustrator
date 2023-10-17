@@ -3,7 +3,7 @@ import { unreachable } from '../func/funUtils';
 import { Option } from '../func/option';
 import { type GL, GLObject, glOpErr } from './glUtils';
 import Texture from './texture';
-import { TextureOptions } from './texture';
+import { type TextureOptions } from './texture';
 
 type FrameBufferTarget = 'Regular' | 'Draw' | 'Read';
 type Filter = 'Linear' | 'Nearest';

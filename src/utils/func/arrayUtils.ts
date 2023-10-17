@@ -17,6 +17,22 @@ export function find<A>(a: A[], fn: (a: A, i?: number) => boolean): Option<A> {
   return Option.fromNull(a.find(fn));
 }
 
+export function numberSatisfying<A>(a: A[], fn: (a: A, i?: number) => boolean): number {
+  let numSatistfy = 0
+  for (const elem of a) {
+    if (fn(elem))
+      numSatistfy += 1
+  }
+  return numSatistfy
+}
+
+export function equals<A>(a: A[], b: A[]): boolean {
+  if (a.length != b.length)
+    return false
+
+  return a.every((el, i) => b[i] === el)
+}
+
 export function indexOf<A>(a: A[], el: A, fromIndex?: number): Option<number> {
   const res = a.indexOf(el, fromIndex);
   if (res < 0) return None();

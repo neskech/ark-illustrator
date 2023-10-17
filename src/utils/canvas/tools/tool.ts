@@ -1,12 +1,12 @@
-import { type Option } from "~/utils/func/option";
-import { type CanvasState } from "../canvas";
+import { type Option } from '~/utils/func/option';
 import { type GlobalToolSettings } from './settings';
+import { type AppState } from '~/utils/mainRoutine';
 
 export type EventString = keyof HTMLElementEventMap;
 export type CanvasEvent = HTMLElementEventMap[EventString];
 
 export interface HandleEventArgs {
-  canvasState: CanvasState;
+  appState: AppState;
   event: CanvasEvent;
   eventString: EventString;
   settings: GlobalToolSettings;
@@ -16,7 +16,3 @@ export interface HandleEventArgs {
 export abstract class Tool {
   abstract handleEvent(args: HandleEventArgs): boolean;
 }
-
-
-
-

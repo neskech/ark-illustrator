@@ -7,11 +7,11 @@ import {
   Matrix4,
   type Matrix4x4,
 } from 'matrixgl';
-import { Int32Vector2, add } from '../web/vector';
+import { Int32Vector2, add, copy } from '../web/vector';
 import { type CanvasState } from './canvas';
 
 const DEFAULT_ZOOM = 1;
-const MIN_ZOOM = 0.1;
+const MIN_ZOOM = 0.03;
 const MAX_ZOOM = 10;
 
 const CANVAS_HEIGHT = 1.0;
@@ -108,7 +108,6 @@ export default class Camera {
     const lookAtPos = new Float32Vector3(this.position.x, this.position.y, 0);
     const theta = deg2Rads(this.rotation);
     const upVector = new Float32Vector3(-Math.sin(theta), Math.cos(theta), 0);
-    //this.position.z = DEFAULT_ZOOM + 0.5
 
     return Matrix4.lookAt(this.position, lookAtPos, upVector);
   }
@@ -150,6 +149,10 @@ export default class Camera {
     return new Float32Vector2(x, y);
   }
 
+  getCameraWidth(): number {
+    return 2 * this.position.z * Math.tan(this.fovX / 2);
+  }
+
   toString(): string {
     return `Camera Object --\n
             Position: ${this.position.toString()}\n
@@ -182,9 +185,8 @@ export default class Camera {
      * TOP = +y = 1
      * BOTTOM = -y = -1
      */
-    const z = this.position.z
-    const width = z * Math.tan(this.fovX / 2);
-    const height = z * Math.tan(this.fovY / 2)
+    const width = this.position.z * Math.tan(this.fovX / 2);
+    const height = this.position.z  * Math.tan(this.fovY / 2)
     p.x *= width;
     p.y *= height;
 
@@ -216,6 +218,10 @@ export default class Camera {
   mulVecByProjection(v: Float32Vector2): Float32Vector2 {
     return matMult(this.getProjectionMatrix(), new Float32Vector4(v.x, v.y, 0, 0))
   }
+
+  getPosition(): Float32Vector2 {
+    return copy(this.position)
+  }
 }
 
 export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vector2 {
@@ -225,15 +231,23 @@ export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vecto
   return new Int32Vector2(x, y);
 }
 
-export function mouseToNormalized(event: PointerEvent, state: CanvasState): Float32Vector2 {
+export function mouseToNormalizedWithEvent(event: PointerEvent | MouseEvent, state: CanvasState): Float32Vector2 {
   const rect = state.canvas.getBoundingClientRect();
   const x = (event.clientX - rect.left) / state.canvas.clientWidth;
   const y = (event.clientY - rect.top) / state.canvas.clientHeight;
   return new Float32Vector2(x, 1.0 - y);
 }
 
+export function mouseToNormalized(mousePos: Float32Vector2, state: CanvasState): Float32Vector2 {
+  const rect = state.canvas.getBoundingClientRect();
+  const x = (mousePos.x
+    - rect.left) / state.canvas.clientWidth;
+  const y = (mousePos.y - rect.top) / state.canvas.clientHeight;
+  return new Float32Vector2(x, 1.0 - y);
+}
+
 export function mouseToNDC(event: PointerEvent, state: CanvasState): Float32Vector2 {
-  const p = mouseToNormalized(event, state);
+  const p = mouseToNormalizedWithEvent(event, state);
   p.x = (p.x - 0.5) * 2.0;
   p.y = (p.y - 0.5) * 2.0;
   return p;

@@ -3,9 +3,8 @@ import { bindAll, unBindAll } from '../web/renderPipeline';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
-import { type AppState, } from '../mainRoutine';
+import { type AppState } from '../mainRoutine';
 import { constructQuadIndices, constructQuadSixTex } from './util';
-import BoxFilterStabilizer from '../canvas/utils/stabilizing/boxFilterStabilizer';
 import UnitStabilizer from '../canvas/utils/stabilizing/unitStabilizer';
 import { type BrushPoint } from '../canvas/tools/brush';
 import SmoothedStabilizer from '../canvas/utils/stabilizing/smoothStabilizer';
@@ -14,7 +13,6 @@ const MAX_POINTS_PER_FRAME = 50000;
 const NUM_VERTICES_QUAD = 4;
 const NUM_INDICES_QUAD = 6;
 const VERTEX_SIZE = 4;
-const SIZE_INTEGER = 4;
 const SIZE_FLOAT = 4;
 
 function fillEbo(gl: GL, ebo: Buffer) {
@@ -82,11 +80,11 @@ export class DebugPipeline {
   shader: Shader;
   linearPoints: BrushPoint[];
   smoothedPoints: BrushPoint[];
-  linearStab = new UnitStabilizer()
-  smoothedStab = new SmoothedStabilizer()
-  currentBuf: 'linear' | 'smoothed' = 'smoothed'
+  linearStab = new UnitStabilizer();
+  smoothedStab = new SmoothedStabilizer();
+  currentBuf: 'linear' | 'smoothed' = 'smoothed';
 
-  public constructor(gl: GL) {
+  public constructor(gl: GL, _: Readonly<AppState>) {
     this.name = 'Standard Draw Pipeline';
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
@@ -103,7 +101,7 @@ export class DebugPipeline {
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
-    bindAll(gl, this, false);
+    bindAll(gl, this);
 
     this.vertexArray
       .builder()
@@ -118,37 +116,35 @@ export class DebugPipeline {
 
     initShader(gl, this.shader);
 
-    appState.toolState.tools['brush'].subscribeToOnBrushStrokeContinuedRaw(
-      (p) => {
-          this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(p, 1, 1, 1)
-          this.linearPoints = this.linearStab.getProcessedCurveWithPoints(p)
+    appState.inputState.tools['brush'].subscribeToOnBrushStrokeContinuedRaw((p) => {
+      this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(p, 1, 1, 1);
+      this.linearPoints = this.linearStab.getProcessedCurveWithPoints(p);
 
-          gl.clearColor(1, 1, 1, 1);
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          const pointsToRender = this.currentBuf == 'smoothed' ? this.smoothedPoints : this.linearPoints
-          this.render(gl, pointsToRender, appState)
-      }
-    );
-    appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       gl.clearColor(1, 1, 1, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      this.smoothedPoints = []
-      this.linearPoints = []
+      const pointsToRender =
+        this.currentBuf == 'smoothed' ? this.smoothedPoints : this.linearPoints;
+      this.render(gl, pointsToRender, appState);
+    });
+    appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
+      gl.clearColor(1, 1, 1, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      this.smoothedPoints = [];
+      this.linearPoints = [];
     });
 
-    this.addEvents(gl, appState)
+    this.addEvents(gl, appState);
 
     unBindAll(gl, this);
   }
 
-  render(gl: GL, pointsToRender: BrushPoint[], state: Readonly<AppState>) {
+  private render(gl: GL, pointsToRender: BrushPoint[], state: Readonly<AppState>) {
     bindAll(gl, this);
-
 
     if (pointsToRender.length <= 1) return;
 
     const buf = new Float32Array(pointsToRender.length * 6 * VERTEX_SIZE);
-    
+
     let i = 0;
     for (const p of pointsToRender) {
       const quadVerts = constructQuadSixTex(p.position, 0.01);
@@ -160,33 +156,25 @@ export class DebugPipeline {
 
     this.vertexBuffer.addData(gl, buf);
 
-    this.shader.uploadMatrix4x4(
-      gl,
-      'model',
-      state.canvasState.camera.getTransformMatrix()
-    );
+    this.shader.uploadMatrix4x4(gl, 'model', state.canvasState.camera.getTransformMatrix());
     this.shader.uploadMatrix4x4(gl, 'view', state.canvasState.camera.getViewMatrix());
-    this.shader.uploadMatrix4x4(
-      gl,
-      'projection',
-      state.canvasState.camera.getProjectionMatrix()
-    );
+    this.shader.uploadMatrix4x4(gl, 'projection', state.canvasState.camera.getProjectionMatrix());
 
     gl.drawArrays(gl.TRIANGLES, 0, 6 * pointsToRender.length);
 
     unBindAll(gl, this);
   }
 
-  addEvents(gl: GL, appState: Readonly<AppState>) {
+  private addEvents(gl: GL, appState: Readonly<AppState>) {
     document.addEventListener('keypress', (e) => {
-        if (e.key == 'j') {
-          this.currentBuf = this.currentBuf == 'linear' ? 'smoothed' : 'linear'
-          gl.clearColor(1, 1, 1, 1);
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          const pointsToRender = this.currentBuf == 'smoothed' ? this.smoothedPoints : this.linearPoints
-          this.render(gl, pointsToRender, appState)
-        }
-          
-    })
+      if (e.key == 'j') {
+        this.currentBuf = this.currentBuf == 'linear' ? 'smoothed' : 'linear';
+        gl.clearColor(1, 1, 1, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        const pointsToRender =
+          this.currentBuf == 'smoothed' ? this.smoothedPoints : this.linearPoints;
+        this.render(gl, pointsToRender, appState);
+      }
+    });
   }
 }

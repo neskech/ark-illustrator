@@ -1,9 +1,9 @@
-import { MAX_POINTS_PER_FRAME } from '~/utils/pipelines/drawPipeline';
+import { MAX_POINTS_PER_FRAME } from '~/utils/pipelines/canvasPipeline';
 import { type BrushPoint, type BrushSettings } from '../../tools/brush';
 import { assert, requires } from '~/utils/contracts';
 
 export default interface Stabilizer {
-    addPoint: (p: BrushPoint) => void,
+    addPoint: (p: BrushPoint, settings: Readonly<BrushSettings>) => void,
     getProcessedCurve: (settings: Readonly<BrushSettings>) => BrushPoint[]
     getRawCurve: (settings: Readonly<BrushSettings>) => BrushPoint[]
     reset: () => void
@@ -16,7 +16,11 @@ export const getSpacingFromBrushSettings = (settings: Readonly<BrushSettings>): 
     return settings.spacing == 'auto' ? settings.size * 0.5 : settings.spacing
 }
 
-export function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize: number): number {
+export function getNumDeletedElementsFromDeleteFactor(deleteFactor: number, maxSize: number): number {
+    return Math.floor(maxSize * deleteFactor)
+}
+
+export function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize: number) {
     requires(array.length == maxSize)
 
     const numToShaveOff = Math.floor(maxSize * deleteFactor)
@@ -28,5 +32,4 @@ export function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize
         array[i] = array[i + numToShaveOff]
     }
 
-    return numToShaveOff
 }

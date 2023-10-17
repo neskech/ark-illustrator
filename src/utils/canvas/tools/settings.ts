@@ -1,3 +1,4 @@
+import { type GL } from "~/utils/web/glUtils";
 import { type BrushSettings, defaultBrushSettings } from "./brush";
 
 
@@ -10,13 +11,13 @@ export interface GlobalToolSettings {
   fillSettings: FillSettings;
 }
 
-export function getDefaultSettings(): GlobalToolSettings {
+export function getDefaultSettings(gl: GL): GlobalToolSettings {
   return {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     brushSettings: [
-        defaultBrushSettings(),
-        defaultBrushSettings(),
-        defaultBrushSettings()
+        defaultBrushSettings(gl),
+        defaultBrushSettings(gl),
+        defaultBrushSettings(gl)
     ],
     fillSettings: {
         tolerance: 0.0
