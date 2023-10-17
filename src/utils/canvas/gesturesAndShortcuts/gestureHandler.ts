@@ -41,6 +41,8 @@ export default class GestureHandler {
       id: event.pointerId,
     });
 
+    console.log("POINTER ID IS DOWN", event.pointerId)
+
     let dirty = false
     for (const gesture of this.gestures) {
       dirty = gesture.fingerTapped(this.pointerPositions, appState) || dirty;
