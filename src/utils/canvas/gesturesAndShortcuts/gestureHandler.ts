@@ -32,6 +32,7 @@ export default class GestureHandler {
 
   handlePointerDown(event: PointerEvent, appState: AppState) {
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
+    console.log('down', event.pointerId)
     this.pointerPositions.push({
       pos: new Float32Vector2(event.clientX, event.clientY),
       id: event.pointerId,
@@ -50,6 +51,7 @@ export default class GestureHandler {
   }
 
   handlePointerUp(event: PointerEvent) {
+    console.log('up', event.pointerId)
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
       if (event.pointerId == id) {

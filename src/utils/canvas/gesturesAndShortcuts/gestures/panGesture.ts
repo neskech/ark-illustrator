@@ -29,13 +29,10 @@ export default class PanGesture implements Gesture {
   }
 
   fingerMoved(positions: PointerPos[], appState: AppState): boolean {
-    console.log('pan start')
     if (!this.isInitialized()) {
       this.tryInitialize(positions, appState);
       return false;
     }
-
-    alert('heya')
 
     const originalMid = midpoint(this.originPosition1, this.originPosition2);
     const newMid = midpoint(positions[0].pos, positions[1].pos);
@@ -53,8 +50,6 @@ export default class PanGesture implements Gesture {
   private tryInitialize(positions: PointerPos[], appState: AppState) {
     const isInit = this.isInitialized();
 
-    console.log('init status:', isInit, positions)
-
     if (isInit && positions.length == 2) {
       this.originPosition1 = copy(positions[0].pos);
       this.originPosition2 = copy(positions[1].pos);
@@ -69,7 +64,6 @@ export default class PanGesture implements Gesture {
       [this.pointerId1, this.pointerId2]
     );
     if (isInit && positions.length != 2 && samePointerIDs) this.deInitialize();
-    console.log('could not initialize!')
   }
 
   private deInitialize() {
