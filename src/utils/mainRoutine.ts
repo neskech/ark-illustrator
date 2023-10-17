@@ -22,7 +22,7 @@ export function init(canvas: HTMLCanvasElement) {
   const result = Option.fromNull(
     canvas.getContext('webgl2', {
       preserveDrawingBuffer: true,
-      premultipliedAlpha: false,
+      //premultipliedAlpha: false,
     })
   );
 

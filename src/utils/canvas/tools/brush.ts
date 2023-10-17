@@ -18,22 +18,28 @@ import { GlobalToolSettings } from './settings';
 export interface BrushSettings {
   size: number;
   opacity: number;
-  stabilization: number;
-  spacing: 'auto' | number;
   minSize: number,
   maxSize: number
-  pressureSettings: BezierFunction;
+  minOpacity: number,
+  maxOpacity: number
+  stabilization: number;
+  spacing: 'auto' | number;
+  pressureSizeSettings: BezierFunction;
+  pressureOpacitySettings: BezierFunction;
 }
 
 export function defaultBrushSettings(): BrushSettings {
   return {
-      size: 0.03,
+      size: 0.08,
       opacity: 1.0,
-      stabilization: 0.5,
-      spacing: 0.005,
       minSize: 0.05,
       maxSize: 1.0,
-      pressureSettings: getLinearBezier()
+      minOpacity: 0.1,
+      maxOpacity: 0.9,
+      stabilization: 0.5,
+      spacing: 0.003,
+      pressureSizeSettings: getLinearBezier(),
+      pressureOpacitySettings: getLinearBezier()
   }
 } 
 
@@ -41,7 +47,16 @@ export function getSizeGivenPressure(settings: Readonly<BrushSettings>, pressure
   const min = settings.size * settings.minSize
   const max = settings.size * settings.maxSize
   const range = max - min
+  //const p = settings.pressureSizeSettings.sampleY(pressure)
   return range * pressure + min
+}
+
+export function getOpacityGivenPressure(settings: Readonly<BrushSettings>, pressure: number): number {
+  const min = settings.opacity * settings.minOpacity
+  const max = settings.opacity * settings.maxOpacity
+  const range = max - min
+  const p = settings.pressureOpacitySettings.sampleY(pressure)
+  return range * p + min
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +127,7 @@ export class Brush extends Tool {
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    const brushPoint = newPoint(point, brushSettings.pressureSettings.sampleY(event.pressure))
+    const brushPoint = newPoint(point, event.pressure)
     if (this.isMouseDown) { 
       this.stabilizer.addPoint(brushPoint);
       this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))
@@ -139,7 +154,7 @@ export class Brush extends Tool {
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    const brushPoint = newPoint(point, brushSettings.pressureSettings.sampleY(event.pressure))
+    const brushPoint = newPoint(point, event.pressure)
     if (!this.isMouseDown) {
        this.stabilizer.addPoint(brushPoint);
        this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))

@@ -17,7 +17,7 @@ export class MasterPipeline {
     //initWithErrorWrapper(() => this.debugPipeline.init(gl, appState), this.debugPipeline.name);
     initWithErrorWrapper(() => this.drawPipeline.init(gl, appState), this.drawPipeline.name);
 
-    gl.clearColor(1, 1, 1, 1);
+    gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.disable(gl.DEPTH_TEST);

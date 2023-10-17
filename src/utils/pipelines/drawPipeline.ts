@@ -11,15 +11,15 @@ import {
 } from './util';
 import { bindAll, unBindAll } from '../web/renderPipeline';
 import { type AppState } from '../mainRoutine';
-import { type BrushPoint, getSizeGivenPressure } from '../canvas/tools/brush';
+import { type BrushPoint, getSizeGivenPressure, getOpacityGivenPressure } from '../canvas/tools/brush';
 import { assert } from '../contracts';
 import { Float32Vector2 } from 'matrixgl';
 import Texture from '../web/texture';
 
-export const MAX_POINTS_PER_FRAME = 1000;
-const NUM_VERTICES_QUAD = 4;
+export const MAX_POINTS_PER_FRAME = 10000;
+const NUM_VERTICES_QUAD = 6;
 const NUM_INDICES_QUAD = 6;
-const VERTEX_SIZE = 4;
+const VERTEX_SIZE = 5;
 const SIZE_INTEGER = 4;
 const SIZE_FLOAT = 4;
 
@@ -40,27 +40,40 @@ function fillEbo(gl: GL, ebo: Buffer) {
 function initShader(gl: GL, shader: Shader) {
   const fragmentSource = `precision highp float;
                           varying highp vec2 vTextureCoord;
+                          varying highp float v_opacity;
                           
                           uniform sampler2D tex;
+                          uniform float flow;
                           
                           
                           void main() {
                              //gl_FragColor = vec4(vTextureCoord, 1, 1);//texture2D(tex, vTextureCoord);
-                             gl_FragColor = texture2D(tex, vTextureCoord);
+                             vec4 color = texture2D(tex, vTextureCoord);
+
+                             float c = (color.r + color.g + color.b) / 3.0;
+                             color.r = 1.0 - c;
+                             color.g = 1.0 - c;
+                             color.b = 1.0 - c;
+                             
+                             color.a *= flow * v_opacity;
+                             gl_FragColor = color;
                           }\n`;
 
   const vertexSource = `attribute vec2 a_position;
                         attribute vec2 aTextureCoord;
+                        attribute float a_opacity;
 
                         uniform mat4 model;
                         uniform mat4 view;
                         uniform mat4 projection;
 
                         varying highp vec2 vTextureCoord;
+                        varying highp float v_opacity;
 
                         void main() {
                           gl_Position = projection * view * model * vec4(a_position, 0, 1);
-                          vTextureCoord = aTextureCoord;             
+                          vTextureCoord = aTextureCoord;     
+                          v_opacity = a_opacity;        
                         }\n`;
 
   shader.constructFromSource(gl, vertexSource, fragmentSource).match(
@@ -112,11 +125,12 @@ export class DrawPipeline {
       .builder()
       .addAttribute(2, 'float', 'position')
       .addAttribute(2, 'float', 'texCord')
+      .addAttribute(1, 'float', 'opacity')
       .build(gl);
 
     fillEbo(gl, this.indexBuffer);
 
-    const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * SIZE_FLOAT;
+    const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE * SIZE_FLOAT;
     this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
     initShader(gl, this.shader);
@@ -125,7 +139,7 @@ export class DrawPipeline {
       this.render(gl, p, appState)
     );
     appState.toolState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
-      gl.clearColor(1, 1, 1, 1);
+      gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
     });
 
@@ -138,7 +152,7 @@ export class DrawPipeline {
     if (points.length == 0) return;
     assert(points.length < MAX_POINTS_PER_FRAME);
 
-    gl.clearColor(1, 1, 1, 1);
+    gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     const buf = new Float32Array(points.length * 6 * VERTEX_SIZE);
@@ -146,24 +160,23 @@ export class DrawPipeline {
     const brushSettings = appState.settings.brushSettings[0];
 
     let i = 0;
-    let prevNormal: Float32Vector2 | null = null;
-    for (let j = 0; j < points.length - 1; j++) {
-      const uvStart = j / ((points.length - 1) / 1)
-      const uvEnd = (j + 1) / ((points.length - 1) / 1)
+    for (let j = 0; j < points.length; j++) {
 
-      const [p, quadVerts] = constructQuadSixPressureNormalUV(
-        points[j],
-        points[j + 1],
-        brushSettings,
-        prevNormal,
-        uvStart,
-        uvEnd
-      ); //constructLinesSixPressureNormal(points[j], points[j + 1], brushSettings, prevNormal);
-      prevNormal = p;
-      for (const v of quadVerts) {
-        buf[i++] = v.x;
-        buf[i++] = v.y;
+      const quadVerts = constructQuadSixTex(points[j].position, getSizeGivenPressure(brushSettings, points[j].pressure))
+      const opacity = getOpacityGivenPressure(brushSettings, points[j].pressure)
+
+      for (let k = 0; k < quadVerts.length; k+=2) {
+        const pos = quadVerts[k]
+        const tex = quadVerts[k + 1]
+
+        buf[i++] = pos.x;
+        buf[i++] = pos.y;
+        buf[i++] = tex.x;
+        buf[i++] = tex.y;
+        buf[i++] = opacity
+
       }
+
     }
 
     this.vertexBuffer.addData(gl, buf);
@@ -175,6 +188,7 @@ export class DrawPipeline {
       'projection',
       appState.canvasState.camera.getProjectionMatrix()
     );
+    this.shader.uploadFloat(gl, 'flow', 0.5)
 
     this.brushTexture.bind(gl);
     this.shader.uploadTexture(gl, 'tex', this.brushTexture);
