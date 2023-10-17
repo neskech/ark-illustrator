@@ -41,9 +41,7 @@ export default class ZoomGesture implements Gesture {
   }
 
   private tryInitialize(positions: PointerPos[]) {
-    const isInit = this.isInitialized();
-
-    if (!isInit && positions.length == 2) {
+    if (positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalDistance = distance(positions[0].pos, positions[1].pos);

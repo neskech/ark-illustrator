@@ -20,6 +20,7 @@ export default class RotationGesture implements Gesture {
 
   fingerMoved(positions: PointerPos[], appState: AppState): boolean {
     if (!this.isInitialized()) {
+      console.log("OOPY DOOPY TRYING TO INIT WITH POS LENGTH", positions.length, JSON.stringify(positions))
       this.tryInitialize(positions);
       return false;
     }
@@ -43,9 +44,7 @@ export default class RotationGesture implements Gesture {
   }
 
   private tryInitialize(positions: PointerPos[]) {
-    const isInit = this.isInitialized();
-
-    if (!isInit && positions.length == 2) {
+    if (positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalRotation = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
