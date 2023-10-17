@@ -127,7 +127,7 @@ export class Brush extends Tool {
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    const brushPoint = newPoint(point, brushSettings.pressureSizeSettings.sampleY(event.pressure))
+    const brushPoint = newPoint(point, event.pressure)
     if (this.isMouseDown) { 
       this.stabilizer.addPoint(brushPoint);
       this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))
@@ -154,7 +154,7 @@ export class Brush extends Tool {
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)]
 
     const point = canvasState.camera.mouseToWorld(event, canvasState);
-    const brushPoint = newPoint(point, brushSettings.pressureSizeSettings.sampleY(event.pressure))
+    const brushPoint = newPoint(point, event.pressure)
     if (!this.isMouseDown) {
        this.stabilizer.addPoint(brushPoint);
        this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings))
