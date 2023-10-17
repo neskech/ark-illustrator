@@ -1,4 +1,4 @@
-import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
+import { type PointerPos, type Gesture, areValidPointerIDs, areValidPositions } from './gesture';
 import { type AppState } from '~/utils/mainRoutine';
 import { distanceSquared } from '~/utils/web/vector';
 import { assert } from '~/utils/contracts';
@@ -23,6 +23,11 @@ export default class ZoomGesture implements Gesture {
       return false;
     }
 
+    if (!this.isValidInput(positions)) {
+        this.deInitialize()
+        return false
+    }
+
     const newDistance = distanceSquared(positions[0].pos, positions[1].pos);
     const deltaDistance = this.originalDistance - newDistance;
     appState.canvasState.camera.setZoom(deltaDistance * ZOOM_FACTOR);
@@ -37,19 +42,26 @@ export default class ZoomGesture implements Gesture {
   private tryInitialize(positions: PointerPos[]) {
     const isInit = this.isInitialized();
 
-    if (!isInit && positions.length == 2) {
+    if (!isInit && this.isValidInput(positions)) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalDistance = distanceSquared(positions[0].pos, positions[1].pos);
       assert(this.isInitialized());
     }
 
-    const samePointerIDs = equalsNoOrder(
-      positions.map((p) => p.id),
-      [this.pointerId1, this.pointerId2]
-    );
-    if (isInit && positions.length != 2 && samePointerIDs) this.deInitialize();
   }
+
+  private isValidInput(positions: PointerPos[]): boolean {
+    const validPositions = areValidPositions(...positions.map(p => p.pos))
+    const validPointerIDs = areValidPointerIDs(...positions.map(p => p.id))
+    const samePointerIDs = equalsNoOrder(
+        positions.map((p) => p.id),
+        [this.pointerId1, this.pointerId2]
+    );
+    const goodLength = positions.length == 2
+    return validPositions && validPointerIDs && samePointerIDs && goodLength
+  }
+
 
   private deInitialize() {
     this.pointerId1 = -1;

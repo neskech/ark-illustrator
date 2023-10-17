@@ -11,7 +11,7 @@ import { add, copy, midpoint, scale } from '~/utils/web/vector';
 import { assert } from '~/utils/contracts';
 import { equalsNoOrder } from '~/utils/func/arrayUtils';
 
-const PAN_FACTOR = 1;
+const PAN_FACTOR = 1.5;
 
 export default class PanGesture implements Gesture {
   private originPosition1: Float32Vector2;
@@ -34,10 +34,15 @@ export default class PanGesture implements Gesture {
       return false;
     }
 
+    if (!this.isValidInput(positions)) {
+        this.deInitialize()
+        return false
+    }
+
     const originalMid = midpoint(this.originPosition1, this.originPosition2);
     const newMid = midpoint(positions[0].pos, positions[1].pos);
     const deltaVector = getFingerDelta(newMid, originalMid, appState);
-    const newPos = add(copy(this.originCameraPos), scale(deltaVector, PAN_FACTOR));
+    const newPos = add(copy(this.originCameraPos), scale(deltaVector, -PAN_FACTOR));
     appState.canvasState.camera.setPosition(newPos);
 
     return true;
@@ -50,27 +55,29 @@ export default class PanGesture implements Gesture {
   private tryInitialize(positions: PointerPos[], appState: AppState) {
     const isInit = this.isInitialized();
 
-    console.log('init status:', isInit, JSON.stringify(positions))
-
-    if (!isInit && positions.length == 2) {
+    if (!isInit && this.isValidInput(positions)) {
       this.originPosition1 = copy(positions[0].pos);
       this.originPosition2 = copy(positions[1].pos);
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originCameraPos = appState.canvasState.camera.getPosition();
-      console.log("IM IN BABYYYYYYYYYY!!!!!!!!!!!!!!!")
       assert(this.isInitialized());
     }
 
+  }
+
+  private isValidInput(positions: PointerPos[]): boolean {
+    const validPositions = areValidPositions(...positions.map(p => p.pos))
+    const validPointerIDs = areValidPointerIDs(...positions.map(p => p.id))
     const samePointerIDs = equalsNoOrder(
-      positions.map((p) => p.id),
-      [this.pointerId1, this.pointerId2]
+        positions.map((p) => p.id),
+        [this.pointerId1, this.pointerId2]
     );
-    if (isInit && positions.length != 2 && samePointerIDs) this.deInitialize();
+    const goodLength = positions.length == 2
+    return validPositions && validPointerIDs && samePointerIDs && goodLength
   }
 
   private deInitialize() {
-    console.log("OH NOO!!!!!")
     this.originPosition1 = new Float32Vector2(-1, -1);
     this.originPosition2 = new Float32Vector2(-1, -1);
     this.pointerId1 = -1;
