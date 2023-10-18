@@ -52,6 +52,11 @@ export default class PanGesture implements Gesture {
     return false;
   }
 
+  fingerReleased(): boolean {
+    this.deInitialize()
+    return false
+  }
+
   private tryInitialize(positions: PointerPos[], appState: AppState) {
     const isInit = this.isInitialized();
 

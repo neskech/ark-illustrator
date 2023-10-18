@@ -73,7 +73,11 @@ export default class GestureHandler {
       }
     }
 
-    return false;
+    let dirty = false
+    for (const gesture of this.gestures) {
+      dirty = gesture.fingerReleased() || dirty;
+    }
+    return dirty
   }
 
   subscribeToOnScreenClearGesture(f: () => void, hasPriority = false) {

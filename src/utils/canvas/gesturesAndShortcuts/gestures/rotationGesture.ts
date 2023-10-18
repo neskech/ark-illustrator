@@ -36,6 +36,11 @@ export default class RotationGesture implements Gesture {
     return true;
   }
 
+  fingerReleased(): boolean {
+    this.deInitialize()
+    return false
+  }
+
   fingerTapped(_: PointerPos[], __: AppState): boolean {
     return false;
   }
