@@ -231,7 +231,7 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    //clearScreen(gl, 0, 0, 0, 0)
+    clearScreen(gl, 0, 0, 0, 0)
 
     const brushSettings = appState.settings.brushSettings[0];
 
@@ -248,7 +248,7 @@ export class StrokePipeline {
     });
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       this.frameBuffer.bind(gl);
-      clearScreen(gl, 0, 0, 0, 0)
+      //clearScreen(gl, 0, 0, 0, 0)
       const texture = canvasFramebuffer.getTextureAttachment();
       this.renderCanvasTexture(gl, texture);
       this.frameBuffer.unBind(gl);
