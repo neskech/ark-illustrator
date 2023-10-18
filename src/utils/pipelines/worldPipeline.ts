@@ -21,7 +21,6 @@ function initShader(gl: GL, shader: Shader) {
                           
                           void main() {
                             gl_FragColor = texture2D(canvas, vTextureCoord);
-                           // gl_FragColor.a = 1.0 - gl_FragColor.a;
                           }\n`;
 
   const vertexSource = `attribute vec2 a_position;
@@ -59,7 +58,7 @@ function initShader2(gl: GL, shader: Shader) {
                             gl_FragColor.r = (gl_FragColor.r + alpha - 1.0) / alpha;
                             gl_FragColor.g = (gl_FragColor.g + alpha - 1.0) / alpha;
                             gl_FragColor.b = (gl_FragColor.b + alpha - 1.0) / alpha;
-                            //gl_FragColor.a *= alpha;
+                            //gl_FragColor.a *= 1.5;
                           }\n`;
 
   const vertexSource = `attribute vec2 a_position;

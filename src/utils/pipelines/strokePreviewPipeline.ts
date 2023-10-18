@@ -108,19 +108,20 @@ export class StrokePreviewPipeline {
     if (points.length == 0) return;
 
     const brushSettings = appState.settings.brushSettings[0];
-
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-    clearScreen(gl, 0, 0, 0, 0);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     bindAll(gl, this);
+
     this.shader.use(gl);
     this.frameBuffer.bind(gl);
     brushSettings.texture.unwrap().bind(gl);
 
+    clearScreen(gl, 0, 0, 0, 0);
+
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
     emplaceQuads(buf, points, brushSettings);
     this.vertexBuffer.addData(gl, buf);
-    
+
     this.shader.uploadFloat(gl, 'flow', brushSettings.flow);
     this.shader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap());
 
@@ -129,7 +130,8 @@ export class StrokePreviewPipeline {
     this.frameBuffer.unBind(gl);
     brushSettings.texture.unwrap().unBind(gl);
     this.shader.stopUsing(gl);
-    unBindAll(gl, this)
+    
+    unBindAll(gl, this);
   }
 
   setupEvents(gl: GL, appState: Readonly<AppState>) {
@@ -138,7 +140,7 @@ export class StrokePreviewPipeline {
     );
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       this.frameBuffer.bind(gl);
-      clearScreen(gl, 1, 1, 1, 0); 
+      clearScreen(gl, 1, 1, 1, 0);
       this.frameBuffer.unBind(gl);
     }, true);
   }
