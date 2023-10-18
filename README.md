@@ -8,6 +8,7 @@
   - Textured Brushes via image url
   - Pen pressure for variable size and opacity
   - Pannable, Zoomable, and Rotatable Canvas
+  - Everything rendered from scratch using WebGL2 
 
 ---
 ## Controls
