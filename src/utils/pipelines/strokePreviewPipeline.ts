@@ -24,7 +24,6 @@ function initShader(gl: GL, shader: Shader) {
                           
                           
                           void main() {
-                             //gl_FragColor = vec4(vTextureCoord, 1, 1);//texture2D(tex, vTextureCoord);
                              vec4 color = texture2D(tex, vTextureCoord);
 
                              float c = (color.r + color.g + color.b) / 3.0;
@@ -32,7 +31,7 @@ function initShader(gl: GL, shader: Shader) {
                              color.g = c;
                              color.b = c;
                              
-                             color.a *= flow * v_opacity;
+                             color.a *= flow;
                              gl_FragColor = color;
                           }\n`;
 
@@ -82,7 +81,7 @@ export class StrokePreviewPipeline {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
-    this.fillFramebufferWithColor(gl);
+    this.fillFramebufferWithWhite(gl);
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
@@ -109,14 +108,16 @@ export class StrokePreviewPipeline {
     if (points.length == 0) return;
 
     const brushSettings = appState.settings.brushSettings[0];
-    gl.blendFunc(gl.ONE, gl.ZERO);
 
     bindAll(gl, this);
+
     this.shader.use(gl);
     this.frameBuffer.bind(gl);
     brushSettings.texture.unwrap().bind(gl);
 
     clearScreen(gl, 0, 0, 0, 0);
+
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
     emplaceQuads(buf, points, brushSettings);
@@ -133,9 +134,10 @@ export class StrokePreviewPipeline {
     brushSettings.texture.unwrap().unBind(gl);
 
     this.shader.stopUsing(gl);
-    unBindAll(gl, this);
 
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+  
+
   }
 
   setupEvents(gl: GL, appState: Readonly<AppState>) {
@@ -144,7 +146,7 @@ export class StrokePreviewPipeline {
     );
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       this.frameBuffer.bind(gl);
-      clearScreen(gl, 0, 0, 0, 0);
+      clearScreen(gl, 1, 1, 1, 0); 
       this.frameBuffer.unBind(gl);
     }, true);
   }
@@ -153,9 +155,9 @@ export class StrokePreviewPipeline {
     return this.frameBuffer;
   }
 
-  private fillFramebufferWithColor(gl: GL) {
+  private fillFramebufferWithWhite(gl: GL) {
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 1, 1, 1, 1);
+    clearScreen(gl, 1, 1, 1, 0);
     this.frameBuffer.unBind(gl);
   }
 }

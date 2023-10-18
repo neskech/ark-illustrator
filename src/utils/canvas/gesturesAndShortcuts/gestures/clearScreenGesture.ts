@@ -3,7 +3,7 @@ import { type AppState } from '~/utils/mainRoutine';
 import { assert } from '~/utils/contracts';
 import { type Event } from '~/utils/func/event';
 
-const TAP_DELAY_MILLIS = 1000
+const TAP_DELAY_MILLIS = 500
 
 export default class ClearScreenGesture implements Gesture {
   private tapCount: number
@@ -22,17 +22,14 @@ export default class ClearScreenGesture implements Gesture {
 
   fingerTapped(positions: PointerPos[], _: AppState): boolean {
     if (!this.isInitialized()) {
-        console.log("CANNOT INIT")
       this.tryInitialize(positions);
     }
 
     if (!this.isValidInput(positions)) {
-        console.log("NPT TWO WUH OH")
       return false;
     }
 
     const now = new Date().getTime()
-    console.log("WE GOT THE DELAY AND ITS", now - this.lastTapTime, now, this.lastTapTime, this.tapCount)
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
         this.tapCount += 1
         if (this.tapCount == 2) {
@@ -68,7 +65,6 @@ export default class ClearScreenGesture implements Gesture {
     const now = new Date().getTime()
     const delta = now - this.lastTapTime
     const v2 = this.lastTapTime != -1 && delta < TAP_DELAY_MILLIS
-    console.log("WUH WOH NOW ITS BAD", delta < TAP_DELAY_MILLIS, delta, TAP_DELAY_MILLIS)
     return v1 && v2;
   }
 }

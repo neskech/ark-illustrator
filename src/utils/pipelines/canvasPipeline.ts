@@ -24,7 +24,6 @@ function initShader(gl: GL, shader: Shader) {
                           
                           
                           void main() {
-                             //gl_FragColor = vec4(vTextureCoord, 1, 1);//texture2D(tex, vTextureCoord);
                              vec4 color = texture2D(tex, vTextureCoord);
 
                              float c = (color.r + color.g + color.b) / 3.0;
@@ -32,7 +31,7 @@ function initShader(gl: GL, shader: Shader) {
                              color.g = c;
                              color.b = c;
                              
-                             color.a *= flow * v_opacity;
+                             color.a *= flow;
                              gl_FragColor = color;
                           }\n`;
 
@@ -111,8 +110,11 @@ export class CanvasPipeline {
     if (points.length == 0) return;
 
     bindAll(gl, this);
-    this.shader.use(gl);
+
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
     this.frameBuffer.bind(gl);
+    this.shader.use(gl);
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
 
@@ -134,6 +136,7 @@ export class CanvasPipeline {
     this.hasDoneInitialRender = true;
 
     this.shader.stopUsing(gl);
+
     unBindAll(gl, this);
   }
 
