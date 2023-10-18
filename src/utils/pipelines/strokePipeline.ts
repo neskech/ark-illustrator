@@ -36,12 +36,6 @@ function initStrokeShader(gl: GL, shader: Shader) {
                           
                           void main() {
                              vec4 color = texture2D(tex, vTextureCoord);
-
-                             float c = (color.r + color.g + color.b) / 3.0;
-                             color.r = c;
-                             color.g = c;
-                             color.b = c;
-                             
                              color.a *= flow * v_opacity;
                              gl_FragColor = color;
                           }\n`;
@@ -237,6 +231,7 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
+    clearScreen(gl, 0, 0, 0, 0)
 
     const brushSettings = appState.settings.brushSettings[0];
 
@@ -253,6 +248,7 @@ export class StrokePipeline {
     });
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       this.frameBuffer.bind(gl);
+      clearScreen(gl, 0, 0, 0, 0)
       const texture = canvasFramebuffer.getTextureAttachment();
       this.renderCanvasTexture(gl, texture);
       this.frameBuffer.unBind(gl);
