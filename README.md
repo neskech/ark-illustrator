@@ -1,28 +1,70 @@
-# Create T3 App
+# Ark Illustrator
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## A Drawing Application Made For The Web
+### [Demo](https://ark-86ohwib9i-craig-mellors-projects.vercel.app/ )
 
-## What's next? How do I make an app with this?
+Built entirely with Typescript and Webgl
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+---
+- ### Features
+  - Textured Brushes via image url
+  - Pen pressure for variable size and opacity
+  - Pannable, Zoomable, and Rotatable Canvas
+  - Configurable Brush Stabilization
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+---
+## Controls
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+---
 
-## Learn More
+- For mouse users
+  - 
+    - Middle mouse click and draw :: Pan 
+    - Scroll Wheel :: Zoom
+    - Alt + mouse drag :: Rotate
+- For touchpad users
+  -
+    - Finger Pinch :: Zoom
+    - Finger Pan :: Pan
+    - Finger Rotate :: Rotate
+    - Two Double Finger Tap (Tap with two fingers, and do that twice) :: Clear Canvas 
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+---
+- ### Tech Stack
+    - WebGL
+    - NextJS
+    - Typescript
+    - TailwindCSS
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+---
+### Future Plans / Improvements
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+ - 1
+   -
+      You may notice a stroke 'flickers' after you finish drawing it. This is because 
+      finished strokes are rendered on a different layer. Right now the application can't
+      blend that layer properly with the canvas, resulting in a shift of color
+   
+ - 2
+   -  
+      Brushes are currently implemented as a sequence of image 'stamps'.
+      These stamps are packed densely next to one another, which gives the
+      illusion of a continuous stroke. This method is not ideal for performance,
+      nor for visual quality. I will explore 'skeletal' and parametrically defined
+      strokes in the future
+      
+ - 3
+   -  
+      Once the brush system is finished, the next step is to build a UI
+      from which the user can select the different tools. Ontop of this
+      UI will be non-trivial tools such as the paint bucket and lasso
+      tool
 
-## How do I deploy this?
+---
+### Remarks
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+I hope for this application to be a fully fledged drawing editor on par with the likes
+of other online editors such as [aggie.io](https://aggie.io/). However, this will take
+an enourmous amount of time and effort. Resources on creating brush engines are few 
+and far between on the internet. If you have any experience with creating these types
+of applications please feel free to reach out to me! I could use the help :)

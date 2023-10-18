@@ -1,36 +1,3 @@
-import type FrameBuffer from './frameBuffer';
-import { type GL } from './glUtils';
-import { type VertexArrayObject } from './vertexArray';
-import type Buffer from './buffer';
-
-export interface RenderPipeline {
-  name: string;
-  vertexArray: VertexArrayObject;
-  vertexBuffer: Buffer;
-  indexBuffer?: Buffer;
-  renderTarget?: FrameBuffer;
-}
-
-export function bindAll(gl: GL, pipeline: RenderPipeline) {
-  pipeline.vertexArray.bind(gl);
-  pipeline.vertexBuffer.bind(gl);
-  pipeline.indexBuffer?.bind(gl)
-  pipeline.renderTarget?.bind(gl)
-}
-
-export function unBindAll(gl: GL, pipeline: RenderPipeline) {
-  pipeline.vertexArray.unBind(gl);
-  pipeline.vertexBuffer.unBind(gl);
-  pipeline.indexBuffer?.unBind(gl)
-  pipeline.renderTarget?.unBind(gl)
-}
-
-export function destroyAll(gl: GL, pipeline: RenderPipeline) {
-  pipeline.vertexArray.destroy(gl);
-  pipeline.vertexBuffer.destroy(gl);
-  pipeline.indexBuffer?.destroy(gl)
-  pipeline.renderTarget?.destroy(gl)
-}
 
 export function initWithErrorWrapper(
   f: () => void,
