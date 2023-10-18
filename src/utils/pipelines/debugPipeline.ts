@@ -1,5 +1,4 @@
 import { type GL } from '../web/glUtils';
-import { bindAll, unBindAll } from '../web/renderPipeline';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
@@ -101,7 +100,7 @@ export class DebugPipeline {
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
-    bindAll(gl, this);
+
 
     this.vertexArray
       .builder()
@@ -135,11 +134,11 @@ export class DebugPipeline {
 
     this.addEvents(gl, appState);
 
-    unBindAll(gl, this);
+
   }
 
   private render(gl: GL, pointsToRender: BrushPoint[], state: Readonly<AppState>) {
-    bindAll(gl, this);
+ 
 
     if (pointsToRender.length <= 1) return;
 
@@ -162,7 +161,7 @@ export class DebugPipeline {
 
     gl.drawArrays(gl.TRIANGLES, 0, 6 * pointsToRender.length);
 
-    unBindAll(gl, this);
+
   }
 
   private addEvents(gl: GL, appState: Readonly<AppState>) {
