@@ -2,14 +2,12 @@ import type FrameBuffer from './frameBuffer';
 import { type GL } from './glUtils';
 import { type VertexArrayObject } from './vertexArray';
 import type Buffer from './buffer';
-import type Shader from './shader';
 
 export interface RenderPipeline {
   name: string;
   vertexArray: VertexArrayObject;
   vertexBuffer: Buffer;
   indexBuffer?: Buffer;
-  shader: Shader;
   renderTarget?: FrameBuffer;
 }
 
@@ -31,7 +29,6 @@ export function destroyAll(gl: GL, pipeline: RenderPipeline) {
   pipeline.vertexArray.destroy(gl);
   pipeline.vertexBuffer.destroy(gl);
   pipeline.indexBuffer?.destroy(gl)
-  pipeline.shader.destroy(gl)
   pipeline.renderTarget?.destroy(gl)
 }
 

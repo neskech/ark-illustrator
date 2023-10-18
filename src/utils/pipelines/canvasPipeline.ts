@@ -1,5 +1,4 @@
 import { type GL } from '../web/glUtils';
-import { bindAll, unBindAll } from '../web/renderPipeline';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
@@ -62,7 +61,6 @@ export class CanvasPipeline {
   vertexBuffer: Buffer;
   shader: Shader;
   frameBuffer: FrameBuffer;
-  hasDoneInitialRender: boolean;
 
   public constructor(gl: GL, appState: Readonly<AppState>) {
     this.name = 'Canvas Pipeline';
@@ -82,14 +80,14 @@ export class CanvasPipeline {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
-    this.hasDoneInitialRender = false;
     this.fillFramebufferWithWhite(gl);
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
     initShader(gl, this.shader);
 
-    bindAll(gl, this);
+    this.vertexArray.bind(gl)
+    this.vertexBuffer.bind(gl)
 
     this.vertexArray
       .builder()
@@ -103,41 +101,36 @@ export class CanvasPipeline {
     const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE * SIZE_FLOAT;
     this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
-    unBindAll(gl, this);
+    this.vertexArray.unBind(gl)
+    this.vertexBuffer.unBind(gl)
   }
 
   render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
     if (points.length == 0) return;
 
-    bindAll(gl, this);
-
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    const brushSettings = appState.settings.brushSettings[0];
 
+    this.vertexArray.bind(gl)
+    this.vertexBuffer.bind(gl)
     this.frameBuffer.bind(gl);
     this.shader.use(gl);
+    brushSettings.texture.map((t) => t.bind(gl));
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
-
-    const brushSettings = appState.settings.brushSettings[0];
     emplaceQuads(buf, points, brushSettings);
-
     this.vertexBuffer.addData(gl, buf);
 
     this.shader.uploadFloat(gl, 'flow', brushSettings.flow);
-
-    brushSettings.texture.map((t) => t.bind(gl));
     brushSettings.texture.map((t) => this.shader.uploadTexture(gl, 'tex', t));
 
     gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
 
     brushSettings.texture.map((t) => t.unBind(gl));
     this.frameBuffer.unBind(gl);
-
-    this.hasDoneInitialRender = true;
-
     this.shader.stopUsing(gl);
-
-    unBindAll(gl, this);
+    this.vertexArray.unBind(gl)
+    this.vertexBuffer.unBind(gl)
   }
 
   setupEvents(gl: GL, appState: Readonly<AppState>) {
@@ -147,7 +140,7 @@ export class CanvasPipeline {
 
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeCutoff((p) => {
       this.render(gl, p, appState);
-    });
+    }, true);
   }
 
   getFrameBuffer(): FrameBuffer {

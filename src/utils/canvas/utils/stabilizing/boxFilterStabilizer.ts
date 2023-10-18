@@ -70,7 +70,7 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
  */
 const DELETE_FACTOR = 1 / 4;
 
-const LOOK_AHEAD = 3
+const LOOK_AHEAD = 5
 
 interface Cache {
   weightsCache: number[];

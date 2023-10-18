@@ -273,7 +273,7 @@ export function constructQuadIndices(offset: number): SixSizeArray {
 export function emplaceQuads(
   buffer: Float32Array,
   curve: BrushPoint[],
-  settings: Readonly<BrushSettings>
+  settings: Readonly<BrushSettings>,
 ) {
   let i = 0;
 
