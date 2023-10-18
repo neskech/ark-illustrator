@@ -1,14 +1,15 @@
 # Ark Illustrator
 
 ## A Drawing Application Made For The Web
-[Demo](https://ark-86ohwib9i-craig-mellors-projects.vercel.app/ )
+### [Demo](https://ark-86ohwib9i-craig-mellors-projects.vercel.app/ )
+
+Built entirely with Typescript and Webgl
 
 ---
 - ### Features
   - Textured Brushes via image url
   - Pen pressure for variable size and opacity
   - Pannable, Zoomable, and Rotatable Canvas
-  - Everything rendered from scratch using WebGL2 
 
 ---
 ## Controls
