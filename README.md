@@ -10,6 +10,7 @@ Built entirely with Typescript and Webgl
   - Textured Brushes via image url
   - Pen pressure for variable size and opacity
   - Pannable, Zoomable, and Rotatable Canvas
+  - Configurable Brush Stabilization
 
 ---
 ## Controls
