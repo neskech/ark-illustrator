@@ -4,8 +4,7 @@
 [Demo](https://ark-86ohwib9i-craig-mellors-projects.vercel.app/ )
 
 ---
-### Features
--
+- ### Features
   - Textured Brushes via image url
   - Pen pressure for variable size and opacity
   - Pannable, Zoomable, and Rotatable Canvas
@@ -28,8 +27,7 @@
     - Two Double Finger Tap (Tap with two fingers, and do that twice) :: Clear Canvas 
 
 ---
-### Tech Stack
--
+- ### Tech Stack
     - WebGL
     - NextJS
     - Typescript
