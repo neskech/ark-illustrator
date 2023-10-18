@@ -54,19 +54,19 @@ export function defaultBrushSettings(gl: GL): BrushSettings {
   });
   brushTexture.allocateFromImageUrl(
     gl,
-    'https://cdn.discordapp.com/attachments/612361044110868480/1163576886761369751/watercolor-brush-texture-5.png?ex=6540146c&is=652d9f6c&hm=a25b453b0bc79a59f3112e84aa3129586c14868864f1a9bc2144e22816eae94f&',
+    'https://cdn.discordapp.com/attachments/627737740078743576/1163574991271493722/solid-circle-png-thumb16.png?ex=654012a8&is=652d9da8&hm=8ac2701699f2763a665a4c35b8603834684ad74ee7876243294352b7abe28e6c&',
     false
   );
 
   return {
     size: 0.08,
     opacity: 1.0,
-    minSize: 0.05,
+    minSize: 0.3,
     maxSize: 1.0,
     minOpacity: 0.3,
     maxOpacity: 0.9,
     flow: 0.85,
-    stabilization: 0.8,
+    stabilization: 0.3,
     spacing: 0.006,
     pressureSizeSettings: getLinearBezier(),
     pressureOpacitySettings: getLinearBezier(),
