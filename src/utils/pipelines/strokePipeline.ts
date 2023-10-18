@@ -231,7 +231,7 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 0, 0, 0, 0)
+    //clearScreen(gl, 0, 0, 0, 0)
 
     const brushSettings = appState.settings.brushSettings[0];
 
