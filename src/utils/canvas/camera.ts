@@ -226,6 +226,10 @@ export default class Camera {
   getZoomLevel(): number {
     return this.position.z
   }
+
+  getRotation(): number {
+    return this.rotation
+  }
 }
 
 export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vector2 {
