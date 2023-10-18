@@ -57,7 +57,7 @@ export default class Camera {
     this.fovX = Math.atan2(screenAspectRatio / 2, DEFAULT_ZOOM) * 2;
 
     this.rotation = 0;
-    this.position = new Float32Vector3(0, 0, DEFAULT_ZOOM);
+    this.position = new Float32Vector3(0, 0, DEFAULT_ZOOM + 0.5);
     this.screenAspectRatio = screenAspectRatio;
     this.canvasAspectRatio = canvasAspectRatio
 

@@ -47,6 +47,7 @@ export function init(canvas: HTMLCanvasElement) {
   initEventListeners(canvas);
 
   masterPipeline.init(gl, appState);
+  appState.onAppStateMutated.invoke()
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
