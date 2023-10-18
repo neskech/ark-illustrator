@@ -35,8 +35,8 @@ export default class PanGesture implements Gesture {
     }
 
     if (!this.isValidInput(positions)) {
-        this.deInitialize()
-        return false
+      this.deInitialize();
+      return false;
     }
 
     const originalMid = midpoint(this.originPosition1, this.originPosition2);
@@ -52,9 +52,10 @@ export default class PanGesture implements Gesture {
     return false;
   }
 
-  fingerReleased(): boolean {
-    this.deInitialize()
-    return false
+  fingerReleased(removedIds: number[]): boolean {
+    if ([this.pointerId1, this.pointerId2].some((id) => removedIds.includes(id)))
+      this.deInitialize();
+    return false;
   }
 
   private tryInitialize(positions: PointerPos[], appState: AppState) {
@@ -68,16 +69,15 @@ export default class PanGesture implements Gesture {
       this.originCameraPos = appState.canvasState.camera.getPosition();
       assert(this.isInitialized());
     }
-
   }
 
   private isValidInput(positions: PointerPos[]): boolean {
     const samePointerIDs = equalsNoOrder(
-        positions.map((p) => p.id),
-        [this.pointerId1, this.pointerId2]
+      positions.map((p) => p.id),
+      [this.pointerId1, this.pointerId2]
     );
-    const goodLength = positions.length == 2
-    return samePointerIDs && goodLength
+    const goodLength = positions.length == 2;
+    return samePointerIDs && goodLength;
   }
 
   private deInitialize() {

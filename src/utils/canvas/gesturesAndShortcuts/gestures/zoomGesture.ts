@@ -41,8 +41,9 @@ export default class ZoomGesture implements Gesture {
     return false;
   }
 
-  fingerReleased(): boolean {
-    this.deInitialize();
+  fingerReleased(removedIds: number[]): boolean {
+    if ([this.pointerId1, this.pointerId2].some((id) => removedIds.includes(id)))
+      this.deInitialize();
     return false;
   }
 

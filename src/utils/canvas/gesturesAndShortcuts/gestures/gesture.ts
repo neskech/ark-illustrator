@@ -10,7 +10,7 @@ export interface PointerPos {
 export interface Gesture {
   fingerMoved: (positions: PointerPos[], appState: AppState) => boolean;
   fingerTapped: (positions: PointerPos[], appState: AppState) => boolean;
-  fingerReleased: () => boolean
+  fingerReleased: (removedIds: number[]) => boolean;
 }
 
 export function isValidPosition(pos: Float32Vector2): boolean {

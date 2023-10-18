@@ -65,17 +65,18 @@ export default class GestureHandler {
   }
 
   handlePointerUp(event: PointerEvent): boolean {
+    const removedIds = []
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
       if (event.pointerId == id) {
         this.pointerPositions.splice(i, 1);
-        return false;
+        removedIds.push(id)
       }
     }
 
     let dirty = false
     for (const gesture of this.gestures) {
-      dirty = gesture.fingerReleased() || dirty;
+      dirty = gesture.fingerReleased(removedIds) || dirty;
     }
     return dirty
   }
