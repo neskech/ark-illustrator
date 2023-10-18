@@ -31,7 +31,7 @@ function initShader(gl: GL, shader: Shader) {
                              color.g = c;
                              color.b = c;
                              
-                             color.a *= flow;
+                             color.a *= flow * v_opacity;
                              gl_FragColor = color;
                           }\n`;
 
@@ -109,35 +109,27 @@ export class StrokePreviewPipeline {
 
     const brushSettings = appState.settings.brushSettings[0];
 
-    bindAll(gl, this);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    clearScreen(gl, 0, 0, 0, 0);
 
+    bindAll(gl, this);
     this.shader.use(gl);
     this.frameBuffer.bind(gl);
     brushSettings.texture.unwrap().bind(gl);
 
-    clearScreen(gl, 0, 0, 0, 0);
-
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
     emplaceQuads(buf, points, brushSettings);
-
     this.vertexBuffer.addData(gl, buf);
-
+    
     this.shader.uploadFloat(gl, 'flow', brushSettings.flow);
-
     this.shader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap());
 
     gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
 
     this.frameBuffer.unBind(gl);
     brushSettings.texture.unwrap().unBind(gl);
-
     this.shader.stopUsing(gl);
-
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-  
-
+    unBindAll(gl, this)
   }
 
   setupEvents(gl: GL, appState: Readonly<AppState>) {

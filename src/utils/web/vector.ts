@@ -591,7 +591,15 @@ export function fromAngle(theta: number): Float32Vector2 {
 }
 
 export function rotateBy(a: Float32Vector2, theta: number): Float32Vector2 {
-  return fromAngle(angle(a) + theta);
+  return scale(fromAngle(angle(a) + theta), a.magnitude);
+}
+
+export function rotateAbout(target: Float32Vector2, about: Float32Vector2, theta: number): Float32Vector2 {
+  const c = copy(target)
+  sub(c, about)
+  const rotated = rotateBy(c, theta)
+  add(rotated, about)
+  return rotated
 }
 
 export function dot(a: Float32Vector2, b: Float32Vector2): number {

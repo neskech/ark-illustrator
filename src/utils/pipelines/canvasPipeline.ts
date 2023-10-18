@@ -31,7 +31,7 @@ function initShader(gl: GL, shader: Shader) {
                              color.g = c;
                              color.b = c;
                              
-                             color.a *= flow;
+                             color.a *= flow * v_opacity;
                              gl_FragColor = color;
                           }\n`;
 
