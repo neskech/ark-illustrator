@@ -30,7 +30,7 @@ export default class ClearScreenGesture implements Gesture {
       this.deInitialize()
       return false
     }
-    
+
     if (!this.isValidInput(positions)) {
       return false;
     }
@@ -38,7 +38,7 @@ export default class ClearScreenGesture implements Gesture {
     const now = new Date().getTime();
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
       this.tapCount += 1;
-      if (this.tapCount == 2) {
+      if (this.tapCount == 3) {
         this.onScreenClearGesture.invoke();
         this.tapCount = 0;
       }
