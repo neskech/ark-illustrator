@@ -33,9 +33,9 @@ export class MasterPipeline {
       this.render(gl, appState);
     }, true);
 
-    appState.inputState.gestures.subscribeToOnScreenClearGesture(() => {
-      this.canvasPipeline.fillFramebufferWithWhite(gl);
-    });
+    // appState.inputState.gestures.subscribeToOnScreenClearGesture(() => {
+    //   this.canvasPipeline.fillFramebufferWithWhite(gl);
+    // });
 
     clearScreen(gl);
 

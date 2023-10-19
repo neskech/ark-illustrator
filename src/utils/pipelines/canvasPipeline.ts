@@ -133,9 +133,9 @@ export class CanvasPipeline {
       this.render(gl, p, appState);
     });
 
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeCutoff((p) => {
-      this.render(gl, p, appState);
-    }, true);
+    // appState.inputState.tools['brush'].subscribeToOnBrushStrokeCutoff((p) => {
+    //   this.render(gl, p, appState);
+    // }, true);
   }
 
   getFrameBuffer(): FrameBuffer {
