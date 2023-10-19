@@ -5,12 +5,14 @@ import { Event } from './func/event';
 import { Option, Some } from './func/option';
 import { MasterPipeline } from './pipelines/MasterPipeline';
 import { type GL } from './web/glUtils';
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
+const WebGLDebugUtils: any = require('webgl-debug');
 
 export interface AppState {
   canvasState: CanvasState;
   settings: GlobalToolSettings;
   inputState: InputState;
-  onAppStateMutated: Event<void>
+  onAppStateMutated: Event<void>;
 }
 
 let gl: GL;
@@ -20,6 +22,11 @@ let masterPipeline: MasterPipeline;
 export function init(canvas: HTMLCanvasElement) {
   if (gl) return;
 
+  function throwOnGLError(err: any, funcName: any, args: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
+    throw WebGLDebugUtils.glEnumToString(err) + 'was caused by call to ' + funcName;
+  }
+
   const result = Option.fromNull(
     canvas.getContext('webgl2', {
       //preserveDrawingBuffer: true,
@@ -28,6 +35,9 @@ export function init(canvas: HTMLCanvasElement) {
   );
 
   gl = result.expect('Could not intialize webgl2. Your browser may not support it');
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  gl = WebGLDebugUtils.makeDebugContext(gl, throwOnGLError)
 
   canvas.width = canvas.clientWidth * 2;
   canvas.height = canvas.clientHeight * 2;
@@ -39,7 +49,7 @@ export function init(canvas: HTMLCanvasElement) {
     canvasState: getDefaultCanvasState(canvas),
     settings,
     inputState: getDefaultToolState(settings),
-    onAppStateMutated: new Event()
+    onAppStateMutated: new Event(),
   };
 
   masterPipeline = new MasterPipeline(gl, appState);
@@ -47,7 +57,7 @@ export function init(canvas: HTMLCanvasElement) {
   initEventListeners(canvas);
 
   masterPipeline.init(gl, appState);
-  appState.onAppStateMutated.invoke()
+  appState.onAppStateMutated.invoke();
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
@@ -77,11 +87,7 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     });
   });
 
-  const globalEvents: (keyof HTMLElementEventMap)[] = [
-    'keydown',
-    'keypress',
-    'keyup',
-  ]
+  const globalEvents: (keyof HTMLElementEventMap)[] = ['keydown', 'keypress', 'keyup'];
 
   globalEvents.forEach((e) => {
     document.addEventListener(e, (ev) => {
@@ -98,7 +104,6 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     });
   });
 }
-
 
 export function stop() {
   destroy();
