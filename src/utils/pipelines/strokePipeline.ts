@@ -187,7 +187,7 @@ export class StrokePipeline {
   }
 
   private renderCanvasTexture(gl: GL, canvasTexture: Texture) {
-    gl.blendFunc(gl.ONE, gl.ZERO);
+    //gl.blendFunc(gl.ONE, gl.ZERO);
 
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
@@ -195,7 +195,7 @@ export class StrokePipeline {
 
     gl.activeTexture(gl.TEXTURE0)
     canvasTexture.bind(gl);
-    
+
     this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
