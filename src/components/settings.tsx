@@ -16,6 +16,7 @@ import { type BrushSettings } from '~/utils/canvas/tools/brush';
 import { appState } from '~/utils/mainRoutine';
 import CheckIcon from '@mui/icons-material/Check';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { getSpacingFromBrushSettings } from '../utils/canvas/utils/stabilizing/stabilizer';
 
 const PaperComponent = (props: PaperProps) => {
   return (
@@ -84,6 +85,12 @@ export const SettingsDialog = (props: Props) => {
   const setSmoothing = (e: Event, val: number) => {
     getBrushSettings()!.stabilization = val;
     setSmoothing_(val);
+  };
+
+  const [spacing, setSpacing_] = useState<number>(getSpacingFromBrushSettings(getBrushSettings()!));
+  const setSpacing = (e: Event, val: number) => {
+    getBrushSettings()!.spacing = val;
+    setSpacing_(val);
   };
 
   const [limitStrokeLength, setLimitStrokeLength_] = useState<'yes' | 'no'>(allowLimitedStrokeLength ? 'yes' : 'no') 
@@ -189,6 +196,18 @@ export const SettingsDialog = (props: Props) => {
           max={1}
           step={0.01}
           onChange={(e, val) => setSmoothing(e, val as number)}
+        />
+      </Stack>
+
+      <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+        <Typography> Spacing </Typography>
+        <Slider
+          aria-label="Spacing"
+          value={spacing}
+          min={0.005}
+          max={1}
+          step={0.001}
+          onChange={(e, val) => setSpacing(e, val as number)}
         />
       </Stack>
 

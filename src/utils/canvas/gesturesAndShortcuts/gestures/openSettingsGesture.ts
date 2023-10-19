@@ -56,7 +56,7 @@ export default class OpenSettingsGesture implements Gesture {
   }
 
   private isValidInput(positions: PointerPos[]): boolean {
-    const goodLength = positions.length == 3;
+    const goodLength = positions.length == 5;
     return goodLength;
   }
 
