@@ -253,6 +253,7 @@ export class StrokePipeline {
       this.render(gl, p, texture, appState);
     });
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
+      console.log("IM CALLLLLLLLLLLLEDDDDDDDDD!")
       this.frameBuffer.bind(gl);
       //clearScreen(gl, 0, 0, 0, 0)
       const texture = canvasFrameBuffer.getTextureAttachment();
