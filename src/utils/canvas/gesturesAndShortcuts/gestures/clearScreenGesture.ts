@@ -25,13 +25,7 @@ export default class ClearScreenGesture implements Gesture {
       this.deInitialize()
       this.tryInitialize(positions);
     }
-
-    /* Means we're doing a > 2 finger tap */
-    if (positions.length > 2) {
-      this.deInitialize()
-      return false
-    }
-
+    
     if (!this.isValidInput(positions)) {
       return false;
     }
