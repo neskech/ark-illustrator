@@ -30,6 +30,12 @@ export default class GestureHandler {
         return this.handlePointerDown(event, appState);
       case 'pointerup':
         return this.handlePointerUp(event);
+      case 'pointercancel':
+        return this.handlePointerUp(event);
+      case 'pointerout':
+        return this.handlePointerUp(event);
+      case 'pointerleave':
+        return this.handlePointerUp(event);
       case 'pointermove':
         return this.handlePointerMove(event, appState);
     }
