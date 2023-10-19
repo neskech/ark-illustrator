@@ -26,6 +26,11 @@ export default class ClearScreenGesture implements Gesture {
       this.tryInitialize(positions);
     }
     
+    if (positions.length > 2) {
+      this.deInitialize()
+      return false
+    }
+    
     if (!this.isValidInput(positions)) {
       return false;
     }
