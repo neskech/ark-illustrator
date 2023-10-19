@@ -67,7 +67,7 @@ export function defaultBrushSettings(gl: GL): BrushSettings {
     maxOpacity: 0.9,
     flow: 0.99,
     stabilization: 0.3,
-    spacing: 0.006,
+    spacing: 0.0005,
     pressureSizeSettings: getLinearBezier(),
     pressureOpacitySettings: getLinearBezier(),
     texture: Some(brushTexture),
