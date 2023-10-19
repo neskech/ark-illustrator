@@ -3,9 +3,19 @@ import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
 import { type AppState } from '../mainRoutine';
-import { type BrushSettings, type BrushPoint } from '../canvas/tools/brush';
+import {
+  type BrushSettings,
+  type BrushPoint,
+  getSizeGivenPressure,
+  getOpacityGivenPressure,
+} from '../canvas/tools/brush';
 import FrameBuffer from '../web/frameBuffer';
-import { clearScreen, constructQuadSixWidthHeightTexture, emplaceQuads } from './util';
+import {
+  clearScreen,
+  constructQuadSixTex,
+  constructQuadSixWidthHeightTexture,
+  emplaceQuads,
+} from './util';
 import type Texture from '../web/texture';
 import { Float32Vector2 } from 'matrixgl';
 
@@ -151,7 +161,6 @@ export class StrokePipeline {
       .addAttribute(1, 'float', 'opacity')
       .build(gl);
 
-
     this.strokeVertexBuffer.allocateWithData(gl, new Float32Array(MAX_SIZE_STROKE));
 
     this.strokeVertexArray.unBind(gl);
@@ -211,16 +220,33 @@ export class StrokePipeline {
     this.strokeShader.use(gl);
     brushSettings.texture.unwrap().bind(gl);
 
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
     this.strokeShader.uploadFloat(gl, 'flow', brushSettings.flow);
     this.strokeShader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap());
 
-    const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY;
-    const buf = new Float32Array(bufSize);
+    for (const p of points) {
+      const size = getSizeGivenPressure(brushSettings, p.pressure);
+      const opacity = getOpacityGivenPressure(brushSettings, p.pressure);
+      const quadVerts = constructQuadSixTex(p.position, size);
 
-    emplaceQuads(buf, points, brushSettings);
-    this.strokeVertexBuffer.addData(gl, buf);
+      const bufSize = NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY;
+      const buffer = new Float32Array(bufSize);
+      let i = 0;
+      for (let k = 0; k < quadVerts.length; k += 2) {
+        const pos = quadVerts[k];
+        const tex = quadVerts[k + 1];
 
-    gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
+        buffer[i++] = pos.x;
+        buffer[i++] = pos.y;
+        buffer[i++] = tex.x;
+        buffer[i++] = tex.y;
+        buffer[i++] = opacity;
+      }
+      this.strokeVertexBuffer.addData(gl, buffer);
+
+      gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD);
+    }
 
     this.strokeShader.stopUsing(gl);
     this.strokeVertexArray.unBind(gl);
@@ -232,7 +258,7 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 0, 0, 0, 0)
+    clearScreen(gl, 0, 0, 0, 0);
 
     const brushSettings = appState.settings.brushSettings[0];
 
@@ -249,7 +275,7 @@ export class StrokePipeline {
     });
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       this.frameBuffer.bind(gl);
-      clearScreen(gl, 0, 0, 0, 0)
+      clearScreen(gl, 0, 0, 0, 0);
       const texture = canvasFramebuffer.getTextureAttachment();
       this.renderCanvasTexture(gl, texture);
       this.frameBuffer.unBind(gl);

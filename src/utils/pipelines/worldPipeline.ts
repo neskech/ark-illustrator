@@ -109,8 +109,9 @@ export class WorldPipeline {
       appState.canvasState.camera.getProjectionMatrix()
     );
 
+    gl.activeTexture(gl.TEXTURE0)
     canvasTexture.bind(gl);
-    this.shader.uploadTexture(gl, 'canvas', canvasTexture);
+    this.shader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTEX_QUAD);
 

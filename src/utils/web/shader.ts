@@ -319,9 +319,9 @@ export default class Shader {
     gl.uniformMatrix4fv(loc, false, matrix.values);
   }
 
-  uploadTexture(gl: GL, location: string, texture: Texture) {
+  uploadTexture(gl: GL, location: string, texture: Texture, override: number | null = null) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
-    gl.uniform1i(loc, texture.getId().innerId() as number);
+    gl.uniform1i(loc, override ? override : texture.getId().innerId() as number);
   }
 
   uploadTextureArray(gl: GL, location: string, textures: Texture[]) {
