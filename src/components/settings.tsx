@@ -205,7 +205,7 @@ export const SettingsDialog = (props: Props) => {
           aria-label="Spacing"
           value={spacing}
           min={0.005}
-          max={1}
+          max={0.5}
           step={0.001}
           onChange={(e, val) => setSpacing(e, val as number)}
         />
