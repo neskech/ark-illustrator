@@ -48,7 +48,7 @@ export default class OpenSettingsGesture implements Gesture {
   }
 
   private tryInitialize(positions: PointerPos[]) {
-    if (positions.length == 5) {
+    if (positions.length == 4) {
       this.tapCount = 0;
       this.lastTapTime = new Date().getTime();
       assert(this.isInitialized());
@@ -56,7 +56,7 @@ export default class OpenSettingsGesture implements Gesture {
   }
 
   private isValidInput(positions: PointerPos[]): boolean {
-    const goodLength = positions.length == 5;
+    const goodLength = positions.length == 4;
     return goodLength;
   }
 
