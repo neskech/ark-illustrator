@@ -10,7 +10,7 @@ export interface AppState {
   canvasState: CanvasState;
   settings: GlobalToolSettings;
   inputState: InputState;
-  onAppStateMutated: Event<void>
+  onAppStateMutated: Event<void>;
 }
 
 let gl: GL;
@@ -39,7 +39,7 @@ export function init(canvas: HTMLCanvasElement) {
     canvasState: getDefaultCanvasState(canvas),
     settings,
     inputState: getDefaultToolState(settings),
-    onAppStateMutated: new Event()
+    onAppStateMutated: new Event(),
   };
 
   masterPipeline = new MasterPipeline(gl, appState);
@@ -47,7 +47,7 @@ export function init(canvas: HTMLCanvasElement) {
   initEventListeners(canvas);
 
   masterPipeline.init(gl, appState);
-  appState.onAppStateMutated.invoke()
+  appState.onAppStateMutated.invoke();
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
@@ -56,6 +56,8 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     'pointermove',
     'pointerup',
     'pointerleave',
+    'pointercancel',
+    'pointerout',
     'wheel',
     'keydown',
     'keypress',
@@ -77,11 +79,7 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     });
   });
 
-  const globalEvents: (keyof HTMLElementEventMap)[] = [
-    'keydown',
-    'keypress',
-    'keyup',
-  ]
+  const globalEvents: (keyof HTMLElementEventMap)[] = ['keydown', 'keypress', 'keyup'];
 
   globalEvents.forEach((e) => {
     document.addEventListener(e, (ev) => {
@@ -98,7 +96,6 @@ function initEventListeners(canvas: HTMLCanvasElement) {
     });
   });
 }
-
 
 export function stop() {
   destroy();
