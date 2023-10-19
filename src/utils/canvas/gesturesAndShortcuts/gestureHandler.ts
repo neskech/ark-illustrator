@@ -9,22 +9,31 @@ import RotationGesture from './gestures/rotationGesture';
 import ZoomGesture from './gestures/zoomGesture';
 import { Event } from '~/utils/func/event';
 import ClearScreenGesture from './gestures/clearScreenGesture';
+import OpenSettingsGesture from './gestures/openSettingsGesture';
 
 export default class GestureHandler {
   private pointerPositions: PointerPos[];
   private gestures: Gesture[];
-  private onScreenClearGesture: Event<void>
+  private onScreenClearGesture: Event<void>;
+  private onSettingsOpenGesture: Event<void>;
 
   constructor() {
     this.pointerPositions = [];
-    this.onScreenClearGesture = new Event()
-    this.gestures = [new PanGesture(), new RotationGesture(), new ZoomGesture(), new ClearScreenGesture(this.onScreenClearGesture)];
+    this.onScreenClearGesture = new Event();
+    this.onSettingsOpenGesture = new Event();
+    this.gestures = [
+      new PanGesture(),
+      new RotationGesture(),
+      new ZoomGesture(),
+      new ClearScreenGesture(this.onScreenClearGesture),
+      new OpenSettingsGesture(this.onSettingsOpenGesture),
+    ];
   }
 
   handleEvent(event: CanvasEvent, appState: AppState, eventType: EventString) {
     if (!(event instanceof PointerEvent)) return;
-    if (event.pointerType != 'touch') return
-    
+    if (event.pointerType != 'touch') return;
+
     switch (eventType) {
       case 'pointerdown':
         return this.handlePointerDown(event, appState);
@@ -48,11 +57,11 @@ export default class GestureHandler {
       id: event.pointerId,
     });
 
-    let dirty = false
+    let dirty = false;
     for (const gesture of this.gestures) {
       dirty = gesture.fingerTapped(this.pointerPositions, appState) || dirty;
     }
-    return dirty
+    return dirty;
   }
 
   handlePointerMove(event: PointerEvent, appState: AppState): boolean {
@@ -61,31 +70,35 @@ export default class GestureHandler {
       p.pos.y = event.clientY;
     });
 
-    let dirty = false
+    let dirty = false;
     for (const gesture of this.gestures) {
       dirty = gesture.fingerMoved(this.pointerPositions, appState) || dirty;
     }
-    return dirty
+    return dirty;
   }
 
   handlePointerUp(event: PointerEvent): boolean {
-    const removedIds = []
+    const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
       if (event.pointerId == id) {
         this.pointerPositions.splice(i, 1);
-        removedIds.push(id)
+        removedIds.push(id);
       }
     }
 
-    let dirty = false
+    let dirty = false;
     for (const gesture of this.gestures) {
       dirty = gesture.fingerReleased(removedIds) || dirty;
     }
-    return dirty
+    return dirty;
   }
 
   subscribeToOnScreenClearGesture(f: () => void, hasPriority = false) {
-    this.onScreenClearGesture.subscribe(f, hasPriority)
+    this.onScreenClearGesture.subscribe(f, hasPriority);
+  }
+
+  subscribeToOnSettingsOpenGesture(f: () => void, hasPriority = false) {
+    this.onScreenClearGesture.subscribe(f, hasPriority);
   }
 }

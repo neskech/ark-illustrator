@@ -14,7 +14,8 @@ export interface AppState {
 }
 
 let gl: GL;
-let appState: AppState;
+/* Temp export so frontend can acces */
+export let appState: AppState;
 let masterPipeline: MasterPipeline;
 
 export function init(canvas: HTMLCanvasElement) {

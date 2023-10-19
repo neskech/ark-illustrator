@@ -12,6 +12,7 @@ import {
 } from './stabilizer';
 import { incrementalLog, trackRuntime } from '~/utils/misc/benchmarking';
 import { type Event } from '~/utils/func/event';
+import { allowLimitedStrokeLength } from '~/components/settings';
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
@@ -141,6 +142,11 @@ export default class BoxFilterStabilizer implements Stabilizer {
   }
 
   private handleOverflow(settings: Readonly<BrushSettings>) {
+    if (!allowLimitedStrokeLength) {
+      this.numPoints = 0
+      return
+    }
+
     updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints);
 
     const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
