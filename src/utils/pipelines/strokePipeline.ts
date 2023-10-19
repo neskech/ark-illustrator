@@ -64,8 +64,8 @@ function initStrokeShader(gl: GL, shader: Shader) {
 }
 
 function initFullScreenBlitShader(gl: GL, shader: Shader) {
-  const fragmentSource = `precision highp float;
-                          varying highp vec2 vTextureCoord;
+  const fragmentSource = `precision mediump float;
+                          varying mediump vec2 vTextureCoord;
                           
                           uniform sampler2D canvas;          
                           
@@ -75,7 +75,7 @@ function initFullScreenBlitShader(gl: GL, shader: Shader) {
 
   const vertexSource = `attribute vec2 a_position;
 
-                      varying highp vec2 vTextureCoord;
+                      varying mediump vec2 vTextureCoord;
                       const vec2 scale = vec2(0.5, 0.5);
 
                       void main() {
