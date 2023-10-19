@@ -67,7 +67,7 @@ function initFullScreenBlitShader(gl: GL, shader: Shader) {
   const fragmentSource = `precision highp float;
                           varying highp vec2 vTextureCoord;
                           
-                          uniform sampler2D canvas;          
+                          //uniform sampler2D canvas;          
                           
                           void main() {
                             gl_FragColor = vec4(1, 0, 0, 1);//texture2D(canvas, vTextureCoord);
@@ -187,20 +187,20 @@ export class StrokePipeline {
   }
 
   private renderCanvasTexture(gl: GL, canvasTexture: Texture) {
-    //gl.blendFunc(gl.ONE, gl.ZERO);
+    gl.blendFunc(gl.ONE, gl.ZERO);
 
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
     this.fullScreenBlitShader.use(gl);
 
-    gl.activeTexture(gl.TEXTURE0)
-    canvasTexture.bind(gl);
-
-    this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
+    // gl.activeTexture(gl.TEXTURE0)
+    // canvasTexture.bind(gl);
+    
+    // this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
 
-    canvasTexture.unBind(gl);
+    //canvasTexture.unBind(gl);
     this.fullScreenBlitShader.stopUsing(gl);
     this.fullScreenBlitVertexArray.unBind(gl);
     this.fullScreenBlitVertexBuffer.unBind(gl);
@@ -237,12 +237,12 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    //clearScreen(gl, 0, 0, 0, 0)
+    clearScreen(gl, 0, 0, 0, 0)
 
     const brushSettings = appState.settings.brushSettings[0];
 
     this.renderCanvasTexture(gl, canvasTexture);
-   // this.renderStroke(gl, points, brushSettings);
+    this.renderStroke(gl, points, brushSettings);
 
     this.frameBuffer.unBind(gl);
   }
