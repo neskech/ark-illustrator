@@ -26,6 +26,11 @@ export default class OpenSettingsGesture implements Gesture {
       this.tryInitialize(positions);
     }
 
+    if (positions.length > 4) {
+        this.deInitialize()
+        return false
+      }
+
     if (!this.isValidInput(positions)) {
       return false;
     }
