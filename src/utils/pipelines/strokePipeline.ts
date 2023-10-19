@@ -196,7 +196,7 @@ export class StrokePipeline {
     canvasTexture.bind(gl);
     this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
-    gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 
     canvasTexture.unBind(gl);
     this.fullScreenBlitShader.stopUsing(gl);
