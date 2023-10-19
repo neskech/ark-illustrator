@@ -8,7 +8,7 @@ const Canvas = forwardRef<HTMLCanvasElement, Props>(function Canvas(props, ref) 
     //const canvas = useRef<HTMLCanvasElement>(null);
 
     return (
-        <canvas ref = {ref} width={1024} height={1024} className="w-full h-[100%] bg-slate-50 select-none"> 
+        <canvas ref = {ref} width={1024} height={1024} className="w-full h-[100%] bg-slate-50 select-none touch-none"> 
         </canvas>
     );
 })
