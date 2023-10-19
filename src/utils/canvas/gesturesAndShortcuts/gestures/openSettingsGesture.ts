@@ -3,7 +3,7 @@ import { type AppState } from '~/utils/mainRoutine';
 import { assert } from '~/utils/contracts';
 import { type Event } from '~/utils/func/event';
 
-const TAP_DELAY_MILLIS = 300;
+const TAP_DELAY_MILLIS = 500;
 
 export default class OpenSettingsGesture implements Gesture {
   private tapCount: number;
@@ -33,7 +33,7 @@ export default class OpenSettingsGesture implements Gesture {
     const now = new Date().getTime();
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
       this.tapCount += 1;
-      if (this.tapCount == 3) {
+      if (this.tapCount == 5) {
         this.openSettingsGesture.invoke();
         this.tapCount = 0;
       }
@@ -48,7 +48,7 @@ export default class OpenSettingsGesture implements Gesture {
   }
 
   private tryInitialize(positions: PointerPos[]) {
-    if (positions.length == 3) {
+    if (positions.length == 5) {
       this.tapCount = 0;
       this.lastTapTime = new Date().getTime();
       assert(this.isInitialized());
@@ -56,7 +56,7 @@ export default class OpenSettingsGesture implements Gesture {
   }
 
   private isValidInput(positions: PointerPos[]): boolean {
-    const goodLength = positions.length == 3;
+    const goodLength = positions.length == 5;
     return goodLength;
   }
 

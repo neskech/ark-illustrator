@@ -99,6 +99,6 @@ export default class GestureHandler {
   }
 
   subscribeToOnSettingsOpenGesture(f: () => void, hasPriority = false) {
-    this.onScreenClearGesture.subscribe(f, hasPriority);
+    this.onSettingsOpenGesture.subscribe(f, hasPriority);
   }
 }
