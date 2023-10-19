@@ -103,7 +103,7 @@ export class CanvasPipeline {
   render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
     if (points.length == 0) return;
 
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
     const brushSettings = appState.settings.brushSettings[0];
 
     this.vertexArray.bind(gl)

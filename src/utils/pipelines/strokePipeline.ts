@@ -212,7 +212,8 @@ export class StrokePipeline {
     brushSettings.texture.unwrap().bind(gl);
 
     
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
 
     this.strokeShader.uploadFloat(gl, 'flow', brushSettings.flow);
     this.strokeShader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap());
