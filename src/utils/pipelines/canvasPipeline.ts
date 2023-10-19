@@ -24,8 +24,8 @@ function initShader(gl: GL, shader: Shader) {
                           
                           void main() {
                              vec4 color = texture2D(tex, vTextureCoord);
-                             color.rgb *= v_opacity;
-                             color.a *= flow;
+                             color.rgb = vec3((color.r + color.g + color.b) / 3.0);
+                             color.a *= flow * v_opacity;
                              gl_FragColor = color;
                           }\n`;
 
