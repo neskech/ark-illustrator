@@ -4,10 +4,9 @@ import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
 import { type AppState } from '../mainRoutine';
 import { type BrushPoint } from '../canvas/tools/brush';
-import type FrameBuffer from '../web/frameBuffer';
+import FrameBuffer from '../web/frameBuffer';
 import { clearScreen, emplaceQuads } from './util';
 import { MAX_POINTS_PER_FRAME } from './strokePipeline';
-import { canvasFrameBuffer } from './MasterPipeline';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 5;
@@ -57,7 +56,7 @@ export class CanvasPipeline {
   shader: Shader;
   frameBuffer: FrameBuffer;
 
-  public constructor(gl: GL, _: Readonly<AppState>) {
+  public constructor(gl: GL, appState: Readonly<AppState>) {
     this.name = 'Canvas Pipeline';
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
@@ -65,7 +64,16 @@ export class CanvasPipeline {
       usage: 'Static Draw',
     });
     this.shader = new Shader(gl);
-    this.frameBuffer = canvasFrameBuffer
+    this.frameBuffer = new FrameBuffer(gl, {
+      width: appState.canvasState.canvas.width,
+      height: appState.canvasState.canvas.height,
+      target: 'Regular',
+      wrapX: 'Repeat',
+      wrapY: 'Repeat',
+      magFilter: 'Nearest',
+      minFilter: 'Nearest',
+      format: 'RGBA',
+    });
     this.fillFramebufferWithWhite(gl);
   }
 

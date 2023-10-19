@@ -22,6 +22,7 @@ export default class ClearScreenGesture implements Gesture {
 
   fingerTapped(positions: PointerPos[], _: AppState): boolean {
     if (!this.isInitialized()) {
+      this.deInitialize()
       this.tryInitialize(positions);
     }
 

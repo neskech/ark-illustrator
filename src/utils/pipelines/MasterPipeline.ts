@@ -6,36 +6,23 @@ import { WorldPipeline } from './worldPipeline';
 import { CanvasPipeline } from './canvasPipeline';
 import { StrokePipeline } from './strokePipeline';
 import { todo } from '../func/funUtils';
-import FrameBuffer from '../web/frameBuffer';
-
-export let canvasFrameBuffer: FrameBuffer
 
 export class MasterPipeline {
   private canvasPipeline: CanvasPipeline;
-  private strokePreviewPipeline: StrokePipeline;
+  private strokePipeline: StrokePipeline;
   private worldPipeline: WorldPipeline;
 
   constructor(gl: GL, appState: Readonly<AppState>) {
-    canvasFrameBuffer = new FrameBuffer(gl, {
-      width: appState.canvasState.canvas.width,
-      height: appState.canvasState.canvas.height,
-      target: 'Regular',
-      wrapX: 'Repeat',
-      wrapY: 'Repeat',
-      magFilter: 'Nearest',
-      minFilter: 'Nearest',
-      format: 'RGBA',
-    });
     this.canvasPipeline = new CanvasPipeline(gl, appState);
-    this.strokePreviewPipeline = new StrokePipeline(gl, appState);
+    this.strokePipeline = new StrokePipeline(gl, appState);
     this.worldPipeline = new WorldPipeline(gl, appState);
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
     initWithErrorWrapper(() => this.canvasPipeline.init(gl, appState), this.canvasPipeline.name);
     initWithErrorWrapper(
-      () => this.strokePreviewPipeline.init(gl, this.canvasPipeline.getFrameBuffer(), appState),
-      this.strokePreviewPipeline.name
+      () => this.strokePipeline.init(gl, this.canvasPipeline.getFrameBuffer(), appState),
+      this.strokePipeline.name
     );
     initWithErrorWrapper(() => this.worldPipeline.init(gl, appState), this.worldPipeline.name);
 
@@ -45,6 +32,12 @@ export class MasterPipeline {
 
     appState.inputState.gestures.subscribeToOnScreenClearGesture(() => {
       this.canvasPipeline.fillFramebufferWithWhite(gl);
+      this.strokePipeline.refreshCanvasTexture(gl, this.canvasPipeline.getFrameBuffer());
+    });
+
+    appState.inputState.shortcuts.subscribeToOnScreenClearClick(() => {
+      this.canvasPipeline.fillFramebufferWithWhite(gl);
+      this.strokePipeline.refreshCanvasTexture(gl, this.canvasPipeline.getFrameBuffer());
     });
 
     clearScreen(gl);
@@ -55,7 +48,7 @@ export class MasterPipeline {
   }
 
   render(gl: GL, appState: Readonly<AppState>) {
-    const finalFramebuffer = this.strokePreviewPipeline.getFrameBuffer();
+    const finalFramebuffer = this.strokePipeline.getFrameBuffer();
     const finalTexture = finalFramebuffer.getTextureAttachment();
 
     renderWithErrorWrapper(
@@ -65,6 +58,6 @@ export class MasterPipeline {
   }
 
   destroy(_: GL) {
-    todo()
+    todo();
   }
 }
