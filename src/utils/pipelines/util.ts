@@ -53,6 +53,27 @@ export function constructQuadSix(position: Float32Vector2, scale: number): SixSi
   ];
 }
 
+export function constructQuadSixWidthHeight(
+  position: Float32Vector2,
+  width: number,
+  height: number
+): Float32Vector2[] {
+  return [
+    //bottom left
+    new Float32Vector2(position.x + width, position.y + height),
+    //top left
+    new Float32Vector2(position.x - width, position.y + height),
+    //top right
+    new Float32Vector2(position.x - width, position.y - height),
+    //bottom right
+    new Float32Vector2(position.x - width, position.y - height),
+    //bottom right
+    new Float32Vector2(position.x + width, position.y - height),
+    //top right
+    new Float32Vector2(position.x + width, position.y + height),
+  ];
+}
+
 export function constructQuadSixWidthHeightTexture(
   position: Float32Vector2,
   width: number,

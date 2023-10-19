@@ -18,8 +18,8 @@ const SCREEN_HEIGHT = 1;
 
 const NUM_VERTICES_QUAD = 6;
 
-const VERTEX_SIZE_POS_TEXTURE = 4;
-const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_TEXTURE * NUM_VERTICES_QUAD;
+const VERTEX_SIZE_POS_= 2
+const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_ * NUM_VERTICES_QUAD;
 
 const SIZE_FLOAT = 4;
 const VERTEX_SIZE_POS_TEX_OPACITY = 5;
@@ -74,13 +74,13 @@ function initFullScreenBlitShader(gl: GL, shader: Shader) {
                           }\n`;
 
   const vertexSource = `attribute vec2 a_position;
-                      attribute vec2 aTextureCoord;
 
                       varying highp vec2 vTextureCoord;
+                      const vec2 scale = vec2(0.5, 0.5);
 
                       void main() {
                         gl_Position = vec4(a_position, 0, 1);
-                        vTextureCoord = aTextureCoord;     
+                        vTextureCoord = a_position * scale + scale;  
                       }\n`;
 
   shader.constructFromSource(gl, vertexSource, fragmentSource).match(
@@ -164,13 +164,12 @@ export class StrokePipeline {
     this.fullScreenBlitVertexArray
       .builder()
       .addAttribute(2, 'float', 'position')
-      .addAttribute(2, 'float', 'texCord')
       .build(gl);
 
     const quadVerts = constructQuadSixWidthHeightTexture(
-      SCREEN_ORIGIN,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT
+      new Float32Vector2(0, 0),
+      0.3,
+      0.3
     );
     const quadBuffer = new Float32Array(SIZE_FULL_SCREEN_QUAD);
 
