@@ -8,11 +8,14 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  Button,
 } from '@mui/material';
 import { useState } from 'react';
 import Draggable from 'react-draggable';
 import { type BrushSettings } from '~/utils/canvas/tools/brush';
 import { appState } from '~/utils/mainRoutine';
+import CheckIcon from '@mui/icons-material/Check';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 const PaperComponent = (props: PaperProps) => {
   return (
@@ -24,6 +27,7 @@ const PaperComponent = (props: PaperProps) => {
 
 interface Props {
   open: boolean;
+  onClose: () => void
 }
 
 function getBrushSettings(): BrushSettings | null {
@@ -82,7 +86,7 @@ export const SettingsDialog = (props: Props) => {
     setSmoothing_(val);
   };
 
-  const [limitStrokeLength, setLimitStrokeLength_] = useState<'yes' | 'no'>('yes') 
+  const [limitStrokeLength, setLimitStrokeLength_] = useState<'yes' | 'no'>(allowLimitedStrokeLength ? 'yes' : 'no') 
   const setLimitStrokeLength = (e: unknown, val: 'yes' | 'no') => {
     allowLimitedStrokeLength = val == 'yes'
     setLimitStrokeLength_(val)
@@ -90,6 +94,8 @@ export const SettingsDialog = (props: Props) => {
 
   return getBrushSettings() ? (
     <Dialog PaperComponent={PaperComponent} open={props.open} style={{}}>
+        <Button variant="contained" onClick={() => props.onClose()} sx={{marginBottom: '50px'}}><CancelIcon/></Button>
+
       <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
         <Typography> Brush Size </Typography>
         <Slider
@@ -187,7 +193,7 @@ export const SettingsDialog = (props: Props) => {
       </Stack>
 
       <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-        Allow limited length brush strokes? (Yes causes visual artifacts)
+        Allow limited length brush strokes? (No causes visual artifacts)
         <ToggleButtonGroup
           color="primary"
           value={limitStrokeLength}
@@ -195,8 +201,8 @@ export const SettingsDialog = (props: Props) => {
           onChange={(e, val) => setLimitStrokeLength(e, val as 'yes' | 'no')}
           aria-label="Limited Brush Stroes"
         >
-          <ToggleButton value="yes">Yes</ToggleButton>
-          <ToggleButton value="no">No</ToggleButton>
+          <ToggleButton value="yes"><CheckIcon/></ToggleButton>
+          <ToggleButton value="no"><CancelIcon/></ToggleButton>
         </ToggleButtonGroup>
       </Stack>
     </Dialog>

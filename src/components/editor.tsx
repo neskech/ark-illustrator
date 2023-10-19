@@ -29,7 +29,7 @@ function Editor() {
     return (
         <Box className='w-full h-full flex flex-row select-none touch-none'> 
                 <Canvas ref={canvas}/> 
-               { showSettings ? <SettingsDialog open={showSettings} /> : <div> </div> }
+               { showSettings ? <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)}/> : <div> </div> }
         </Box>
     );
 }
