@@ -10,7 +10,7 @@ import type Texture from '../web/texture';
 import { Float32Vector2 } from 'matrixgl';
 import { canvasFrameBuffer } from './MasterPipeline';
 
-export const MAX_POINTS_PER_FRAME = 100000;
+export const MAX_POINTS_PER_FRAME = 10000;
 
 const SCREEN_ORIGIN = new Float32Vector2(0, 0);
 const SCREEN_WIDTH = 1;

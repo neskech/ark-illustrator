@@ -68,11 +68,11 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
  * We want to maintain a small current points list in order to
  * maintain a small computation time for our stabilizing functions
  */
-const DELETE_FACTOR = 0.993;
+const DELETE_FACTOR = 0.93;
 
 const LOOK_AHEAD = 5
 
-const OPACITY_COMPRESSION = 0.001
+const OPACITY_COMPRESSION = 0.0001
 
 interface Cache {
   weightsCache: number[];
