@@ -42,7 +42,7 @@ export default class GestureHandler {
       id: event.pointerId,
     });
 
-    console.log("POINTER ID IS DOWN", event.pointerId, this.pointerPositions.length, JSON.stringify(this.pointerPositions))
+    console.log("POINTER ID IS DOWN", event.pointerId, this.pointerPositions.length, JSON.stringify(this.pointerPositions.map(p => p.id)))
 
     let dirty = false
     for (const gesture of this.gestures) {
@@ -74,7 +74,7 @@ export default class GestureHandler {
       }
     }
 
-    console.log("POINTER ID IS UP", event.pointerId, this.pointerPositions.length, JSON.stringify(this.pointerPositions))
+    console.log("POINTER ID IS UP", event.pointerId, this.pointerPositions.length, JSON.stringify(this.pointerPositions.map(p => p.id)))
 
     let dirty = false
     for (const gesture of this.gestures) {

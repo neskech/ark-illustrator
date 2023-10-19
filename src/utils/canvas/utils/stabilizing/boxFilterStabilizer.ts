@@ -68,9 +68,11 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
  * We want to maintain a small current points list in order to
  * maintain a small computation time for our stabilizing functions
  */
-const DELETE_FACTOR = 0.93;
+const DELETE_FACTOR = 0.993;
 
 const LOOK_AHEAD = 5
+
+const OPACITY_COMPRESSION = 0.001
 
 interface Cache {
   weightsCache: number[];
@@ -405,7 +407,7 @@ function addPointsCartmollInterpolation3D(
 ): BrushPoint[] {
   if (rawCurve.length <= 1) return rawCurve;
 
-  const points = rawCurve.map((p) => [p.position.x, p.position.y, p.pressure]);
+  const points = rawCurve.map((p) => [p.position.x, p.position.y, p.pressure * OPACITY_COMPRESSION]);
   const interpolator = new CurveInterpolator(points, {
     tension,
     alpha,
@@ -419,7 +421,7 @@ function addPointsCartmollInterpolation3D(
     const parameter = Math.min(1, (spacing * i) / curveDist);
     const point = interpolator.getPointAt(parameter);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    output.push(newPoint(new Float32Vector2(point[0], point[1]), point[2]!));
+    output.push(newPoint(new Float32Vector2(point[0], point[1]), (point[2]! * (1 / OPACITY_COMPRESSION))));
   }
 
   return output;
