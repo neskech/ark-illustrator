@@ -109,6 +109,7 @@ export class CanvasPipeline {
     this.vertexBuffer.bind(gl)
     this.frameBuffer.bind(gl);
     this.shader.use(gl);
+    gl.activeTexture(gl.TEXTURE0)
     brushSettings.texture.map((t) => t.bind(gl));
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
@@ -116,7 +117,7 @@ export class CanvasPipeline {
     this.vertexBuffer.addData(gl, buf);
 
     this.shader.uploadFloat(gl, 'flow', brushSettings.flow);
-    brushSettings.texture.map((t) => this.shader.uploadTexture(gl, 'tex', t));
+    brushSettings.texture.map((t) => this.shader.uploadTexture(gl, 'tex', t, 0));
 
     gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
 

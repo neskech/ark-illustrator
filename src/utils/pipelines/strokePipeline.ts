@@ -191,9 +191,10 @@ export class StrokePipeline {
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
     this.fullScreenBlitShader.use(gl);
-    canvasTexture.bind(gl);
 
-    this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture);
+    gl.activeTexture(gl.TEXTURE0)
+    canvasTexture.bind(gl);
+    this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
 
@@ -201,22 +202,20 @@ export class StrokePipeline {
     this.fullScreenBlitShader.stopUsing(gl);
     this.fullScreenBlitVertexArray.unBind(gl);
     this.fullScreenBlitVertexBuffer.unBind(gl);
-
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
 
   private renderStroke(gl: GL, points: BrushPoint[], brushSettings: BrushSettings) {
     this.strokeVertexArray.bind(gl);
     this.strokeVertexBuffer.bind(gl);
     this.strokeShader.use(gl);
+
+    gl.activeTexture(gl.TEXTURE0)
     brushSettings.texture.unwrap().bind(gl);
 
-    
-    //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
 
     this.strokeShader.uploadFloat(gl, 'flow', brushSettings.flow);
-    this.strokeShader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap());
+    this.strokeShader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap(), 0);
 
     const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY;
     const buf = new Float32Array(bufSize);
