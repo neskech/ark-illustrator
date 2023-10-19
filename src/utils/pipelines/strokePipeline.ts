@@ -8,6 +8,7 @@ import FrameBuffer from '../web/frameBuffer';
 import { clearScreen, constructQuadSixWidthHeightTexture, emplaceQuads } from './util';
 import type Texture from '../web/texture';
 import { Float32Vector2 } from 'matrixgl';
+import { canvasFrameBuffer } from './MasterPipeline';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 
@@ -245,15 +246,15 @@ export class StrokePipeline {
     this.frameBuffer.unBind(gl);
   }
 
-  setupEvents(gl: GL, canvasFramebuffer: FrameBuffer, appState: Readonly<AppState>) {
+  setupEvents(gl: GL, _: FrameBuffer, appState: Readonly<AppState>) {
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeContinued((p) => {
-      const texture = canvasFramebuffer.getTextureAttachment();
+      const texture = canvasFrameBuffer.getTextureAttachment();
       this.render(gl, p, texture, appState);
     });
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       this.frameBuffer.bind(gl);
       clearScreen(gl, 0, 0, 0, 0)
-      const texture = canvasFramebuffer.getTextureAttachment();
+      const texture = canvasFrameBuffer.getTextureAttachment();
       this.renderCanvasTexture(gl, texture);
       this.frameBuffer.unBind(gl);
     });

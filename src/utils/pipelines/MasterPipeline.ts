@@ -1,24 +1,34 @@
 import { type GL } from '../web/glUtils';
 import { initWithErrorWrapper, renderWithErrorWrapper } from '../web/renderPipeline';
-import { DebugPipeline } from './debugPipeline';
 import { type AppState } from '../mainRoutine';
 import { clearScreen } from './util';
 import { WorldPipeline } from './worldPipeline';
 import { CanvasPipeline } from './canvasPipeline';
 import { StrokePipeline } from './strokePipeline';
 import { todo } from '../func/funUtils';
+import FrameBuffer from '../web/frameBuffer';
+
+export let canvasFrameBuffer: FrameBuffer
 
 export class MasterPipeline {
   private canvasPipeline: CanvasPipeline;
   private strokePreviewPipeline: StrokePipeline;
   private worldPipeline: WorldPipeline;
-  private debugPipeline: DebugPipeline;
 
   constructor(gl: GL, appState: Readonly<AppState>) {
     this.canvasPipeline = new CanvasPipeline(gl, appState);
     this.strokePreviewPipeline = new StrokePipeline(gl, appState);
     this.worldPipeline = new WorldPipeline(gl, appState);
-    this.debugPipeline = new DebugPipeline(gl, appState);
+    canvasFrameBuffer = new FrameBuffer(gl, {
+      width: appState.canvasState.canvas.width,
+      height: appState.canvasState.canvas.height,
+      target: 'Regular',
+      wrapX: 'Repeat',
+      wrapY: 'Repeat',
+      magFilter: 'Nearest',
+      minFilter: 'Nearest',
+      format: 'RGBA',
+    });
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
