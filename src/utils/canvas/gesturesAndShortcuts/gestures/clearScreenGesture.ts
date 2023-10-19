@@ -30,6 +30,12 @@ export default class ClearScreenGesture implements Gesture {
       return false;
     }
 
+    /* Means we're doing a 3 finger tap */
+    if (positions.length == 3) {
+      this.deInitialize()
+      return false
+    }
+
     const now = new Date().getTime();
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
       this.tapCount += 1;
