@@ -1,4 +1,4 @@
-import { type GL } from '../web/glUtils';
+import { checkError, type GL } from '../web/glUtils';
 import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
 import Shader from '../web/shader';
@@ -198,6 +198,7 @@ export class StrokePipeline {
     this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
+    checkError(gl, 'ME')
 
     canvasTexture.unBind(gl);
     this.fullScreenBlitShader.stopUsing(gl);
