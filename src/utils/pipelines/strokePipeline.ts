@@ -181,7 +181,7 @@ export class StrokePipeline {
       quadBuffer[i++] = vert.y;
     }
 
-    this.fullScreenBlitVertexBuffer.allocateWithData(gl, quadBuffer);
+    this.fullScreenBlitVertexBuffer.allocateWithData(gl, new Float32Array(SIZE_FULL_SCREEN_QUAD * 2));
 
     this.fullScreenBlitVertexArray.unBind(gl);
     this.fullScreenBlitVertexBuffer.unBind(gl);
@@ -199,6 +199,20 @@ export class StrokePipeline {
     
     // this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
     console.log("im hereee!!!!!")
+    const quadVerts = constructQuadSixWidthHeightTexture(
+      SCREEN_ORIGIN,
+      SCREEN_WIDTH,
+      SCREEN_HEIGHT
+    );
+    const quadBuffer = new Float32Array(SIZE_FULL_SCREEN_QUAD);
+
+    let i = 0;
+    for (const vert of quadVerts) {
+      quadBuffer[i++] = vert.x;
+      quadBuffer[i++] = vert.y;
+    }
+    this.fullScreenBlitVertexBuffer.addData(gl, quadBuffer)
+
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
 
     //canvasTexture.unBind(gl);
