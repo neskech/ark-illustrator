@@ -195,6 +195,7 @@ export class StrokePipeline {
 
     gl.activeTexture(gl.TEXTURE0)
     canvasTexture.bind(gl);
+    
     this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
@@ -241,7 +242,7 @@ export class StrokePipeline {
     const brushSettings = appState.settings.brushSettings[0];
 
     this.renderCanvasTexture(gl, canvasTexture);
-    this.renderStroke(gl, points, brushSettings);
+   // this.renderStroke(gl, points, brushSettings);
 
     this.frameBuffer.unBind(gl);
   }
