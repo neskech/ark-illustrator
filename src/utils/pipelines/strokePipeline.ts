@@ -18,10 +18,11 @@ const SCREEN_HEIGHT = 1;
 
 const NUM_VERTICES_QUAD = 6;
 
-const VERTEX_SIZE_POS_TEXTURE = 4;
-const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_TEXTURE * NUM_VERTICES_QUAD;
-
 const SIZE_FLOAT = 4;
+
+const VERTEX_SIZE_POS_TEXTURE = 4;
+const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_TEXTURE * NUM_VERTICES_QUAD * SIZE_FLOAT;
+
 const VERTEX_SIZE_POS_TEX_OPACITY = 5;
 const MAX_SIZE_STROKE =
   MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY * SIZE_FLOAT;
@@ -197,7 +198,7 @@ export class StrokePipeline {
     // canvasTexture.bind(gl);
     
     // this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
-
+    console.log("im hereee!!!!!")
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
 
     //canvasTexture.unBind(gl);
