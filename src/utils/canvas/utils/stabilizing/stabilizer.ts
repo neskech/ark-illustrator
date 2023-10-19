@@ -1,6 +1,6 @@
 import { MAX_POINTS_PER_FRAME } from '~/utils/pipelines/strokePipeline';
 import { type BrushPoint, type BrushSettings } from '../../tools/brush';
-import { assert, requires } from '~/utils/contracts';
+import { requires } from '~/utils/contracts';
 
 export default interface Stabilizer {
     addPoint: (p: BrushPoint, settings: Readonly<BrushSettings>) => void,
@@ -24,7 +24,6 @@ export function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize
     requires(array.length == maxSize)
 
     const numToShaveOff = Math.floor(maxSize * deleteFactor)
-   /// assert(numToShaveOff < maxSize)
 
     const remaining = maxSize - numToShaveOff
 

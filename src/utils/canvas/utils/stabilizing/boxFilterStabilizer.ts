@@ -150,8 +150,6 @@ export default class BoxFilterStabilizer implements Stabilizer {
     shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
     this.numPoints -= numDeleted;
 
-    //assert(this.numPoints > 0 && numDeleted > 0);
-
     const sumOfAll = this.cache.runningSumPointCache[numDeleted - 1];
     shiftDeleteElements(this.cache.runningSumPointCache, DELETE_FACTOR, this.maxSize);
 
@@ -188,7 +186,6 @@ function process(
     smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
   }
 
-  //return boxed;
   return addPointsCartmollInterpolation3D(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
 }
 
