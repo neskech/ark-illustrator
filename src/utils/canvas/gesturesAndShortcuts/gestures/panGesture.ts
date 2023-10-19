@@ -42,7 +42,7 @@ export default class PanGesture implements Gesture {
     const originalMid = midpoint(this.originPosition1, this.originPosition2);
     const newMid = midpoint(positions[0].pos, positions[1].pos);
     const deltaVector = getFingerDelta(newMid, originalMid, appState);
-    const newPos = add(copy(this.originCameraPos), scale(deltaVector, -PAN_FACTOR));
+    const newPos = add(copy(this.originCameraPos), scale(deltaVector, -PAN_FACTOR * appState.canvasState.camera.getCameraWidth()));
     appState.canvasState.camera.setPosition(newPos);
 
     return true;

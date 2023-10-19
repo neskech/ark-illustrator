@@ -68,7 +68,7 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
  * We want to maintain a small current points list in order to
  * maintain a small computation time for our stabilizing functions
  */
-const DELETE_FACTOR = 1 / 4;
+const DELETE_FACTOR = 0.93;
 
 const LOOK_AHEAD = 5
 
@@ -143,14 +143,14 @@ export default class BoxFilterStabilizer implements Stabilizer {
 
     const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
 
-    const shavedOff = this.currentPoints.slice(0, numDeleted + LOOK_AHEAD)
-    const processed = process(shavedOff, numDeleted + LOOK_AHEAD, settings, this.cache)
+    const shavedOff = this.currentPoints.slice(0, this.numPoints)
+    const processed = process(shavedOff, this.numPoints, settings, this.cache)
     this.onBrushStrokeCutoff.invoke(processed)
 
     shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
     this.numPoints -= numDeleted;
 
-    assert(this.numPoints > 0 && numDeleted > 0);
+    //assert(this.numPoints > 0 && numDeleted > 0);
 
     const sumOfAll = this.cache.runningSumPointCache[numDeleted - 1];
     shiftDeleteElements(this.cache.runningSumPointCache, DELETE_FACTOR, this.maxSize);

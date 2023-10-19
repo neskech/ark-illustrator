@@ -9,7 +9,7 @@ import { clearScreen, constructQuadSixWidthHeightTexture, emplaceQuads } from '.
 import type Texture from '../web/texture';
 import { Float32Vector2 } from 'matrixgl';
 
-export const MAX_POINTS_PER_FRAME = 1000000;
+export const MAX_POINTS_PER_FRAME = 10000;
 
 const SCREEN_ORIGIN = new Float32Vector2(0, 0);
 const SCREEN_WIDTH = 1;
@@ -236,7 +236,7 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 0, 0, 0, 0)
+    //clearScreen(gl, 0, 0, 0, 0)
 
     const brushSettings = appState.settings.brushSettings[0];
 

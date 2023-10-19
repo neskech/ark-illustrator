@@ -4,7 +4,7 @@ import { distance } from '~/utils/web/vector';
 import { assert } from '~/utils/contracts';
 import { equalsNoOrder } from '~/utils/func/arrayUtils';
 
-const ZOOM_FACTOR = 1 / 100;
+const ZOOM_FACTOR = 1 / 300;
 
 export default class ZoomGesture implements Gesture {
   private pointerId1: number;

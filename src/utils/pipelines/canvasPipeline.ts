@@ -6,8 +6,7 @@ import { type AppState } from '../mainRoutine';
 import { type BrushPoint } from '../canvas/tools/brush';
 import FrameBuffer from '../web/frameBuffer';
 import { clearScreen, emplaceQuads } from './util';
-
-export const MAX_POINTS_PER_FRAME = 10000;
+import { MAX_POINTS_PER_FRAME } from './strokePipeline';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 5;
