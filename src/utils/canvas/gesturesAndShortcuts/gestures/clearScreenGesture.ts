@@ -26,14 +26,14 @@ export default class ClearScreenGesture implements Gesture {
       this.tryInitialize(positions);
     }
 
-    if (!this.isValidInput(positions)) {
-      return false;
-    }
-
-    /* Means we're doing a 3 finger tap */
-    if (positions.length == 3) {
+    /* Means we're doing a > 2 finger tap */
+    if (positions.length > 2) {
       this.deInitialize()
       return false
+    }
+
+    if (!this.isValidInput(positions)) {
+      return false;
     }
 
     const now = new Date().getTime();
