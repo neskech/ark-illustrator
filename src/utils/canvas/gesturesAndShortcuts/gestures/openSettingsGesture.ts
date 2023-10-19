@@ -3,7 +3,7 @@ import { type AppState } from '~/utils/mainRoutine';
 import { assert } from '~/utils/contracts';
 import { type Event } from '~/utils/func/event';
 
-const TAP_DELAY_MILLIS = 300;
+const TAP_DELAY_MILLIS = 600;
 
 export default class OpenSettingsGesture implements Gesture {
   private tapCount: number;
