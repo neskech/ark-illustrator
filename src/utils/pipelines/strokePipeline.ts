@@ -189,7 +189,6 @@ export class StrokePipeline {
   private renderCanvasTexture(gl: GL, canvasTexture: Texture) {
     gl.blendFunc(gl.ONE, gl.ZERO);
 
-    this.frameBuffer.bind(gl);
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
     this.fullScreenBlitShader.use(gl);
@@ -239,10 +238,10 @@ export class StrokePipeline {
     this.frameBuffer.bind(gl);
    // clearScreen(gl, 0, 0, 0, 0)
 
-    const brushSettings = appState.settings.brushSettings[0];
+   // const brushSettings = appState.settings.brushSettings[0];
 
     this.renderCanvasTexture(gl, canvasTexture);
-    this.renderStroke(gl, points, brushSettings);
+    //this.renderStroke(gl, points, brushSettings);
 
     this.frameBuffer.unBind(gl);
   }
