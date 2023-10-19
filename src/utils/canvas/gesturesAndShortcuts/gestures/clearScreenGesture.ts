@@ -3,7 +3,7 @@ import { type AppState } from '~/utils/mainRoutine';
 import { assert } from '~/utils/contracts';
 import { type Event } from '~/utils/func/event';
 
-const TAP_DELAY_MILLIS = 500;
+const TAP_DELAY_MILLIS = 300;
 
 export default class ClearScreenGesture implements Gesture {
   private tapCount: number;
