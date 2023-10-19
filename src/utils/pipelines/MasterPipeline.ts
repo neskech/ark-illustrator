@@ -16,9 +16,6 @@ export class MasterPipeline {
   private worldPipeline: WorldPipeline;
 
   constructor(gl: GL, appState: Readonly<AppState>) {
-    this.canvasPipeline = new CanvasPipeline(gl, appState);
-    this.strokePreviewPipeline = new StrokePipeline(gl, appState);
-    this.worldPipeline = new WorldPipeline(gl, appState);
     canvasFrameBuffer = new FrameBuffer(gl, {
       width: appState.canvasState.canvas.width,
       height: appState.canvasState.canvas.height,
@@ -29,6 +26,9 @@ export class MasterPipeline {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
+    this.canvasPipeline = new CanvasPipeline(gl, appState);
+    this.strokePreviewPipeline = new StrokePipeline(gl, appState);
+    this.worldPipeline = new WorldPipeline(gl, appState);
   }
 
   init(gl: GL, appState: Readonly<AppState>) {

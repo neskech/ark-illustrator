@@ -70,7 +70,7 @@ function initFullScreenBlitShader(gl: GL, shader: Shader) {
                           uniform sampler2D canvas;          
                           
                           void main() {
-                            gl_FragColor = texture2D(canvas, vTextureCoord);
+                            gl_FragColor = vec4(1, 0, 0, 1);//texture2D(canvas, vTextureCoord);
                           }\n`;
 
   const vertexSource = `attribute vec2 a_position;
