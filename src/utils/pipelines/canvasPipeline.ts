@@ -24,8 +24,8 @@ function initShader(gl: GL, shader: Shader) {
                           
                           void main() {
                              vec4 color = texture2D(tex, vTextureCoord);
-                             
-                             color.a *= flow * v_opacity;
+                             color.rgb *= v_opacity;
+                             color.a *= flow;
                              gl_FragColor = color;
                           }\n`;
 
@@ -131,11 +131,11 @@ export class CanvasPipeline {
   setupEvents(gl: GL, appState: Readonly<AppState>) {
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((p) => {
       this.render(gl, p, appState);
-    });
+    }, true);
 
-    // appState.inputState.tools['brush'].subscribeToOnBrushStrokeCutoff((p) => {
-    //   this.render(gl, p, appState);
-    // }, true);
+    appState.inputState.tools['brush'].subscribeToOnBrushStrokeCutoff((p) => {
+      this.render(gl, p, appState);
+    }, true);
   }
 
   getFrameBuffer(): FrameBuffer {
