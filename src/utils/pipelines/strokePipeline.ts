@@ -18,11 +18,10 @@ const SCREEN_HEIGHT = 1;
 
 const NUM_VERTICES_QUAD = 6;
 
-const SIZE_FLOAT = 4;
-
 const VERTEX_SIZE_POS_TEXTURE = 4;
-const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_TEXTURE * NUM_VERTICES_QUAD * SIZE_FLOAT;
+const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_TEXTURE * NUM_VERTICES_QUAD;
 
+const SIZE_FLOAT = 4;
 const VERTEX_SIZE_POS_TEX_OPACITY = 5;
 const MAX_SIZE_STROKE =
   MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY * SIZE_FLOAT;
@@ -68,7 +67,7 @@ function initFullScreenBlitShader(gl: GL, shader: Shader) {
   const fragmentSource = `precision highp float;
                           varying highp vec2 vTextureCoord;
                           
-                          //uniform sampler2D canvas;          
+                          uniform sampler2D canvas;          
                           
                           void main() {
                             gl_FragColor = vec4(1, 0, 0, 1);//texture2D(canvas, vTextureCoord);
@@ -181,7 +180,7 @@ export class StrokePipeline {
       quadBuffer[i++] = vert.y;
     }
 
-    this.fullScreenBlitVertexBuffer.allocateWithData(gl, new Float32Array(SIZE_FULL_SCREEN_QUAD * 2));
+    this.fullScreenBlitVertexBuffer.allocateWithData(gl, quadBuffer);
 
     this.fullScreenBlitVertexArray.unBind(gl);
     this.fullScreenBlitVertexBuffer.unBind(gl);
@@ -190,32 +189,18 @@ export class StrokePipeline {
   private renderCanvasTexture(gl: GL, canvasTexture: Texture) {
     gl.blendFunc(gl.ONE, gl.ZERO);
 
+    this.frameBuffer.bind(gl);
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
     this.fullScreenBlitShader.use(gl);
 
-    // gl.activeTexture(gl.TEXTURE0)
-    // canvasTexture.bind(gl);
-    
-    // this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
-    console.log("im hereee!!!!!")
-    const quadVerts = constructQuadSixWidthHeightTexture(
-      SCREEN_ORIGIN,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT
-    );
-    const quadBuffer = new Float32Array(SIZE_FULL_SCREEN_QUAD);
-
-    let i = 0;
-    for (const vert of quadVerts) {
-      quadBuffer[i++] = vert.x;
-      quadBuffer[i++] = vert.y;
-    }
-    this.fullScreenBlitVertexBuffer.addData(gl, quadBuffer)
+    gl.activeTexture(gl.TEXTURE0)
+    canvasTexture.bind(gl);
+    this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, SIZE_FULL_SCREEN_QUAD);
 
-    //canvasTexture.unBind(gl);
+    canvasTexture.unBind(gl);
     this.fullScreenBlitShader.stopUsing(gl);
     this.fullScreenBlitVertexArray.unBind(gl);
     this.fullScreenBlitVertexBuffer.unBind(gl);
@@ -252,7 +237,7 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 0, 0, 0, 0)
+   // clearScreen(gl, 0, 0, 0, 0)
 
     const brushSettings = appState.settings.brushSettings[0];
 
@@ -269,7 +254,7 @@ export class StrokePipeline {
     });
     appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
       this.frameBuffer.bind(gl);
-      clearScreen(gl, 0, 0, 0, 0)
+      //clearScreen(gl, 0, 0, 0, 0)
       const texture = canvasFrameBuffer.getTextureAttachment();
       this.renderCanvasTexture(gl, texture);
       this.frameBuffer.unBind(gl);
@@ -282,7 +267,7 @@ export class StrokePipeline {
 
   private fillFramebufferWithWhite(gl: GL) {
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 1, 1, 1, 1);
+    //clearScreen(gl, 1, 1, 1, 1);
     this.frameBuffer.unBind(gl);
   }
 }
