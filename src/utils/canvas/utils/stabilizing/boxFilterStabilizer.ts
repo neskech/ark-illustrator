@@ -73,7 +73,7 @@ const DELETE_FACTOR = 0.93;
 
 const LOOK_AHEAD = 5
 
-const OPACITY_COMPRESSION = 0.0001
+const OPACITY_COMPRESSION = 0.000001
 
 interface Cache {
   weightsCache: number[];
