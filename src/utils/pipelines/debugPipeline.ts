@@ -7,6 +7,7 @@ import { constructQuadIndices, constructQuadSixTex } from './util';
 import UnitStabilizer from '../canvas/utils/stabilizing/unitStabilizer';
 import { type BrushPoint } from '../canvas/tools/brush';
 import SmoothedStabilizer from '../canvas/utils/stabilizing/smoothStabilizer';
+import EventManager from '../event/eventManager';
 
 const MAX_POINTS_PER_FRAME = 50000;
 const NUM_VERTICES_QUAD = 4;
@@ -100,8 +101,6 @@ export class DebugPipeline {
   }
 
   init(gl: GL, appState: Readonly<AppState>) {
-
-
     this.vertexArray
       .builder()
       .addAttribute(2, 'float', 'position')
@@ -115,7 +114,7 @@ export class DebugPipeline {
 
     initShader(gl, this.shader);
 
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeContinuedRaw((p) => {
+    EventManager.subscribe('brushStrokeContinuedRaw', (p) => {
       this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(p, 1, 1, 1);
       this.linearPoints = this.linearStab.getProcessedCurveWithPoints(p);
 
@@ -125,7 +124,8 @@ export class DebugPipeline {
         this.currentBuf == 'smoothed' ? this.smoothedPoints : this.linearPoints;
       this.render(gl, pointsToRender, appState);
     });
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
+
+    EventManager.subscribe('brushStrokEnd', _ => {
       gl.clearColor(1, 1, 1, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
       this.smoothedPoints = [];
@@ -133,13 +133,9 @@ export class DebugPipeline {
     });
 
     this.addEvents(gl, appState);
-
-
   }
 
   private render(gl: GL, pointsToRender: BrushPoint[], state: Readonly<AppState>) {
- 
-
     if (pointsToRender.length <= 1) return;
 
     const buf = new Float32Array(pointsToRender.length * 6 * VERTEX_SIZE);
@@ -160,8 +156,6 @@ export class DebugPipeline {
     this.shader.uploadMatrix4x4(gl, 'projection', state.canvasState.camera.getProjectionMatrix());
 
     gl.drawArrays(gl.TRIANGLES, 0, 6 * pointsToRender.length);
-
-
   }
 
   private addEvents(gl: GL, appState: Readonly<AppState>) {

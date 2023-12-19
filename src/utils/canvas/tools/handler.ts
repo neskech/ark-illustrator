@@ -3,6 +3,7 @@ import ShortcutHandler from '../gesturesAndShortcuts/shortcutHandler';
 import { Brush } from './brush';
 import { type GlobalToolSettings } from './settings';
 import { type EventString, type HandleEventArgs } from './tool';
+import EventManager from '../../event/eventManager';
 
 export type ToolMap = {
   brush: Brush;
@@ -47,7 +48,7 @@ export function handleEvent({
   const tool = map[currentTool];
   const evStr: EventString = event.type as EventString; //TODO: pain point
 
-  let dirty = false
+  let dirty = false;
 
   dirty = tool.handleEvent({
     event,
@@ -55,10 +56,10 @@ export function handleEvent({
     eventString: evStr,
     settings,
     presetNumber,
-  }) || dirty;
+  });
 
   dirty = gestures.handleEvent(event, appState, evStr) || dirty;
   dirty = shortcuts.handleEvent(event, appState, evStr) || dirty;
 
-  if (dirty) appState.onAppStateMutated.invoke()
+  if (dirty) EventManager.invokeVoid('appStateMutated');
 }

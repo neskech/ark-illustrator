@@ -1,19 +1,17 @@
 import { type PointerPos, type Gesture } from './gesture';
 import { type AppState } from '~/utils/mainRoutine';
 import { assert } from '~/utils/contracts';
-import { type Event } from '~/utils/func/event';
+import EventManager from '~/utils/event/eventManager';
 
 const TAP_DELAY_MILLIS = 300;
 
 export default class ClearScreenGesture implements Gesture {
   private tapCount: number;
   private lastTapTime: number;
-  private onScreenClearGesture: Event<void>;
 
-  constructor(onScreenClearGesture: Event<void>) {
+  constructor() {
     this.tapCount = -1;
     this.lastTapTime = -1;
-    this.onScreenClearGesture = onScreenClearGesture;
   }
 
   fingerMoved(_: PointerPos[], __: AppState): boolean {
@@ -39,7 +37,7 @@ export default class ClearScreenGesture implements Gesture {
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
       this.tapCount += 1;
       if (this.tapCount == 3) {
-        this.onScreenClearGesture.invoke();
+        EventManager.invokeVoid('clearCanvas')
         this.tapCount = 0;
       }
       this.lastTapTime = now;

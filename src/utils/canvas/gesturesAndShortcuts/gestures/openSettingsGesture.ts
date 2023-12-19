@@ -1,19 +1,17 @@
 import { type PointerPos, type Gesture } from './gesture';
 import { type AppState } from '~/utils/mainRoutine';
 import { assert } from '~/utils/contracts';
-import { type Event } from '~/utils/func/event';
+import EventManager from '~/utils/event/eventManager';
 
 const TAP_DELAY_MILLIS = 300;
 
 export default class OpenSettingsGesture implements Gesture {
   private tapCount: number;
   private lastTapTime: number;
-  private openSettingsGesture: Event<void>;
 
-  constructor(openSettingsGesture: Event<void>) {
+  constructor() {
     this.tapCount = -1;
     this.lastTapTime = -1;
-    this.openSettingsGesture = openSettingsGesture;
   }
 
   fingerMoved(_: PointerPos[], __: AppState): boolean {
@@ -39,7 +37,7 @@ export default class OpenSettingsGesture implements Gesture {
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
       this.tapCount += 1;
       if (this.tapCount == 2) {
-        this.openSettingsGesture.invoke();
+        EventManager.invokeVoid('openSettings')
         this.tapCount = 0;
       }
       this.lastTapTime = now;

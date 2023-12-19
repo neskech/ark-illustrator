@@ -99,6 +99,16 @@ export function dropWhile<A>(a: A[], fn: (a: A) => boolean): A[] {
   return arr;
 }
 
+export function filterInPlace<A>(a: A[], fn: (a: A) => boolean): A[] {
+  for (let i = 0; i < a.length; i++) {
+    if (!fn(a[i])) {
+      a.splice(i, 1)
+      i--
+    }
+  }
+  
+  return a
+}
 export function min(a: number[]): number {
   requires(a.length > 0);
   return a.reduce((a, b) => Math.min(a, b), Infinity);

@@ -8,6 +8,7 @@ import FrameBuffer from '../web/frameBuffer';
 import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from './util';
 import type Texture from '../web/texture';
 import { Float32Vector2 } from 'matrixgl';
+import EventManager from '../event/eventManager';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 
@@ -17,7 +18,7 @@ const SCREEN_HEIGHT = 1;
 
 const NUM_VERTICES_QUAD = 6;
 
-const VERTEX_SIZE_POS_= 2
+const VERTEX_SIZE_POS_ = 2;
 const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_ * NUM_VERTICES_QUAD;
 
 const SIZE_FLOAT = 4;
@@ -151,7 +152,6 @@ export class StrokePipeline {
       .addAttribute(1, 'float', 'opacity')
       .build(gl);
 
-
     this.strokeVertexBuffer.allocateWithData(gl, new Float32Array(MAX_SIZE_STROKE));
 
     this.strokeVertexArray.unBind(gl);
@@ -160,16 +160,9 @@ export class StrokePipeline {
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
 
-    this.fullScreenBlitVertexArray
-      .builder()
-      .addAttribute(2, 'float', 'position')
-      .build(gl);
+    this.fullScreenBlitVertexArray.builder().addAttribute(2, 'float', 'position').build(gl);
 
-    const quadVerts = constructQuadSixWidthHeight(
-      SCREEN_ORIGIN,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT
-    );
+    const quadVerts = constructQuadSixWidthHeight(SCREEN_ORIGIN, SCREEN_WIDTH, SCREEN_HEIGHT);
     const quadBuffer = new Float32Array(SIZE_FULL_SCREEN_QUAD);
 
     let i = 0;
@@ -191,7 +184,7 @@ export class StrokePipeline {
     this.fullScreenBlitVertexBuffer.bind(gl);
     this.fullScreenBlitShader.use(gl);
 
-    gl.activeTexture(gl.TEXTURE0)
+    gl.activeTexture(gl.TEXTURE0);
     canvasTexture.bind(gl);
     this.fullScreenBlitShader.uploadTexture(gl, 'canvas', canvasTexture, 0);
 
@@ -208,10 +201,10 @@ export class StrokePipeline {
     this.strokeVertexBuffer.bind(gl);
     this.strokeShader.use(gl);
 
-    gl.activeTexture(gl.TEXTURE0)
+    gl.activeTexture(gl.TEXTURE0);
     brushSettings.texture.unwrap().bind(gl);
 
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
     this.strokeShader.uploadFloat(gl, 'flow', brushSettings.flow);
     this.strokeShader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap(), 0);
@@ -234,7 +227,7 @@ export class StrokePipeline {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 0, 0, 0, 0)
+    clearScreen(gl, 0, 0, 0, 0);
 
     const brushSettings = appState.settings.brushSettings[0];
 
@@ -252,13 +245,14 @@ export class StrokePipeline {
   }
 
   setupEvents(gl: GL, canvasFrameBuffer: FrameBuffer, appState: Readonly<AppState>) {
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeContinued((p) => {
+    EventManager.subscribe('brushStrokeContinued', (p) => {
       const texture = canvasFrameBuffer.getTextureAttachment();
       this.render(gl, p, texture, appState);
     });
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((_) => {
+
+    EventManager.subscribe('brushStrokEnd', (_) => {
       this.frameBuffer.bind(gl);
-      clearScreen(gl, 0, 0, 0, 0)
+      clearScreen(gl, 0, 0, 0, 0);
       const texture = canvasFrameBuffer.getTextureAttachment();
       this.renderCanvasTexture(gl, texture);
       this.frameBuffer.unBind(gl);

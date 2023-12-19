@@ -3,7 +3,7 @@ import { type CanvasEvent, type EventString } from '../tools/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { mouseToNormalized, mouseToNormalizedWithEvent } from '../camera';
 import { dot, scale } from '~/utils/web/vector';
-import { Event } from '~/utils/func/event';
+import EventManager from '~/utils/event/eventManager';
 
 const LEFT_MOUSE = 0;
 const RIGHT_MOUSE = 2;
@@ -21,7 +21,6 @@ export default class ShortcutHandler {
   private isLeftMouseHeldDown: number;
   private isAltKeyDown: boolean;
   private mousePosition: Float32Vector2;
-  private onScreenClearClick: Event<void>;
 
   constructor() {
     this.isMiddleMouseHeldDown = 0;
@@ -29,7 +28,6 @@ export default class ShortcutHandler {
     this.isLeftMouseHeldDown = 0;
     this.isAltKeyDown = false;
     this.mousePosition = new Float32Vector2(-1, -1);
-    this.onScreenClearClick = new Event()
   }
 
   handleEvent(event: CanvasEvent, appState: AppState, eventType: EventString) {
@@ -110,7 +108,7 @@ export default class ShortcutHandler {
     this.isAltKeyDown = keyEvent.key == 'Alt';
    
     if (keyEvent.key == 'c') {
-      this.onScreenClearClick.invoke()
+      EventManager.invokeVoid('clearCanvas')
       return true
     }
 
@@ -122,9 +120,6 @@ export default class ShortcutHandler {
     return false
   }
 
-  subscribeToOnScreenClearClick(f: () => void, hasPriority = false) {
-    this.onScreenClearClick.subscribe(f, hasPriority)
-  }
 }
 
 function isValidMousePos(pos: Float32Vector2): boolean {

@@ -7,26 +7,21 @@ import { type PointerPos, type Gesture } from './gestures/gesture';
 import PanGesture from './gestures/panGesture';
 import RotationGesture from './gestures/rotationGesture';
 import ZoomGesture from './gestures/zoomGesture';
-import { Event } from '~/utils/func/event';
 import ClearScreenGesture from './gestures/clearScreenGesture';
 import OpenSettingsGesture from './gestures/openSettingsGesture';
 
 export default class GestureHandler {
   private pointerPositions: PointerPos[];
   private gestures: Gesture[];
-  private onScreenClearGesture: Event<void>;
-  private onSettingsOpenGesture: Event<void>;
 
   constructor() {
     this.pointerPositions = [];
-    this.onScreenClearGesture = new Event();
-    this.onSettingsOpenGesture = new Event();
     this.gestures = [
       new PanGesture(),
       new RotationGesture(),
       new ZoomGesture(),
-      new ClearScreenGesture(this.onScreenClearGesture),
-      new OpenSettingsGesture(this.onSettingsOpenGesture),
+      new ClearScreenGesture(),
+      new OpenSettingsGesture(),
     ];
   }
 
@@ -92,13 +87,5 @@ export default class GestureHandler {
       dirty = gesture.fingerReleased(removedIds) || dirty;
     }
     return dirty;
-  }
-
-  subscribeToOnScreenClearGesture(f: () => void, hasPriority = false) {
-    this.onScreenClearGesture.subscribe(f, hasPriority);
-  }
-
-  subscribeToOnSettingsOpenGesture(f: () => void, hasPriority = false) {
-    this.onSettingsOpenGesture.subscribe(f, hasPriority);
   }
 }

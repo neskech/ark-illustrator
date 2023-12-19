@@ -7,6 +7,7 @@ import { type BrushPoint } from '../canvas/tools/brush';
 import FrameBuffer from '../web/frameBuffer';
 import { clearScreen, emplaceQuads } from './util';
 import { MAX_POINTS_PER_FRAME } from './strokePipeline';
+import EventManager from '../event/eventManager';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 5;
@@ -80,8 +81,8 @@ export class CanvasPipeline {
   init(gl: GL, appState: Readonly<AppState>) {
     initShader(gl, this.shader);
 
-    this.vertexArray.bind(gl)
-    this.vertexBuffer.bind(gl)
+    this.vertexArray.bind(gl);
+    this.vertexBuffer.bind(gl);
 
     this.vertexArray
       .builder()
@@ -95,21 +96,21 @@ export class CanvasPipeline {
     const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE * SIZE_FLOAT;
     this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
-    this.vertexArray.unBind(gl)
-    this.vertexBuffer.unBind(gl)
+    this.vertexArray.unBind(gl);
+    this.vertexBuffer.unBind(gl);
   }
 
   render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
     if (points.length == 0) return;
 
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
     const brushSettings = appState.settings.brushSettings[0];
 
-    this.vertexArray.bind(gl)
-    this.vertexBuffer.bind(gl)
+    this.vertexArray.bind(gl);
+    this.vertexBuffer.bind(gl);
     this.frameBuffer.bind(gl);
     this.shader.use(gl);
-    gl.activeTexture(gl.TEXTURE0)
+    gl.activeTexture(gl.TEXTURE0);
     brushSettings.texture.map((t) => t.bind(gl));
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
@@ -124,18 +125,13 @@ export class CanvasPipeline {
     brushSettings.texture.map((t) => t.unBind(gl));
     this.frameBuffer.unBind(gl);
     this.shader.stopUsing(gl);
-    this.vertexArray.unBind(gl)
-    this.vertexBuffer.unBind(gl)
+    this.vertexArray.unBind(gl);
+    this.vertexBuffer.unBind(gl);
   }
 
   setupEvents(gl: GL, appState: Readonly<AppState>) {
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeEnd((p) => {
-      this.render(gl, p, appState);
-    }, true);
-
-    appState.inputState.tools['brush'].subscribeToOnBrushStrokeCutoff((p) => {
-      this.render(gl, p, appState);
-    }, true);
+    EventManager.subscribe('brushStrokEnd', (p) => this.render(gl, p, appState), true);
+    EventManager.subscribe('brushStrokCutoff', (p) => this.render(gl, p, appState), true);
   }
 
   getFrameBuffer(): FrameBuffer {

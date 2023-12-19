@@ -6,6 +6,7 @@ import { WorldPipeline } from './worldPipeline';
 import { CanvasPipeline } from './canvasPipeline';
 import { StrokePipeline } from './strokePipeline';
 import { todo } from '../func/funUtils';
+import EventManager from '../event/eventManager';
 
 export class MasterPipeline {
   private canvasPipeline: CanvasPipeline;
@@ -25,20 +26,13 @@ export class MasterPipeline {
       this.strokePipeline.name
     );
     initWithErrorWrapper(() => this.worldPipeline.init(gl, appState), this.worldPipeline.name);
-
-    appState.onAppStateMutated.subscribe(() => {
-      this.render(gl, appState);
-    }, true);
-
-    appState.inputState.gestures.subscribeToOnScreenClearGesture(() => {
+    
+    EventManager.subscribe('appStateMutated', () => this.render(gl, appState))
+    
+    EventManager.subscribe('clearCanvas', _ => {
       this.canvasPipeline.fillFramebufferWithWhite(gl);
       this.strokePipeline.refreshCanvasTexture(gl, this.canvasPipeline.getFrameBuffer());
-    });
-
-    appState.inputState.shortcuts.subscribeToOnScreenClearClick(() => {
-      this.canvasPipeline.fillFramebufferWithWhite(gl);
-      this.strokePipeline.refreshCanvasTexture(gl, this.canvasPipeline.getFrameBuffer());
-    });
+    })
 
     clearScreen(gl);
 

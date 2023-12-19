@@ -11,8 +11,8 @@ import {
   shiftDeleteElements,
 } from './stabilizer';
 import { incrementalLog, trackRuntime } from '~/utils/misc/benchmarking';
-import { type Event } from '~/utils/func/event';
 import { allowLimitedStrokeLength } from '~/components/settings';
+import EventManager from '~/utils/event/eventManager';
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
@@ -87,9 +87,8 @@ export default class BoxFilterStabilizer implements Stabilizer {
   private numPoints: number;
   private cache: Cache;
   private maxSize: number;
-  private onBrushStrokeCutoff: Event<BrushPoint[]>;
 
-  constructor(settings: Readonly<BrushSettings>, onBrushStrokeCutoff: Event<BrushPoint[]>) {
+  constructor(settings: Readonly<BrushSettings>) {
     this.maxSize = Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(settings) * 0.5);
     //TODO: Add mutation observer on the s
 
@@ -102,8 +101,6 @@ export default class BoxFilterStabilizer implements Stabilizer {
       runningSumPointCache: new Array(this.maxSize).map((_) => new Float32Vector2(0, 0)),
       previousRawCurveLength: 0,
     };
-
-    this.onBrushStrokeCutoff = onBrushStrokeCutoff;
   }
 
   addPoint(p: BrushPoint, settings: Readonly<BrushSettings>) {
@@ -153,7 +150,7 @@ export default class BoxFilterStabilizer implements Stabilizer {
 
     const shavedOff = this.currentPoints.slice(0, this.numPoints)
     const processed = process(shavedOff, this.numPoints, settings, this.cache)
-    this.onBrushStrokeCutoff.invoke(processed)
+    EventManager.invoke('brushStrokCutoff', processed)
 
     shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
     this.numPoints -= numDeleted;

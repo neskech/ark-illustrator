@@ -1,7 +1,6 @@
 import { requires } from '../../contracts';
 import { Tool, type HandleEventArgs } from './tool';
 import { type Float32Vector2 } from 'matrixgl';
-import { Event } from '../../func/event';
 import type Stabilizer from '../utils/stabilizing/stabilizer';
 import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
 import { type BezierFunction, getLinearBezier } from '~/utils/misc/bezierFunction';
@@ -10,6 +9,7 @@ import Texture from '~/utils/web/texture';
 import { type GL } from '~/utils/web/glUtils';
 import { type Option } from '~/utils/func/option';
 import { Some } from '../../func/option';
+import EventManager from '~/utils/event/eventManager';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +19,7 @@ import { Some } from '../../func/option';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const MIDDLE_MOUSE = 1
+const MIDDLE_MOUSE = 1;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -114,21 +114,11 @@ export const newPoint = (pos: Float32Vector2, pressure: number): BrushPoint => (
 export class Brush extends Tool {
   private isPointerDown: boolean;
   private stabilizer: Stabilizer;
-  onBrushStrokeEnd: Event<BrushPoint[]>;
-  onBrushStrokeContinued: Event<BrushPoint[]>;
-  onBrushStrokeEndRaw: Event<BrushPoint[]>;
-  onBrushStrokeContinuedRaw: Event<BrushPoint[]>;
-  onBrushStrokeCutoff: Event<BrushPoint[]>;
 
   constructor(settings: Readonly<GlobalToolSettings>) {
     super();
     this.isPointerDown = false;
-    this.onBrushStrokeEnd = new Event();
-    this.onBrushStrokeContinued = new Event();
-    this.onBrushStrokeEndRaw = new Event();
-    this.onBrushStrokeContinuedRaw = new Event();
-    this.onBrushStrokeCutoff = new Event();
-    this.stabilizer = new BoxFilterStabilizer(settings.brushSettings[0], this.onBrushStrokeCutoff);
+    this.stabilizer = new BoxFilterStabilizer(settings.brushSettings[0]);
   }
 
   handleEvent(args: HandleEventArgs): boolean {
@@ -141,7 +131,7 @@ export class Brush extends Tool {
     const event = args.event;
 
     if (event.pointerType == 'touch') return false;
-    if (event.pointerType == 'mouse' && event.button == MIDDLE_MOUSE) return false
+    if (event.pointerType == 'mouse' && event.button == MIDDLE_MOUSE) return false;
 
     switch (evType) {
       case 'pointerleave':
@@ -165,8 +155,8 @@ export class Brush extends Tool {
     const brushPoint = newPoint(point, event.pressure);
     if (this.isPointerDown) {
       this.stabilizer.addPoint(brushPoint, brushSettings);
-      this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings));
-      this.onBrushStrokeContinuedRaw.invoke(this.stabilizer.getRawCurve(brushSettings));
+      EventManager.invoke('brushStrokeContinued', this.stabilizer.getProcessedCurve(brushSettings));
+      EventManager.invoke('brushStrokeContinuedRaw', this.stabilizer.getRawCurve(brushSettings));
     }
 
     return this.isPointerDown;
@@ -176,8 +166,8 @@ export class Brush extends Tool {
     const { settings, presetNumber } = args;
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)];
 
-    this.onBrushStrokeEnd.invoke(this.stabilizer.getProcessedCurve(brushSettings));
-    this.onBrushStrokeEndRaw.invoke(this.stabilizer.getRawCurve(brushSettings));
+    EventManager.invoke('brushStrokEnd', this.stabilizer.getProcessedCurve(brushSettings));
+    EventManager.invoke('brushStrokEndRaw', this.stabilizer.getRawCurve(brushSettings));
     this.stabilizer.reset();
 
     this.isPointerDown = false;
@@ -190,13 +180,14 @@ export class Brush extends Tool {
 
     const point = appState.canvasState.camera.mouseToWorld(event, appState.canvasState);
     const brushPoint = newPoint(point, event.pressure);
+
     if (!this.isPointerDown) {
       this.stabilizer.addPoint(brushPoint, brushSettings);
-      this.onBrushStrokeContinued.invoke(this.stabilizer.getProcessedCurve(brushSettings));
-      this.onBrushStrokeContinuedRaw.invoke(this.stabilizer.getRawCurve(brushSettings));
+      EventManager.invoke('brushStrokeContinued', this.stabilizer.getProcessedCurve(brushSettings));
+      EventManager.invoke('brushStrokeContinuedRaw', this.stabilizer.getRawCurve(brushSettings));
     }
 
-    const dirty = !this.isPointerDown
+    const dirty = !this.isPointerDown;
     this.isPointerDown = true;
     return dirty;
   }
@@ -205,8 +196,8 @@ export class Brush extends Tool {
     const { settings, presetNumber } = args;
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)];
 
-    this.onBrushStrokeEnd.invoke(this.stabilizer.getProcessedCurve(brushSettings));
-    this.onBrushStrokeEndRaw.invoke(this.stabilizer.getRawCurve(brushSettings));
+    EventManager.invoke('brushStrokEnd', this.stabilizer.getProcessedCurve(brushSettings));
+    EventManager.invoke('brushStrokEndRaw', this.stabilizer.getRawCurve(brushSettings));
     this.stabilizer.reset();
 
     this.isPointerDown = false;
@@ -215,26 +206,6 @@ export class Brush extends Tool {
 
   areValidBrushSettings(b: BrushSettings): boolean {
     return 0 <= b.opacity && b.opacity <= 100 && 0 <= b.stabilization && b.stabilization <= 1;
-  }
-
-  subscribeToOnBrushStrokeEnd(f: (p: BrushPoint[]) => void, hasPriority = false) {
-    this.onBrushStrokeEnd.subscribe(f, hasPriority);
-  }
-
-  subscribeToOnBrushStrokeContinued(f: (p: BrushPoint[]) => void, hasPriority = false) {
-    this.onBrushStrokeContinued.subscribe(f, hasPriority);
-  }
-
-  subscribeToOnBrushStrokeEndRaw(f: (p: BrushPoint[]) => void, hasPriority = false) {
-    this.onBrushStrokeEndRaw.subscribe(f, hasPriority);
-  }
-
-  subscribeToOnBrushStrokeContinuedRaw(f: (p: BrushPoint[]) => void, hasPriority = false) {
-    this.onBrushStrokeContinuedRaw.subscribe(f, hasPriority);
-  }
-
-  subscribeToOnBrushStrokeCutoff(f: (p: BrushPoint[]) => void, hasPriority = false) {
-    this.onBrushStrokeCutoff.subscribe(f, hasPriority);
   }
 }
 

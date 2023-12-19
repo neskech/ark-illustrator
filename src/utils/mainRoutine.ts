@@ -1,7 +1,7 @@
 import { type CanvasState, getDefaultCanvasState } from './canvas/canvas';
 import { type InputState, getDefaultToolState, handleEvent } from './canvas/tools/handler';
 import { type GlobalToolSettings, getDefaultSettings } from './canvas/tools/settings';
-import { Event } from './func/event';
+import EventManager from './event/eventManager';
 import { Option, Some } from './func/option';
 import { MasterPipeline } from './pipelines/MasterPipeline';
 import { type GL } from './web/glUtils';
@@ -10,7 +10,6 @@ export interface AppState {
   canvasState: CanvasState;
   settings: GlobalToolSettings;
   inputState: InputState;
-  onAppStateMutated: Event<void>;
 }
 
 let gl: GL;
@@ -29,7 +28,7 @@ export function init(canvas: HTMLCanvasElement) {
   );
 
   gl = result.expect('Could not intialize webgl2. Your browser may not support it');
-
+  
   canvas.width = canvas.clientWidth * 2;
   canvas.height = canvas.clientHeight * 2;
 
@@ -39,8 +38,7 @@ export function init(canvas: HTMLCanvasElement) {
   appState = {
     canvasState: getDefaultCanvasState(canvas),
     settings,
-    inputState: getDefaultToolState(settings),
-    onAppStateMutated: new Event(),
+    inputState: getDefaultToolState(settings)
   };
 
   masterPipeline = new MasterPipeline(gl, appState);
@@ -48,7 +46,7 @@ export function init(canvas: HTMLCanvasElement) {
   initEventListeners(canvas);
 
   masterPipeline.init(gl, appState);
-  appState.onAppStateMutated.invoke();
+  EventManager.invokeVoid('appStateMutated')
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
