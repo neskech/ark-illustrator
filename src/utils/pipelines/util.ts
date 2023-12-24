@@ -294,7 +294,7 @@ export function constructQuadIndices(offset: number): SixSizeArray {
 export function emplaceQuads(
   buffer: Float32Array,
   curve: BrushPoint[],
-  settings: Readonly<BrushSettings>,
+  settings: Readonly<BrushSettings>
 ) {
   let i = 0;
 
@@ -323,20 +323,20 @@ export function emplaceQuadsAngled(
 ) {
   let i = 0;
 
-  let ang = 0
+  let ang = 0;
   for (let a = 0; a < curve.length; a++) {
-    const p = curve[a]
-    const p2 = a < curve.length - 1 ? curve[a + 1] : null
-    ang = p2 != null ? angle(displacement(p.position, p2.position)) : ang
+    const p = curve[a];
+    const p2 = a < curve.length - 1 ? curve[a + 1] : null;
+    ang = p2 != null ? angle(displacement(p.position, p2.position)) : ang;
 
     const size = getSizeGivenPressure(settings, p.pressure);
     const opacity = getOpacityGivenPressure(settings, p.pressure);
     const quadVerts = constructQuadSixTex(p.position, size);
 
-    const centroid = new Float32Vector2(p.position.x + size / 2, p.position.y + size / 2)
+    const centroid = new Float32Vector2(p.position.x + size / 2, p.position.y + size / 2);
 
     for (let k = 0; k < quadVerts.length; k += 2) {
-      const pos = rotateAbout(quadVerts[k], centroid, ang)
+      const pos = rotateAbout(quadVerts[k], centroid, ang);
       const tex = quadVerts[k + 1];
 
       buffer[i++] = pos.x;
@@ -355,23 +355,29 @@ export function emplaceQuadsStretched(
 ) {
   let i = 0;
 
-  const uvLength = 30
+  const uvLength = 30;
 
-  let prevNormal = null
+  let prevNormal = null;
   for (let a = 0; a < curve.length - 1; a++) {
-    const p = curve[a]
-    const p2 = curve[a + 1]
+    const p = curve[a];
+    const p2 = curve[a + 1];
 
-    const uvLow = a / uvLength - Math.floor(a / uvLength)
-    const uvHigh = (a + 1) / uvLength - Math.floor((a + 1) / uvLength)
-    
+    const uvLow = a / uvLength - Math.floor(a / uvLength);
+    const uvHigh = (a + 1) / uvLength - Math.floor((a + 1) / uvLength);
 
     const opacity = getOpacityGivenPressure(settings, p.pressure);
-    const [pNorm, quadVerts] = constructQuadSixPressureNormalUV(p, p2, settings, prevNormal, uvLow, uvHigh);
-    prevNormal = pNorm
+    const [pNorm, quadVerts] = constructQuadSixPressureNormalUV(
+      p,
+      p2,
+      settings,
+      prevNormal,
+      uvLow,
+      uvHigh
+    );
+    prevNormal = pNorm;
 
     for (let k = 0; k < quadVerts.length; k += 2) {
-      const pos = quadVerts[k]
+      const pos = quadVerts[k];
       const tex = quadVerts[k + 1];
 
       buffer[i++] = pos.x;

@@ -11,7 +11,7 @@ import {
   shiftDeleteElements,
 } from './stabilizer';
 import { incrementalLog, trackRuntime } from '~/utils/misc/benchmarking';
-import { allowLimitedStrokeLength } from '~/components/settings';
+import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
 import EventManager from '~/utils/event/eventManager';
 
 const MAX_SMOOTHING = 20;
@@ -71,9 +71,9 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
  */
 const DELETE_FACTOR = 0.93;
 
-const LOOK_AHEAD = 5
+const LOOK_AHEAD = 5;
 
-const OPACITY_COMPRESSION = 0.000001
+const OPACITY_COMPRESSION = 0.000001;
 
 interface Cache {
   weightsCache: number[];
@@ -140,17 +140,17 @@ export default class BoxFilterStabilizer implements Stabilizer {
 
   private handleOverflow(settings: Readonly<BrushSettings>) {
     if (!allowLimitedStrokeLength) {
-      this.numPoints = 0
-      return
+      this.numPoints = 0;
+      return;
     }
 
     updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints);
 
     const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
 
-    const shavedOff = this.currentPoints.slice(0, this.numPoints)
-    const processed = process(shavedOff, this.numPoints, settings, this.cache)
-    EventManager.invoke('brushStrokCutoff', processed)
+    const shavedOff = this.currentPoints.slice(0, this.numPoints);
+    const processed = process(shavedOff, this.numPoints, settings, this.cache);
+    EventManager.invoke('brushStrokCutoff', processed);
 
     shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
     this.numPoints -= numDeleted;
@@ -410,7 +410,11 @@ function addPointsCartmollInterpolation3D(
 ): BrushPoint[] {
   if (rawCurve.length <= 1) return rawCurve;
 
-  const points = rawCurve.map((p) => [p.position.x, p.position.y, p.pressure * OPACITY_COMPRESSION]);
+  const points = rawCurve.map((p) => [
+    p.position.x,
+    p.position.y,
+    p.pressure * OPACITY_COMPRESSION,
+  ]);
   const interpolator = new CurveInterpolator(points, {
     tension,
     alpha,
@@ -424,7 +428,9 @@ function addPointsCartmollInterpolation3D(
     const parameter = Math.min(1, (spacing * i) / curveDist);
     const point = interpolator.getPointAt(parameter);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    output.push(newPoint(new Float32Vector2(point[0], point[1]), (point[2]! * (1 / OPACITY_COMPRESSION))));
+    output.push(
+      newPoint(new Float32Vector2(point[0], point[1]), point[2]! * (1 / OPACITY_COMPRESSION))
+    );
   }
 
   return output;

@@ -2,9 +2,7 @@ import { zip } from '../func/arrayUtils';
 import { Option } from '../func/option';
 import { type GL, GLObject, glOpErr } from './glUtils';
 import type Texture from './texture';
-import fs from 'fs';
-import { promisify } from 'util';
-import { Result } from '../func/result';
+import { Err, Ok, Result, type Unit, unit } from '../func/result';
 import { type Float32Vector2, type Float32Vector3, type Float32Vector4, type Matrix2x2, type Matrix3x3, type Matrix4x4 } from 'matrixgl';
 import { type Int32Vector2, type Int32Vector3, type Int32Vector4 } from './vector';
 
@@ -14,10 +12,11 @@ export default class Shader {
   private vertexShaderId: GLObject<WebGLShader>;
   private fragmentShaderId: GLObject<WebGLShader>;
   private programId: GLObject<WebGLProgram>;
+  private name: string;
   private compiled: boolean;
   private linked: boolean;
 
-  constructor(gl: GL) {
+  constructor(gl: GL, name='unknown') {
     const vId = Option.fromNull(
       glOpErr(gl, gl.createShader.bind(gl), gl.VERTEX_SHADER)
     );
@@ -36,43 +35,23 @@ export default class Shader {
 
     this.compiled = false;
     this.linked = false;
+    this.name = name
   }
 
-  async compileFromFile(gl: GL, shaderName: string) {
+  async compileFromFile(gl: GL, shaderName: string): Promise<Result<Unit, string>> {
     try {
-      const open = promisify(fs.readFile);
-      const vertContents = await open(
-        `../../../public/shaders/${shaderName}.vertex`,
-        'utf-8'
-      );
-      const fragContents = await open(
-        `../../../public/shaders/${shaderName}.frag`,
-        'utf-8'
-      );
+      this.name = shaderName
+      const vert = await fetch(`shaders/${shaderName}.vert`)
+      const vertText = await vert.text()
 
-      this.compileFromSource(gl, vertContents, fragContents);
+      const frag = await fetch(`shaders/${shaderName}.frag`)
+      const fragText = await frag.text()
+
+      this.compileFromSource(gl, vertText, fragText);
+      return Ok(unit)
     } catch (err) {
-      if (err instanceof Error) throw err;
-      else throw new Error(`Failed to read ${shaderName} shaders`);
-    }
-  }
-
-  compileFromFileSynchronous(gl: GL, shaderName: string) {
-    try {
-      const vertContents = fs.readFileSync(
-        `../../../public/shaders/${shaderName}.vertex`,
-        'utf-8'
-      );
-
-      const fragContents = fs.readFileSync(
-        `../../../public/shaders/${shaderName}.frag`,
-        'utf-8'
-      );
-
-      this.compileFromSource(gl, vertContents, fragContents);
-    } catch (err) {
-      if (err instanceof Error) throw err;
-      else throw new Error(`Failed to read ${shaderName} shaders`);
+      if (err instanceof Error) return Err(err.message);
+      else return Err(`Failed to read ${shaderName} shaders`);
     }
   }
 
@@ -98,7 +77,7 @@ export default class Shader {
     this.compiled = true;
   }
 
-  link(gl: GL) {
+  link(gl: GL): Result<Unit, string> {
     if (!this.compiled)
       throw new Error('tried linking shaders before compilation');
 
@@ -128,7 +107,7 @@ export default class Shader {
       const programInfo = gl.getProgramInfoLog(this.programId.innerId());
       const vertexInfo = gl.getShaderInfoLog(this.vertexShaderId.innerId());
       const fragmentInfo = gl.getShaderInfoLog(this.fragmentShaderId.innerId());
-      throw new Error(`Failed to construct shader. Info logs --\n
+      return Err(`Failed to construct '${this.name}' shader. Info logs --\n
                              Program Log: ${programInfo ?? ''}\n
                              Vertex Log: ${vertexInfo ?? ''}\n
                              Fragment Log: ${fragmentInfo ?? ''}`);
@@ -140,6 +119,8 @@ export default class Shader {
     gl.deleteShader(this.fragmentShaderId.innerId());
 
     this.linked = true;
+
+    return Ok(unit)
   }
 
   async construct(gl: GL, shaderName: string) {
@@ -147,16 +128,14 @@ export default class Shader {
     this.link(gl);
   }
 
-  constructSynchronous(gl: GL, shaderName: string): Result<void, string> {
-    const f = () => {
-      Result.fromError<void, string>(() => {
-        this.compileFromFileSynchronous(gl, shaderName);
-      }).throwIfErr();
+  async constructAsync(gl: GL, shaderName: string): Promise<Result<Unit, string>> {
+    const result = await this.compileFromFile(gl, shaderName)
+    if (result.isErr()) return result
 
-      this.link(gl);
-    };
+    const result2 = this.link(gl)
+    if (result2.isErr()) return result2
 
-    return Result.fromError(f);
+    return Ok(unit)
   }
 
   constructFromSource(

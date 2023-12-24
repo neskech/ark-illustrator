@@ -16,7 +16,7 @@ import { type BrushSettings } from '~/utils/canvas/tools/brush';
 import { appState } from '~/utils/mainRoutine';
 import CheckIcon from '@mui/icons-material/Check';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { getSpacingFromBrushSettings } from '../utils/canvas/utils/stabilizing/stabilizer';
+import { getSpacingFromBrushSettings } from '../../../utils/canvas/utils/stabilizing/stabilizer';
 
 const PaperComponent = (props: PaperProps) => {
   return (
@@ -28,7 +28,7 @@ const PaperComponent = (props: PaperProps) => {
 
 interface Props {
   open: boolean;
-  onClose: () => void
+  onClose: () => void;
 }
 
 function getBrushSettings(): BrushSettings | null {
@@ -36,7 +36,7 @@ function getBrushSettings(): BrushSettings | null {
 }
 
 /* This is nasty I KNOW!!!! */
-export let allowLimitedStrokeLength = true
+export let allowLimitedStrokeLength = true;
 
 export const SettingsDialog = (props: Props) => {
   const [size, setSize_] = useState<number>(getBrushSettings()!.size);
@@ -93,15 +93,19 @@ export const SettingsDialog = (props: Props) => {
     setSpacing_(val);
   };
 
-  const [limitStrokeLength, setLimitStrokeLength_] = useState<'yes' | 'no'>(allowLimitedStrokeLength ? 'yes' : 'no') 
+  const [limitStrokeLength, setLimitStrokeLength_] = useState<'yes' | 'no'>(
+    allowLimitedStrokeLength ? 'yes' : 'no'
+  );
   const setLimitStrokeLength = (e: unknown, val: 'yes' | 'no') => {
-    allowLimitedStrokeLength = val == 'yes'
-    setLimitStrokeLength_(val)
-  }
+    allowLimitedStrokeLength = val == 'yes';
+    setLimitStrokeLength_(val);
+  };
 
   return getBrushSettings() ? (
     <Dialog PaperComponent={PaperComponent} open={props.open} style={{}}>
-        <Button variant="contained" onClick={() => props.onClose()} sx={{marginBottom: '50px'}}><CancelIcon/></Button>
+      <Button variant="contained" onClick={() => props.onClose()} sx={{ marginBottom: '50px' }}>
+        <CancelIcon />
+      </Button>
 
       <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
         <Typography> Brush Size </Typography>
@@ -220,8 +224,12 @@ export const SettingsDialog = (props: Props) => {
           onChange={(e, val) => setLimitStrokeLength(e, val as 'yes' | 'no')}
           aria-label="Limited Brush Stroes"
         >
-          <ToggleButton value="yes"><CheckIcon/></ToggleButton>
-          <ToggleButton value="no"><CancelIcon/></ToggleButton>
+          <ToggleButton value="yes">
+            <CheckIcon />
+          </ToggleButton>
+          <ToggleButton value="no">
+            <CancelIcon />
+          </ToggleButton>
         </ToggleButtonGroup>
       </Stack>
     </Dialog>

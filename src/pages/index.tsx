@@ -1,11 +1,12 @@
 import { type NextPage } from 'next';
-import Editor from '../components/editor';
 import { Box } from '@mui/system';
+import EditorWrapper from '~/components/editorWrapper';
+import { BasicEditor } from '~/components/editors/basicEditor/basicEditor';
 
 const Home: NextPage = () => {
   return (
     <Box className="h-screen w-screen touch-none">
-      <Editor />
+      <EditorWrapper EditorComponent={BasicEditor} />
     </Box>
   );
 };

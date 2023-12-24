@@ -125,7 +125,7 @@ export class DebugPipeline {
       this.render(gl, pointsToRender, appState);
     });
 
-    EventManager.subscribe('brushStrokEnd', _ => {
+    EventManager.subscribe('brushStrokEnd', (_) => {
       gl.clearColor(1, 1, 1, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
       this.smoothedPoints = [];

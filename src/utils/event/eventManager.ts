@@ -60,7 +60,7 @@ export default class EventManager {
 
 
   public static invoke<S extends KeysWithoutVoid>(event: S, params: ExtractParams<EventMap[S]>) {
-    const funcs = this.getInstance().eventMapping[event]!;
+    const funcs = this.getInstance().eventMapping[event] ?? [];
 
     const priority = find(funcs, (o) => o.hasPriority);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
@@ -75,7 +75,7 @@ export default class EventManager {
   }
 
   public static invokeVoid<S extends KeysWithVoid>(event: S) {
-    const funcs = this.getInstance().eventMapping[event]!;
+    const funcs = this.getInstance().eventMapping[event] ?? [];
 
     const priority = find(funcs, (o) => o.hasPriority);
     priority.map((o) => o.fn());
@@ -88,7 +88,7 @@ export default class EventManager {
   public static subscribe<S extends Key>(event: S, fn: EventMap[S], hasPriority = false) {
     const eventMapping = this.getInstance().eventMapping
 
-    if (eventMapping[event]) eventMapping[event] = [];
+    if (!eventMapping[event]) eventMapping[event] = [];
 
     const subscribers = eventMapping[event]!;
 

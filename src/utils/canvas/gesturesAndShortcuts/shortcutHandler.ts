@@ -45,14 +45,14 @@ export default class ShortcutHandler {
       case 'keyup':
         return this.handleKeyUp(event as KeyboardEvent);
       default:
-        return false
+        return false;
     }
   }
 
   handleScroll(wheelEvent: WheelEvent, appState: AppState): boolean {
     const scrollAmount = wheelEvent.deltaY * ZOOM_SCALING;
     appState.canvasState.camera.translateZoom(scrollAmount);
-    return true
+    return true;
   }
 
   handleMouseMove(mouseEvent: PointerEvent, appState: AppState): boolean {
@@ -75,7 +75,7 @@ export default class ShortcutHandler {
     this.mousePosition.x = mouseEvent.clientX;
     this.mousePosition.y = mouseEvent.clientY;
 
-    return isCurrPositionValid && (this.isAltKeyDown || this.isMiddleMouseHeldDown > 0)
+    return isCurrPositionValid && (this.isAltKeyDown || this.isMiddleMouseHeldDown > 0);
   }
 
   handleMouseDown(mouseEvent: PointerEvent): boolean {
@@ -87,8 +87,8 @@ export default class ShortcutHandler {
       case RIGHT_MOUSE:
         this.isRightMouseHeldDown += 1;
     }
-    
-    return false
+
+    return false;
   }
 
   handleMouseUp(mouseEvent: PointerEvent): boolean {
@@ -101,25 +101,29 @@ export default class ShortcutHandler {
         this.isRightMouseHeldDown -= 1;
     }
 
-    return false
+    return false;
   }
 
   handleKeyDown(keyEvent: KeyboardEvent): boolean {
     this.isAltKeyDown = keyEvent.key == 'Alt';
-   
+
     if (keyEvent.key == 'c') {
-      EventManager.invokeVoid('clearCanvas')
-      return true
+      EventManager.invokeVoid('clearCanvas');
+      return true;
     }
 
-    return false
+    if (keyEvent.key == 's') {
+      EventManager.invokeVoid('openSettings');
+      return true;
+    }
+
+    return false;
   }
 
   handleKeyUp(_: KeyboardEvent): boolean {
     this.isAltKeyDown = false;
-    return false
+    return false;
   }
-
 }
 
 function isValidMousePos(pos: Float32Vector2): boolean {

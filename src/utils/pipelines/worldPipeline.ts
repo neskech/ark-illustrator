@@ -6,42 +6,12 @@ import { type AppState } from '../mainRoutine';
 import type Texture from '../web/texture';
 import { clearScreen, constructQuadSixWidthHeightTexture } from './util';
 import { Float32Vector2 } from 'matrixgl';
+import { Ok, type Result, type Unit, unit } from '../func/result';
 
 const CANVAS_ORIGIN = new Float32Vector2(0, 0);
 
 const SIZE_VERTEX = 4;
 const NUM_VERTEX_QUAD = 6;
-
-function initShader(gl: GL, shader: Shader) {
-  const fragmentSource = `precision highp float;
-                          varying highp vec2 vTextureCoord;
-                          
-                          uniform sampler2D canvas;          
-                          
-                          void main() {
-                            gl_FragColor = texture2D(canvas, vTextureCoord);
-                          }\n`;
-
-  const vertexSource = `attribute vec2 a_position;
-                      attribute vec2 aTextureCoord;
-
-                      uniform mat4 view;
-                      uniform mat4 projection;
-
-                      varying highp vec2 vTextureCoord;
-
-                      void main() {
-                        gl_Position = projection * view * vec4(a_position, 0, 1);
-                        vTextureCoord = aTextureCoord;     
-                      }\n`;
-
-  shader.constructFromSource(gl, vertexSource, fragmentSource).match(
-    (_) => console.log('debug shader compilation success!'),
-    (e) => {
-      throw new Error(`Could not compile stroke preview shader...\n\n${e}`);
-    }
-  );
-}
 
 export class WorldPipeline {
   name: string;
@@ -57,11 +27,12 @@ export class WorldPipeline {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
-    this.shader = new Shader(gl);
+    this.shader = new Shader(gl, 'world');
   }
 
-  init(gl: GL, appState: Readonly<AppState>) {
-    initShader(gl, this.shader);
+  async init(gl: GL, appState: Readonly<AppState>): Promise<Result<Unit, string>> {
+    const res = await this.shader.constructAsync(gl, 'world')
+    if (res.isErr()) return res
 
     this.vertexArray.bind(gl)
     this.vertexBuffer.bind(gl)
@@ -88,6 +59,8 @@ export class WorldPipeline {
 
     this.vertexArray.unBind(gl)
     this.vertexBuffer.unBind(gl)
+
+    return Ok(unit)
   }
 
   render(

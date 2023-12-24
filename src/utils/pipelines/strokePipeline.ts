@@ -9,6 +9,7 @@ import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from './util';
 import type Texture from '../web/texture';
 import { Float32Vector2 } from 'matrixgl';
 import EventManager from '../event/eventManager';
+import { Ok, type Result, type Unit, unit } from '../func/result';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 
@@ -25,71 +26,6 @@ const SIZE_FLOAT = 4;
 const VERTEX_SIZE_POS_TEX_OPACITY = 5;
 const MAX_SIZE_STROKE =
   MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY * SIZE_FLOAT;
-
-function initStrokeShader(gl: GL, shader: Shader) {
-  const fragmentSource = `precision highp float;
-                          varying highp vec2 vTextureCoord;
-                          varying highp float v_opacity;
-                          
-                          uniform sampler2D tex;
-                          uniform float flow;
-                          
-                          
-                          void main() {
-                             vec4 color = texture2D(tex, vTextureCoord);
-                             color.rgb = vec3((color.r + color.g + color.b) / 3.0);
-                             color.a *= flow * v_opacity;
-                             gl_FragColor = color;
-                          }\n`;
-
-  const vertexSource = `attribute vec2 a_position;
-                        attribute vec2 aTextureCoord;
-                        attribute float a_opacity;
-
-                        varying highp vec2 vTextureCoord;
-                        varying highp float v_opacity;
-
-                        void main() {
-                          gl_Position = vec4(a_position, 0, 1);
-                          vTextureCoord = aTextureCoord;     
-                          v_opacity = a_opacity;        
-                        }\n`;
-
-  shader.constructFromSource(gl, vertexSource, fragmentSource).match(
-    (_) => console.log('standard draw shader compilation success!'),
-    (e) => {
-      throw new Error(`Could not compile debug shader...\n\n${e}`);
-    }
-  );
-}
-
-function initFullScreenBlitShader(gl: GL, shader: Shader) {
-  const fragmentSource = `precision highp float;
-                          varying highp vec2 vTextureCoord;
-                          
-                          uniform sampler2D canvas;          
-                          
-                          void main() {
-                            gl_FragColor = texture2D(canvas, vTextureCoord);
-                          }\n`;
-
-  const vertexSource = `attribute vec2 a_position;
-
-                      varying highp vec2 vTextureCoord;
-                      const vec2 scale = vec2(0.5, 0.5);
-
-                      void main() {
-                        gl_Position = vec4(a_position, 0, 1);
-                        vTextureCoord = a_position * scale + scale;  
-                      }\n`;
-
-  shader.constructFromSource(gl, vertexSource, fragmentSource).match(
-    (_) => console.log('debug shader compilation success!'),
-    (e) => {
-      throw new Error(`Could not compile stroke preview shader...\n\n${e}`);
-    }
-  );
-}
 
 export class StrokePipeline {
   name: string;
@@ -120,8 +56,8 @@ export class StrokePipeline {
       usage: 'Static Draw',
     });
 
-    this.strokeShader = new Shader(gl);
-    this.fullScreenBlitShader = new Shader(gl);
+    this.strokeShader = new Shader(gl, 'stroke');
+    this.fullScreenBlitShader = new Shader(gl, 'blit');
 
     this.frameBuffer = new FrameBuffer(gl, {
       width: appState.canvasState.canvas.width,
@@ -136,9 +72,16 @@ export class StrokePipeline {
     this.fillFramebufferWithWhite(gl);
   }
 
-  init(gl: GL, canvasFramebuffer: FrameBuffer, appState: Readonly<AppState>) {
-    initStrokeShader(gl, this.strokeShader);
-    initFullScreenBlitShader(gl, this.fullScreenBlitShader);
+  async init(
+    gl: GL,
+    canvasFramebuffer: FrameBuffer,
+    appState: Readonly<AppState>
+  ): Promise<Result<Unit, string>> {
+    const res1 = await this.strokeShader.constructAsync(gl, 'stroke');
+    const res2 = await this.fullScreenBlitShader.constructAsync(gl, 'blit');
+
+    if (res1.isErr()) return res1;
+    if (res2.isErr()) return res2;
 
     this.setupEvents(gl, canvasFramebuffer, appState);
 
@@ -175,6 +118,8 @@ export class StrokePipeline {
 
     this.fullScreenBlitVertexArray.unBind(gl);
     this.fullScreenBlitVertexBuffer.unBind(gl);
+
+    return Ok(unit);
   }
 
   private renderCanvasTexture(gl: GL, canvasTexture: Texture) {

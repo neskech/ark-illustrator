@@ -8,47 +8,11 @@ import FrameBuffer from '../web/frameBuffer';
 import { clearScreen, emplaceQuads } from './util';
 import { MAX_POINTS_PER_FRAME } from './strokePipeline';
 import EventManager from '../event/eventManager';
+import { Ok, type Result, type Unit, unit } from '../func/result';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 5;
 const SIZE_FLOAT = 4;
-
-function initShader(gl: GL, shader: Shader) {
-  const fragmentSource = `precision highp float;
-                          varying highp vec2 vTextureCoord;
-                          varying highp float v_opacity;
-                          
-                          uniform sampler2D tex;
-                          uniform float flow;
-                          
-                          
-                          void main() {
-                             vec4 color = texture2D(tex, vTextureCoord);
-                             color.rgb = vec3((color.r + color.g + color.b) / 3.0);
-                             color.a *= flow * v_opacity;
-                             gl_FragColor = color;
-                          }\n`;
-
-  const vertexSource = `attribute vec2 a_position;
-                        attribute vec2 aTextureCoord;
-                        attribute float a_opacity;
-
-                        varying highp vec2 vTextureCoord;
-                        varying highp float v_opacity;
-
-                        void main() {
-                          gl_Position = vec4(a_position, 0, 1);
-                          vTextureCoord = aTextureCoord;     
-                          v_opacity = a_opacity;        
-                        }\n`;
-
-  shader.constructFromSource(gl, vertexSource, fragmentSource).match(
-    (_) => console.log('standard draw shader compilation success!'),
-    (e) => {
-      throw new Error(`Could not compile debug shader...\n\n${e}`);
-    }
-  );
-}
 
 export class CanvasPipeline {
   name: string;
@@ -64,7 +28,7 @@ export class CanvasPipeline {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
-    this.shader = new Shader(gl);
+    this.shader = new Shader(gl, 'canvas');
     this.frameBuffer = new FrameBuffer(gl, {
       width: appState.canvasState.canvas.width,
       height: appState.canvasState.canvas.height,
@@ -78,8 +42,9 @@ export class CanvasPipeline {
     this.fillFramebufferWithWhite(gl);
   }
 
-  init(gl: GL, appState: Readonly<AppState>) {
-    initShader(gl, this.shader);
+  async init(gl: GL, appState: Readonly<AppState>): Promise<Result<Unit, string>> {
+    const res = await this.shader.constructAsync(gl, 'canvas');
+    if (res.isErr()) return res;
 
     this.vertexArray.bind(gl);
     this.vertexBuffer.bind(gl);
@@ -98,6 +63,8 @@ export class CanvasPipeline {
 
     this.vertexArray.unBind(gl);
     this.vertexBuffer.unBind(gl);
+
+    return Ok(unit);
   }
 
   render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {

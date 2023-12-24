@@ -3,6 +3,7 @@ import { type InputState, getDefaultToolState, handleEvent } from './canvas/tool
 import { type GlobalToolSettings, getDefaultSettings } from './canvas/tools/settings';
 import EventManager from './event/eventManager';
 import { Option, Some } from './func/option';
+import { Ok, type Result, Err } from './func/result';
 import { MasterPipeline } from './pipelines/MasterPipeline';
 import { type GL } from './web/glUtils';
 
@@ -17,8 +18,8 @@ let gl: GL;
 export let appState: AppState;
 let masterPipeline: MasterPipeline;
 
-export function init(canvas: HTMLCanvasElement) {
-  if (gl) return;
+export async function init(canvas: HTMLCanvasElement): Promise<Result<AppState, string>> {
+  if (gl) return Ok(appState);
 
   const result = Option.fromNull(
     canvas.getContext('webgl2', {
@@ -45,8 +46,12 @@ export function init(canvas: HTMLCanvasElement) {
 
   initEventListeners(canvas);
 
-  masterPipeline.init(gl, appState);
+  const res = await masterPipeline.init(gl, appState);
+  if (res.isErr()) return Err(res.unwrapErr())
+
   EventManager.invokeVoid('appStateMutated')
+
+  return Ok(appState)
 }
 
 function initEventListeners(canvas: HTMLCanvasElement) {
@@ -70,7 +75,7 @@ function initEventListeners(canvas: HTMLCanvasElement) {
         event: ev,
         gestures: appState.inputState.gestures,
         shortcuts: appState.inputState.shortcuts,
-        currentTool: appState.inputState.currentTool,
+        currentTool: appState.inputState.currentTool.current,
         appState: appState,
         settings: appState.settings,
         presetNumber: Some(0),
@@ -82,12 +87,13 @@ function initEventListeners(canvas: HTMLCanvasElement) {
 
   globalEvents.forEach((e) => {
     document.addEventListener(e, (ev) => {
+      console.log(appState.inputState.currentTool.current)
       handleEvent({
         map: appState.inputState.tools,
         event: ev,
         gestures: appState.inputState.gestures,
         shortcuts: appState.inputState.shortcuts,
-        currentTool: appState.inputState.currentTool,
+        currentTool: appState.inputState.currentTool.current,
         appState: appState,
         settings: appState.settings,
         presetNumber: Some(0),
