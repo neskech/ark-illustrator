@@ -1,7 +1,7 @@
 # Ark Illustrator
 
 ## A Drawing Application Made For The Web
-### [Demo](https://ark-86ohwib9i-craig-mellors-projects.vercel.app/ )
+### [Demo](https://ark-pdintdmyx-craig-mellors-projects.vercel.app/)
 
 Built entirely with Typescript and Webgl
 
@@ -22,12 +22,15 @@ Built entirely with Typescript and Webgl
     - Middle mouse click and draw :: Pan 
     - Scroll Wheel :: Zoom
     - Alt + mouse drag :: Rotate
+    - c :: Clear Canvas
+    - s :: Settings Menu
 - For touchpad users
   -
     - Finger Pinch :: Zoom
     - Finger Pan :: Pan
     - Finger Rotate :: Rotate
-    - Two Double Finger Tap (Tap with two fingers, and do that twice) :: Clear Canvas 
+    - Two Finger Triple Tap :: Clear Canvas
+    - Four Finger Double Tap :: Settings Menu
 
 ---
 - ### Tech Stack
@@ -38,22 +41,16 @@ Built entirely with Typescript and Webgl
 
 ---
 ### Future Plans / Improvements
-
- - 1
-   -
-      You may notice a stroke 'flickers' after you finish drawing it. This is because 
-      finished strokes are rendered on a different layer. Right now the application can't
-      blend that layer properly with the canvas, resulting in a shift of color
    
- - 2
+ - 1
    -  
       Brushes are currently implemented as a sequence of image 'stamps'.
-      These stamps are packed densely next to one another, which gives the
-      illusion of a continuous stroke. This method is not ideal for performance,
-      nor for visual quality. I will explore 'skeletal' and parametrically defined
+      These stamps are packed densely next to one another which gives the
+      illusion of a continuous stroke. This method is not ideal for performance
+      nor for visual quality. As such, I will explore 'skeletal' and parametrically defined
       strokes in the future
       
- - 3
+ - 2
    -  
       Once the brush system is finished, the next step is to build a UI
       from which the user can select the different tools. Ontop of this
