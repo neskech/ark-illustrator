@@ -56,9 +56,19 @@ function ColorPicker(props: ColorPickerProps) {
       setInnerHeld(false);
     };
     document.addEventListener('pointerup', pointerUp);
-    document.addEventListener('pointercancle', pointerUp);
+    document.addEventListener('pointercancel', pointerUp);
 
     pointerMove = (e: MouseEvent) => {
+      const rect = outerCircle.current!.getBoundingClientRect();
+      const dx = e.clientX - (rect.x + rect.width / 2);
+      const dy = e.clientY - (rect.y + rect.height / 2);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 100) {
+        setInnerHeld(false);
+        setOuterHeld(false);
+        return;
+      }
+
       if (isOuterHeld && !isInnerHeld) {
         setDegree(calculateDegree(e, outerCircle.current!));
       } else if (isInnerHeld && !isOuterHeld) {
@@ -203,8 +213,7 @@ function absoluteToRelative(
 function removeEvents() {
   if (pointerUp) {
     document.removeEventListener('pointerup', pointerUp);
-    document.removeEventListener('pointercancel', pointerUp)
-
+    document.removeEventListener('pointercancel', pointerUp);
   }
   if (pointerMove) document.removeEventListener('pointermove', pointerMove);
 }
