@@ -69,7 +69,7 @@ const UNIFORMITY_DECAY_EXPONENT = 4;
  * We want to maintain a small current points list in order to
  * maintain a small computation time for our stabilizing functions
  */
-const DELETE_FACTOR = 0.93;
+const DELETE_FACTOR = 0.935;
 
 const LOOK_AHEAD = 5;
 

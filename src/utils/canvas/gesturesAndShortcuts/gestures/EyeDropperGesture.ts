@@ -4,7 +4,6 @@ import { noOp } from '~/utils/func/funUtils';
 import { None, Some, type Option } from '~/utils/func/option';
 import { type AppState } from '~/utils/mainRoutine';
 import { type Gesture, type PointerPos } from './gesture';
-import { Int32Vector2 } from '../../../web/vector';
 
 const EYEDROPPER_DELAY_MILLIS = 300;
 
