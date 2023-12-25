@@ -9,6 +9,7 @@ import RotationGesture from './gestures/rotationGesture';
 import ZoomGesture from './gestures/zoomGesture';
 import ClearScreenGesture from './gestures/clearScreenGesture';
 import OpenSettingsGesture from './gestures/openSettingsGesture';
+import EyeDropperGesture from './gestures/EyeDropperGesture';
 
 export default class GestureHandler {
   private pointerPositions: PointerPos[];
@@ -22,6 +23,7 @@ export default class GestureHandler {
       new ZoomGesture(),
       new ClearScreenGesture(),
       new OpenSettingsGesture(),
+      new EyeDropperGesture()
     ];
   }
 
