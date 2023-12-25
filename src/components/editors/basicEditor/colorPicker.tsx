@@ -91,9 +91,10 @@ function ColorPicker(props: ColorPickerProps) {
       ref={outerCircle}
       onMouseDown={(e) => {
         const target = e.target as HTMLElement;
-        if (target.id != 'circle' || isInnerHeld) return;
+        if (target.id != 'circle') return;
         setDegree(calculateDegree(e, outerCircle.current!));
         setOuterHeld(true);
+        setInnerHeld(false)
       }}
       style={{
         background: 'conic-gradient(#fc0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
@@ -127,9 +128,10 @@ function ColorPicker(props: ColorPickerProps) {
           ref={innerSquare}
           onMouseDown={(e) => {
             const target = e.target as HTMLElement;
-            if (target.id != 'square' || isOuterHeld) return;
+            if (target.id != 'square') return;
             setInnerPos(absoluteToRelative(e, innerSquare.current!));
             setInnerHeld(true);
+            setOuterHeld(false);
           }}
           style={{
             width: `${innerSquareSize}px`,
