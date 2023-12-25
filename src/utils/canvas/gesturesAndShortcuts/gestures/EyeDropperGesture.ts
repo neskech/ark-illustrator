@@ -5,7 +5,7 @@ import { None, Some, type Option } from '~/utils/func/option';
 import { type AppState } from '~/utils/mainRoutine';
 import { type Gesture, type PointerPos } from './gesture';
 
-const EYEDROPPER_DELAY_MILLIS = 600;
+const EYEDROPPER_DELAY_MILLIS = 300;
 
 export default class EyeDropperGesture implements Gesture {
   private downPointerId: Option<number>;
@@ -35,7 +35,6 @@ export default class EyeDropperGesture implements Gesture {
 
     this.downPointerId = Some(positions[0].id);
     setTimeout(() => {
-      console.log('in timeout and it is none? ', this.downPointerId.isNone())
       if (this.downPointerId.isNone()) return;
       EventManager.invoke('toggleEyeDropper', {
         canvas: appState.canvasState.canvas,
@@ -51,7 +50,6 @@ export default class EyeDropperGesture implements Gesture {
     const contained = removedFingers.some(
       (p) => this.downPointerId.isSome() && this.downPointerId.unwrap() == p
     );
-    console.log('fingers released', contained, removedFingers)
 
     if (contained) {
       this.downPointerId = None();

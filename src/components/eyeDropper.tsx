@@ -40,7 +40,7 @@ function EyeDropper({ brushSettings }: EyeDropperProps) {
     pointerMove = (e: MouseEvent) => {
       setPosition(new Float32Vector2(e.clientX, e.clientY));
     };
-    document.addEventListener('mousemove', pointerMove);
+    document.addEventListener('pointermove', pointerMove);
 
     pointerUp = () => {
       if (!isVisible) return;
@@ -48,6 +48,7 @@ function EyeDropper({ brushSettings }: EyeDropperProps) {
       brushSettings.color = new Float32Vector3(color.x / 255, color.y / 255, color.z / 255);
     };
     document.addEventListener('pointerup', pointerUp);
+    document.addEventListener('pointercancel', pointerUp);
 
     return removeEvents
   }, [isVisible, color]);
@@ -102,9 +103,11 @@ function removeEvents() {
     if (toggle)
         EventManager.unSubscribe('toggleEyeDropper', toggle)
     if (pointerMove)
-        document.removeEventListener('mousemove', pointerMove)
-    if (pointerUp)  
+        document.removeEventListener('pointermove', pointerMove)
+    if (pointerUp) {
         document.removeEventListener('pointerup', pointerUp)
+        document.removeEventListener('pointercancel', pointerUp)
+    }
 }
 
 export default EyeDropper;
