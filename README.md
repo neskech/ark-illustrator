@@ -24,7 +24,7 @@ Built entirely with Typescript and Webgl
     - Alt + mouse drag :: Rotate
     - c :: Clear Canvas
     - s :: Settings Menu
-    - i :: Eye Dropper
+    - i :: EyeDropper
 - For touchpad users
   -
     - Finger Pinch :: Zoom
