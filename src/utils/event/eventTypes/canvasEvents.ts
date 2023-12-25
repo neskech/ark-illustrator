@@ -1,16 +1,18 @@
-import type Camera from '~/utils/canvas/camera';
+import { type Float32Vector2 } from 'matrixgl';
+import { type Option } from '~/utils/func/option';
 import type FrameBuffer from '~/utils/web/frameBuffer';
+import { type GL } from '~/utils/web/glUtils';
 import type Func from '../util';
-import { GL } from '~/utils/web/glUtils';
 
 interface ClearCanvas {
   clearCanvas: Func<void>;
 }
 
-interface EyeDropperArgs {
+export interface EyeDropperArgs {
     canvas: HTMLCanvasElement
     canvasFramebuffer: FrameBuffer
-    gl: GL
+    gl: GL,
+    originPosition: Option<Float32Vector2>
 }
 interface ToggleEyeDropper {
     toggleEyeDropper: Func<EyeDropperArgs>

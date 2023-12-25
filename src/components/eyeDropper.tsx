@@ -8,6 +8,7 @@ import { type GL } from '~/utils/web/glUtils';
 import { Int32Vector3 } from '~/utils/web/vector';
 import { mouseToNormalized } from '../utils/canvas/camera';
 import { hslToHex } from '../utils/misc/color';
+import { EyeDropperArgs } from '~/utils/event/eventTypes/canvasEvents';
 
 export interface EyeDropperProps {
   brushSettings: BrushSettings;
@@ -19,7 +20,7 @@ interface RenderObjects {
   gl: GL;
 }
 let renderObjects: RenderObjects | null;
-let toggle: ((obj: RenderObjects) => void) | null;
+let toggle: ((obj: EyeDropperArgs) => void) | null;
 let pointerMove: ((e: MouseEvent) => void) | null;
 let pointerUp: (() => void) | null;
 
@@ -31,9 +32,14 @@ function EyeDropper({ brushSettings }: EyeDropperProps) {
   useEffect(() => {
     removeEvents()
 
-    toggle = (obj: RenderObjects) => {
+    toggle = (obj: EyeDropperArgs) => {
       setIsVisible((v) => !v);
-      renderObjects = obj;
+      renderObjects = {
+        canvasFramebuffer: obj.canvasFramebuffer,
+        canvas: obj.canvas,
+        gl: obj.gl
+      };
+      obj.originPosition.map(p => setPosition(p))
     };
     EventManager.subscribe('toggleEyeDropper', toggle);
 

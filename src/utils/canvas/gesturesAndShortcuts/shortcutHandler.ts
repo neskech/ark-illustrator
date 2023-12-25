@@ -4,6 +4,7 @@ import { Float32Vector2 } from 'matrixgl';
 import { mouseToNormalized, mouseToNormalizedWithEvent } from '../camera';
 import { dot, scale } from '~/utils/web/vector';
 import EventManager from '~/utils/event/eventManager';
+import { None } from '~/utils/func/option';
 
 const LEFT_MOUSE = 0;
 const RIGHT_MOUSE = 2;
@@ -122,6 +123,7 @@ export default class ShortcutHandler {
         canvas: appState.canvasState.canvas,
         canvasFramebuffer: appState.renderer.getCanvasFramebuffer(),
         gl: appState.renderer.getGLHandle(),
+        originPosition: None()
       });
     }
 
