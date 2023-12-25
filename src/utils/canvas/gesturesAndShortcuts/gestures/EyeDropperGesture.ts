@@ -35,6 +35,7 @@ export default class EyeDropperGesture implements Gesture {
 
     this.downPointerId = Some(positions[0].id);
     setTimeout(() => {
+      console.log('in timeout and it is none? ', this.downPointerId.isNone())
       if (this.downPointerId.isNone()) return;
       EventManager.invoke('toggleEyeDropper', {
         canvas: appState.canvasState.canvas,
@@ -50,6 +51,7 @@ export default class EyeDropperGesture implements Gesture {
     const contained = removedFingers.some(
       (p) => this.downPointerId.isSome() && this.downPointerId.unwrap() == p
     );
+    console.log('fingers released', contained, removedFingers)
 
     if (contained) {
       this.downPointerId = None();

@@ -56,6 +56,7 @@ function ColorPicker(props: ColorPickerProps) {
       setInnerHeld(false);
     };
     document.addEventListener('pointerup', pointerUp);
+    document.addEventListener('pointercancle', pointerUp);
 
     pointerMove = (e: MouseEvent) => {
       if (isOuterHeld && !isInnerHeld) {
@@ -200,6 +201,10 @@ function absoluteToRelative(
 }
 
 function removeEvents() {
-  if (pointerUp) document.removeEventListener('pointerup', pointerUp);
+  if (pointerUp) {
+    document.removeEventListener('pointerup', pointerUp);
+    document.removeEventListener('pointercancel', pointerUp)
+
+  }
   if (pointerMove) document.removeEventListener('pointermove', pointerMove);
 }
