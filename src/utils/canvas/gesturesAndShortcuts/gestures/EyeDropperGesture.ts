@@ -5,7 +5,7 @@ import { None, Some, type Option } from '~/utils/func/option';
 import { type AppState } from '~/utils/mainRoutine';
 import { type Gesture, type PointerPos } from './gesture';
 
-const EYEDROPPER_DELAY_MILLIS = 300;
+const EYEDROPPER_DELAY_MILLIS = 500;
 
 export default class EyeDropperGesture implements Gesture {
   private downPointerId: Option<number>;
@@ -24,12 +24,8 @@ export default class EyeDropperGesture implements Gesture {
       this.tryInitialize(positions);
     }
 
-    if (positions.length > 1) {
-      this.deInitialize();
-      return false;
-    }
-
     if (!this.isValidInput(positions)) {
+      this.deInitialize();
       return false;
     }
 
@@ -61,18 +57,19 @@ export default class EyeDropperGesture implements Gesture {
   }
 
   private tryInitialize(positions: PointerPos[]) {
-    if (positions.length == 1) {
-      assert(this.isInitialized());
-    }
+     this.downPointerId = None()
   }
 
   private isValidInput(positions: PointerPos[]): boolean {
+    if (positions.length < 1) return false;
+
     const goodLength = positions.length == 1;
-    return goodLength;
+    const sameId = this.downPointerId.isNone() || this.downPointerId.unwrap() == positions[0].id
+    return goodLength && sameId;
   }
 
   private deInitialize() {
-    noOp();
+    this.downPointerId = None()
   }
 
   private isInitialized(): boolean {
