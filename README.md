@@ -24,6 +24,7 @@ Built entirely with Typescript and Webgl
     - Alt + mouse drag :: Rotate
     - c :: Clear Canvas
     - s :: Settings Menu
+    - i :: Eye Dropper
 - For touchpad users
   -
     - Finger Pinch :: Zoom
@@ -31,6 +32,7 @@ Built entirely with Typescript and Webgl
     - Finger Rotate :: Rotate
     - Two Finger Triple Tap :: Clear Canvas
     - Four Finger Double Tap :: Settings Menu
+    - One Finger Long Hold :: Eyedropper
 
 ---
 - ### Tech Stack
