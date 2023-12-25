@@ -10,7 +10,7 @@ export interface PointerPos {
 export interface Gesture {
   fingerMoved: (positions: PointerPos[], appState: AppState) => boolean;
   fingerTapped: (positions: PointerPos[], appState: AppState) => boolean;
-  fingerReleased: (removedIds: number[]) => boolean;
+  fingerReleased: (removedIds: number[], appState: AppState) => boolean;
 }
 
 export function isValidPosition(pos: Float32Vector2): boolean {
@@ -34,8 +34,8 @@ export function getFingerDelta(
   b: Float32Vector2,
   appState: AppState
 ): Float32Vector2 {
-  const aNorm = mouseToNormalized(a, appState.canvasState);
-  const bNorm = mouseToNormalized(b, appState.canvasState);
+  const aNorm = mouseToNormalized(a, appState.canvasState.canvas);
+  const bNorm = mouseToNormalized(b, appState.canvasState.canvas);
 
   const deltaX = aNorm.x - bNorm.x;
   const deltaY = aNorm.y - bNorm.y;

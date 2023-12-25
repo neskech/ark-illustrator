@@ -1,32 +1,22 @@
-import BrushIcon from '@mui/icons-material/Brush';
-import CropSquareIcon from '@mui/icons-material/CropSquare';
-import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
-import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
-import { Box, Button } from '@mui/material';
-import { useState } from 'react';
-import { type ToolType, type ToolTypeRef } from '~/utils/canvas/tools/handler';
+import { Box } from '@mui/material';
+import { type SettingsObject } from '../types';
 import ColorPicker from './colorPicker';
+import BrushSettingsPanel from './brushSettingsPanel';
 
 export interface RightBarProps {
-  selectedTool: ToolTypeRef;
+  settingsObject: SettingsObject;
 }
 
-const SELECTED_OPACITY = 0.3;
-
-function RightBar({ selectedTool }: RightBarProps) {
-  const [toolType, setToolType] = useState<ToolType>(selectedTool.current);
-
-  function setType(type: ToolType) {
-    selectedTool.current = type;
-    setToolType(selectedTool.current);
-  }
-
+function RightBar({ settingsObject }: RightBarProps) {
   return (
     <Box className="z-20 ml-auto mr-0 flex h-[100%] w-[100%] flex-col items-center gap-5 rounded-lg border-slate-800 bg-slate-800">
-      <Box className='h-[30%] pt-11'>
-        <ColorPicker size={130} />
+      <Box className="h-[30%] pb-3 pt-11">
+        <ColorPicker size={130} brushSettings={settingsObject.settings.brushSettings[0]} />
       </Box>
-      hhgh
+
+      <Box className="h-fit pt-4 w-full pr-4 pl-4">
+        <BrushSettingsPanel height={300} brushSettings={settingsObject.settings.brushSettings[0]} />
+      </Box>
     </Box>
   );
 }

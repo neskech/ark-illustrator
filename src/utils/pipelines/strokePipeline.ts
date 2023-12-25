@@ -1,15 +1,14 @@
-import { type GL } from '../web/glUtils';
-import { VertexArrayObject } from '../web/vertexArray';
-import Buffer from '~/utils/web/buffer';
-import Shader from '../web/shader';
-import { type AppState } from '../mainRoutine';
-import { type BrushSettings, type BrushPoint } from '../canvas/tools/brush';
-import FrameBuffer from '../web/frameBuffer';
-import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from './util';
-import type Texture from '../web/texture';
 import { Float32Vector2 } from 'matrixgl';
+import Buffer from '~/utils/web/buffer';
+import { type BrushPoint, type BrushSettings } from '../canvas/tools/brush';
 import EventManager from '../event/eventManager';
-import { Ok, type Result, type Unit, unit } from '../func/result';
+import { Ok, unit, type Result, type Unit } from '../func/result';
+import FrameBuffer from '../web/frameBuffer';
+import { type GL } from '../web/glUtils';
+import Shader from '../web/shader';
+import type Texture from '../web/texture';
+import { VertexArrayObject } from '../web/vertexArray';
+import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from './util';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 
@@ -23,9 +22,9 @@ const VERTEX_SIZE_POS_ = 2;
 const SIZE_FULL_SCREEN_QUAD = VERTEX_SIZE_POS_ * NUM_VERTICES_QUAD;
 
 const SIZE_FLOAT = 4;
-const VERTEX_SIZE_POS_TEX_OPACITY = 5;
+const VERTEX_SIZE_POS_COLOR_TEX_OPACITY = 8;
 const MAX_SIZE_STROKE =
-  MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY * SIZE_FLOAT;
+  MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY * SIZE_FLOAT;
 
 export class StrokePipeline {
   name: string;
@@ -41,7 +40,7 @@ export class StrokePipeline {
 
   frameBuffer: FrameBuffer;
 
-  public constructor(gl: GL, appState: Readonly<AppState>) {
+  public constructor(gl: GL, canvas: HTMLCanvasElement) {
     this.name = 'Stroke Preview Pipeline';
 
     this.strokeVertexArray = new VertexArrayObject(gl);
@@ -60,8 +59,8 @@ export class StrokePipeline {
     this.fullScreenBlitShader = new Shader(gl, 'blit');
 
     this.frameBuffer = new FrameBuffer(gl, {
-      width: appState.canvasState.canvas.width,
-      height: appState.canvasState.canvas.height,
+      width: canvas.width,
+      height: canvas.height,
       target: 'Regular',
       wrapX: 'Repeat',
       wrapY: 'Repeat',
@@ -74,8 +73,7 @@ export class StrokePipeline {
 
   async init(
     gl: GL,
-    canvasFramebuffer: FrameBuffer,
-    appState: Readonly<AppState>
+    canvasFramebuffer: FrameBuffer
   ): Promise<Result<Unit, string>> {
     const res1 = await this.strokeShader.constructAsync(gl, 'stroke');
     const res2 = await this.fullScreenBlitShader.constructAsync(gl, 'blit');
@@ -83,7 +81,7 @@ export class StrokePipeline {
     if (res1.isErr()) return res1;
     if (res2.isErr()) return res2;
 
-    this.setupEvents(gl, canvasFramebuffer, appState);
+    this.setupEvents(gl, canvasFramebuffer);
 
     this.strokeVertexArray.bind(gl);
     this.strokeVertexBuffer.bind(gl);
@@ -91,6 +89,7 @@ export class StrokePipeline {
     this.strokeVertexArray
       .builder()
       .addAttribute(2, 'float', 'position')
+      .addAttribute(3, 'float', 'color')
       .addAttribute(2, 'float', 'texCord')
       .addAttribute(1, 'float', 'opacity')
       .build(gl);
@@ -149,12 +148,15 @@ export class StrokePipeline {
     gl.activeTexture(gl.TEXTURE0);
     brushSettings.texture.unwrap().bind(gl);
 
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+    if (brushSettings.isEraser) 
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
+    else
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
     this.strokeShader.uploadFloat(gl, 'flow', brushSettings.flow);
     this.strokeShader.uploadTexture(gl, 'tex', brushSettings.texture.unwrap(), 0);
 
-    const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_TEX_OPACITY;
+    const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY;
     const buf = new Float32Array(bufSize);
 
     emplaceQuads(buf, points, brushSettings);
@@ -168,13 +170,11 @@ export class StrokePipeline {
     brushSettings.texture.unwrap().unBind(gl);
   }
 
-  render(gl: GL, points: BrushPoint[], canvasTexture: Texture, appState: Readonly<AppState>) {
+  render(gl: GL, points: BrushPoint[], canvasTexture: Texture,  brushSettings: Readonly<BrushSettings>) {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);
-    clearScreen(gl, 0, 0, 0, 0);
-
-    const brushSettings = appState.settings.brushSettings[0];
+    clearScreen(gl, 1, 0, 0, 1);
 
     this.renderCanvasTexture(gl, canvasTexture);
     this.renderStroke(gl, points, brushSettings);
@@ -189,10 +189,10 @@ export class StrokePipeline {
     this.frameBuffer.unBind(gl);
   }
 
-  setupEvents(gl: GL, canvasFrameBuffer: FrameBuffer, appState: Readonly<AppState>) {
-    EventManager.subscribe('brushStrokeContinued', (p) => {
+  setupEvents(gl: GL, canvasFrameBuffer: FrameBuffer) {
+    EventManager.subscribe('brushStrokeContinued', ({pointData, currentSettings}) => {
       const texture = canvasFrameBuffer.getTextureAttachment();
-      this.render(gl, p, texture, appState);
+      this.render(gl, pointData, texture, currentSettings);
     });
 
     EventManager.subscribe('brushStrokEnd', (_) => {

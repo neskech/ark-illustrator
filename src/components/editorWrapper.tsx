@@ -22,8 +22,9 @@ function LoadingFallback(): React.JSX.Element {
 }
 
 function ErrorFallback({ error }: { error: string }): React.JSX.Element {
+  console.error(error)
   return (
-    <Box className="align absolute z-10 flex h-full w-full touch-none select-none flex-col items-center justify-center gap-7 bg-black">
+    <Box className="align absolute z-10 flex h-full w-full touch-none select-none flex-col items-center justify-center gap-7 bg-black text-white">
       <SentimentVeryDissatisfiedIcon sx={{ width: 100, height: 100, color: '#43a333' }} />
       <Typography className="mb-4">Woops! It seems like the editor could not load</Typography>
       <Typography>The error: {error}</Typography>

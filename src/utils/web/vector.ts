@@ -402,16 +402,16 @@ export class Int32Vector2 extends Vector2Base<Int32Array> {
   }
 
   toString(): string {
-    return `Vector2Int -- x: ${this.x}, y: ${this.y}`;
+    return `Vector2Int: (x: ${this.x}, y: ${this.y})`;
   }
 }
 
 export class Int32Vector3 extends Vector3Base<Int32Array> {
   _values: Int32Array;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, z: number) {
     super();
-    this._values = new Int32Array([x, y]);
+    this._values = new Int32Array([x, y, z]);
   }
 
   get x(): number {
@@ -445,16 +445,16 @@ export class Int32Vector3 extends Vector3Base<Int32Array> {
   }
 
   toString(): string {
-    return `Vector2Int -- x: ${this.x}, y: ${this.y}, z: ${this.z}`;
+    return `Vector3Int: (x: ${this.x}, y: ${this.y}, z: ${this.z})`;
   }
 }
 
 export class Int32Vector4 extends Vector4Base<Int32Array> {
   _values: Int32Array;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, z: number, w: number) {
     super();
-    this._values = new Int32Array([x, y]);
+    this._values = new Int32Array([x, y, z, w]);
   }
 
   get x(): number {
@@ -495,7 +495,7 @@ export class Int32Vector4 extends Vector4Base<Int32Array> {
   }
 
   toString(): string {
-    return `Vector2Int -- x: ${this.x}, y: ${this.y}, z: ${this.z}, w: ${this.w}`;
+    return `Vector4Int: (x: ${this.x}, y: ${this.y}, z: ${this.z}, w: ${this.w})`;
   }
 }
 

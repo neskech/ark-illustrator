@@ -1,15 +1,15 @@
-import { requires } from '../../contracts';
-import { Tool, type HandleEventArgs } from './tool';
-import { type Float32Vector2 } from 'matrixgl';
-import type Stabilizer from '../utils/stabilizing/stabilizer';
-import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
-import { type BezierFunction, getLinearBezier } from '~/utils/misc/bezierFunction';
-import { type GlobalToolSettings } from './settings';
-import Texture from '~/utils/web/texture';
-import { type GL } from '~/utils/web/glUtils';
-import { type Option } from '~/utils/func/option';
-import { Some } from '../../func/option';
+import { Float32Vector3, type Float32Vector2 } from 'matrixgl';
 import EventManager from '~/utils/event/eventManager';
+import { type Option } from '~/utils/func/option';
+import { getLinearBezier, type BezierFunction } from '~/utils/misc/bezierFunction';
+import { type GL } from '~/utils/web/glUtils';
+import Texture from '~/utils/web/texture';
+import { requires } from '../../contracts';
+import { Some } from '../../func/option';
+import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
+import type Stabilizer from '../utils/stabilizing/stabilizer';
+import { type GlobalToolSettings } from './settings';
+import { Tool, type HandleEventArgs } from './tool';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +41,8 @@ export interface BrushSettings {
   spacing: 'auto' | number;
   pressureSizeSettings: BezierFunction;
   pressureOpacitySettings: BezierFunction;
+  color: Float32Vector3;
+  isEraser: boolean;
   texture: Option<Texture>;
 }
 
@@ -70,6 +72,8 @@ export function defaultBrushSettings(gl: GL): BrushSettings {
     spacing: 0.0005,
     pressureSizeSettings: getLinearBezier(),
     pressureOpacitySettings: getLinearBezier(),
+    color: new Float32Vector3(0, 0, 0),
+    isEraser: false,
     texture: Some(brushTexture),
   };
 }
@@ -106,7 +110,10 @@ export interface BrushPoint {
   pressure: number;
 }
 
-export const newPoint = (pos: Float32Vector2, pressure: number): BrushPoint => ({
+export const newPoint = (
+  pos: Float32Vector2,
+  pressure: number
+): BrushPoint => ({
   position: pos,
   pressure,
 });
@@ -151,12 +158,18 @@ export class Brush extends Tool {
     const { appState, settings, presetNumber } = args;
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)];
 
-    const point = appState.canvasState.camera.mouseToWorld(event, appState.canvasState);
+    const point = appState.canvasState.camera.mouseToWorld(event, appState.canvasState.canvas);
     const brushPoint = newPoint(point, event.pressure);
     if (this.isPointerDown) {
       this.stabilizer.addPoint(brushPoint, brushSettings);
-      EventManager.invoke('brushStrokeContinued', this.stabilizer.getProcessedCurve(brushSettings));
-      EventManager.invoke('brushStrokeContinuedRaw', this.stabilizer.getRawCurve(brushSettings));
+      EventManager.invoke('brushStrokeContinued', {
+        pointData: this.stabilizer.getProcessedCurve(brushSettings),
+        currentSettings: brushSettings,
+      });
+      EventManager.invoke('brushStrokeContinuedRaw', {
+        pointData: this.stabilizer.getRawCurve(brushSettings),
+        currentSettings: brushSettings,
+      });
     }
 
     return this.isPointerDown;
@@ -166,8 +179,14 @@ export class Brush extends Tool {
     const { settings, presetNumber } = args;
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)];
 
-    EventManager.invoke('brushStrokEnd', this.stabilizer.getProcessedCurve(brushSettings));
-    EventManager.invoke('brushStrokEndRaw', this.stabilizer.getRawCurve(brushSettings));
+    EventManager.invoke('brushStrokEnd', {
+      pointData: this.stabilizer.getProcessedCurve(brushSettings),
+      currentSettings: brushSettings,
+    });
+    EventManager.invoke('brushStrokEndRaw', {
+      pointData: this.stabilizer.getRawCurve(brushSettings),
+      currentSettings: brushSettings,
+    });
     this.stabilizer.reset();
 
     this.isPointerDown = false;
@@ -178,13 +197,19 @@ export class Brush extends Tool {
     const { appState, settings, presetNumber } = args;
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)];
 
-    const point = appState.canvasState.camera.mouseToWorld(event, appState.canvasState);
+    const point = appState.canvasState.camera.mouseToWorld(event, appState.canvasState.canvas);
     const brushPoint = newPoint(point, event.pressure);
 
     if (!this.isPointerDown) {
       this.stabilizer.addPoint(brushPoint, brushSettings);
-      EventManager.invoke('brushStrokeContinued', this.stabilizer.getProcessedCurve(brushSettings));
-      EventManager.invoke('brushStrokeContinuedRaw', this.stabilizer.getRawCurve(brushSettings));
+      EventManager.invoke('brushStrokeContinued', {
+        pointData: this.stabilizer.getProcessedCurve(brushSettings),
+        currentSettings: brushSettings,
+      });
+      EventManager.invoke('brushStrokeContinuedRaw', {
+        pointData: this.stabilizer.getRawCurve(brushSettings),
+        currentSettings: brushSettings,
+      });
     }
 
     const dirty = !this.isPointerDown;
@@ -196,8 +221,14 @@ export class Brush extends Tool {
     const { settings, presetNumber } = args;
     const brushSettings = settings.brushSettings[presetNumber.unwrapOrDefault(0)];
 
-    EventManager.invoke('brushStrokEnd', this.stabilizer.getProcessedCurve(brushSettings));
-    EventManager.invoke('brushStrokEndRaw', this.stabilizer.getRawCurve(brushSettings));
+    EventManager.invoke('brushStrokEnd', {
+      pointData: this.stabilizer.getProcessedCurve(brushSettings),
+      currentSettings: brushSettings,
+    });
+    EventManager.invoke('brushStrokEndRaw', {
+      pointData: this.stabilizer.getRawCurve(brushSettings),
+      currentSettings: brushSettings,
+    });
     this.stabilizer.reset();
 
     this.isPointerDown = false;

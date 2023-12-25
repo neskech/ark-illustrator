@@ -1,23 +1,28 @@
-import { type BrushPoint } from '~/utils/canvas/tools/brush';
+import { type BrushSettings, type BrushPoint } from '~/utils/canvas/tools/brush';
 import type Func from '../util';
 
+export interface BrushEventArgs {
+  pointData: BrushPoint[];
+  currentSettings: BrushSettings;
+}
+
 interface BrushStrokeEnd {
-  brushStrokEnd: Func<BrushPoint[]>;
+  brushStrokEnd: Func<BrushEventArgs>;
 }
 interface BrushStrokeEndRaw {
-  brushStrokEndRaw: Func<BrushPoint[]>;
+  brushStrokEndRaw: Func<BrushEventArgs>;
 }
 
 interface BrushStrokeContinued {
-  brushStrokeContinued: Func<BrushPoint[]>;
+  brushStrokeContinued: Func<BrushEventArgs>;
 }
 
-export interface BrushStrokeContinuedRaw {
-  brushStrokeContinuedRaw: Func<BrushPoint[]>;
+interface BrushStrokeContinuedRaw {
+  brushStrokeContinuedRaw: Func<BrushEventArgs>;
 }
 
-export interface BrushStrokeCutoff {
-  brushStrokCutoff: Func<BrushPoint[]>;
+interface BrushStrokeCutoff {
+  brushStrokCutoff: Func<BrushEventArgs>;
 }
 
 type BrushEvents = [

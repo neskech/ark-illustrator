@@ -80,7 +80,7 @@ type ReturnCurry<F extends Fun> = F extends (...args: infer Args) => infer R
 
 type First<Args extends unknown[]> = Args extends [infer Head]
   ? Head
-  : Args extends [infer Head, ...infer _] 
+  : Args extends [infer Head, ...infer _]
   ? Head
   : never;
 
@@ -91,7 +91,12 @@ export function curry<F extends Fun>(f: F): ReturnCurry<F> {
   return ((a: First<Parameters<F>>) => curry((...args) => f(a, ...args))) as ReturnCurry<F>;
 }
 
-export const todo = () => { throw new Error("todo") };
+export const todo = () => {
+  throw new Error('todo');
+};
+export const noOp = () => {
+  const _ = 1;
+};
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const todoEmpty = () => {};
 export const greaterThan = (a: number) => (b: number) => b > a;
@@ -101,13 +106,13 @@ export const lessThanEqual = (a: number) => (b: number) => a >= b;
 export const equal = (a: number) => (b: number) => a === b;
 export const notEqual = (a: number) => (b: number) => a !== b;
 export const multipleOf = (a: number) => (b: number) => a % b === 0;
-export const min = (a: number) => (b: number) => Math.min(a, b)
-export const max = (a: number) => (b: number) => Math.max(a, b)
+export const min = (a: number) => (b: number) => Math.min(a, b);
+export const max = (a: number) => (b: number) => Math.max(a, b);
 export const plus = (a: number) => (b: number) => a + b;
 export const plusStr = (a: string) => (b: string) => a + b;
 export const sub = (a: number) => (b: number) => b - a;
 export const mult = (a: number) => (b: number) => a + b;
 export const div = (a: number) => (b: number) => b / a;
 export const unreachable = (errMsg?: string) => {
-  throw new Error(errMsg != null ? "Error: Unreachable code" : errMsg)
-}
+  throw new Error(errMsg != null ? 'Error: Unreachable code' : errMsg);
+};

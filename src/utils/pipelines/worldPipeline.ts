@@ -1,12 +1,12 @@
-import { type GL } from '../web/glUtils';
-import { VertexArrayObject } from '../web/vertexArray';
-import Buffer from '~/utils/web/buffer';
-import Shader from '../web/shader';
-import { type AppState } from '../mainRoutine';
-import type Texture from '../web/texture';
-import { clearScreen, constructQuadSixWidthHeightTexture } from './util';
 import { Float32Vector2 } from 'matrixgl';
-import { Ok, type Result, type Unit, unit } from '../func/result';
+import Buffer from '~/utils/web/buffer';
+import type Camera from '../canvas/camera';
+import { Ok, unit, type Result, type Unit } from '../func/result';
+import { type GL } from '../web/glUtils';
+import Shader from '../web/shader';
+import type Texture from '../web/texture';
+import { VertexArrayObject } from '../web/vertexArray';
+import { clearScreen, constructQuadSixWidthHeightTexture } from './util';
 
 const CANVAS_ORIGIN = new Float32Vector2(0, 0);
 
@@ -20,7 +20,7 @@ export class WorldPipeline {
   shader: Shader;
   rot = 0;
 
-  public constructor(gl: GL, _: Readonly<AppState>) {
+  public constructor(gl: GL) {
     this.name = 'World Pipeline';
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
@@ -30,7 +30,7 @@ export class WorldPipeline {
     this.shader = new Shader(gl, 'world');
   }
 
-  async init(gl: GL, appState: Readonly<AppState>): Promise<Result<Unit, string>> {
+  async init(gl: GL, camera: Camera): Promise<Result<Unit, string>> {
     const res = await this.shader.constructAsync(gl, 'world')
     if (res.isErr()) return res
 
@@ -42,10 +42,8 @@ export class WorldPipeline {
       .addAttribute(2, 'float', 'position')
       .addAttribute(2, 'float', 'texCord')
       .build(gl);
-
-    const w = appState.canvasState.canvas.width;
-    const h = appState.canvasState.canvas.height;
-    const aspectRatio = w / h;
+      
+    const aspectRatio = camera.getAspRatio()
     const quadVerts = constructQuadSixWidthHeightTexture(CANVAS_ORIGIN, aspectRatio / 2, 0.5);
     const quadBuffer = new Float32Array(quadVerts.length * SIZE_VERTEX);
 
@@ -66,7 +64,7 @@ export class WorldPipeline {
   render(
     gl: GL,
     canvasTexture: Texture,
-    appState: Readonly<AppState>
+    camera: Camera
   ) {
     this.vertexArray.bind(gl)
     this.vertexBuffer.bind(gl)
@@ -75,11 +73,11 @@ export class WorldPipeline {
     gl.blendFunc(gl.ONE, gl.ZERO); 
     
     this.shader.use(gl)
-    this.shader.uploadMatrix4x4(gl, 'view', appState.canvasState.camera.getViewMatrix());
+    this.shader.uploadMatrix4x4(gl, 'view', camera.getViewMatrix());
     this.shader.uploadMatrix4x4(
       gl,
       'projection',
-      appState.canvasState.camera.getProjectionMatrix()
+      camera.getProjectionMatrix()
     );
 
     gl.activeTexture(gl.TEXTURE0)

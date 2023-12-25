@@ -33,13 +33,13 @@ export default class GestureHandler {
       case 'pointerdown':
         return this.handlePointerDown(event, appState);
       case 'pointerup':
-        return this.handlePointerUp(event);
+        return this.handlePointerUp(event, appState);
       case 'pointercancel':
-        return this.handlePointerUp(event);
+        return this.handlePointerUp(event, appState);
       case 'pointerout':
-        return this.handlePointerUp(event);
+        return this.handlePointerUp(event, appState);
       case 'pointerleave':
-        return this.handlePointerUp(event);
+        return this.handlePointerUp(event, appState);
       case 'pointermove':
         return this.handlePointerMove(event, appState);
     }
@@ -72,7 +72,7 @@ export default class GestureHandler {
     return dirty;
   }
 
-  handlePointerUp(event: PointerEvent): boolean {
+  handlePointerUp(event: PointerEvent, appState: AppState): boolean {
     const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
@@ -84,7 +84,7 @@ export default class GestureHandler {
 
     let dirty = false;
     for (const gesture of this.gestures) {
-      dirty = gesture.fingerReleased(removedIds) || dirty;
+      dirty = gesture.fingerReleased(removedIds, appState) || dirty;
     }
     return dirty;
   }

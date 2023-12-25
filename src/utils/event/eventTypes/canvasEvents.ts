@@ -1,8 +1,20 @@
-import type Func from "../util"
+import type Camera from '~/utils/canvas/camera';
+import type FrameBuffer from '~/utils/web/frameBuffer';
+import type Func from '../util';
+import { GL } from '~/utils/web/glUtils';
 
 interface ClearCanvas {
-    clearCanvas: Func<void>
+  clearCanvas: Func<void>;
 }
 
- type CanvasEvents = [ClearCanvas]
- export default CanvasEvents
+interface EyeDropperArgs {
+    canvas: HTMLCanvasElement
+    canvasFramebuffer: FrameBuffer
+    gl: GL
+}
+interface ToggleEyeDropper {
+    toggleEyeDropper: Func<EyeDropperArgs>
+}
+
+type CanvasEvents = [ClearCanvas, ToggleEyeDropper];
+export default CanvasEvents;

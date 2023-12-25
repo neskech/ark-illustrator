@@ -41,7 +41,7 @@ export default class ShortcutHandler {
       case 'pointermove':
         return this.handleMouseMove(event as PointerEvent, appState);
       case 'keydown':
-        return this.handleKeyDown(event as KeyboardEvent);
+        return this.handleKeyDown(event as KeyboardEvent, appState);
       case 'keyup':
         return this.handleKeyUp(event as KeyboardEvent);
       default:
@@ -104,7 +104,7 @@ export default class ShortcutHandler {
     return false;
   }
 
-  handleKeyDown(keyEvent: KeyboardEvent): boolean {
+  handleKeyDown(keyEvent: KeyboardEvent, appState: AppState): boolean {
     this.isAltKeyDown = keyEvent.key == 'Alt';
 
     if (keyEvent.key == 'c') {
@@ -115,6 +115,14 @@ export default class ShortcutHandler {
     if (keyEvent.key == 's') {
       EventManager.invokeVoid('openSettings');
       return true;
+    }
+
+    if (keyEvent.key == 'i') {
+      EventManager.invoke('toggleEyeDropper', {
+        canvas: appState.canvasState.canvas,
+        canvasFramebuffer: appState.renderer.getCanvasFramebuffer(),
+        gl: appState.renderer.getGLHandle(),
+      });
     }
 
     return false;
@@ -135,8 +143,8 @@ function getMouseDeltaFromEvent(
   event: MouseEvent,
   appState: AppState
 ): Float32Vector2 {
-  const normCurrPos = mouseToNormalized(mouse, appState.canvasState);
-  const normEventPos = mouseToNormalizedWithEvent(event, appState.canvasState);
+  const normCurrPos = mouseToNormalized(mouse, appState.canvasState.canvas);
+  const normEventPos = mouseToNormalizedWithEvent(event, appState.canvasState.canvas);
 
   const deltaX = normEventPos.x - normCurrPos.x;
   const deltaY = normEventPos.y - normCurrPos.y;

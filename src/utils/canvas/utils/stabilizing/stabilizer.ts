@@ -28,7 +28,7 @@ export function getNumDeletedElementsFromDeleteFactor(
 export function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize: number) {
   requires(array.length == maxSize);
 
-  const numToShaveOff = Math.floor(maxSize * deleteFactor);
+  const numToShaveOff = getNumDeletedElementsFromDeleteFactor(deleteFactor, maxSize)
 
   const remaining = maxSize - numToShaveOff;
 

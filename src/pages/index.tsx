@@ -2,6 +2,7 @@ import { type NextPage } from 'next';
 import { Box } from '@mui/system';
 import EditorWrapper from '~/components/editorWrapper';
 import { BasicEditor } from '~/components/editors/basicEditor/basicEditor';
+import EyeDropper from '~/components/eyeDropper';
 
 const Home: NextPage = () => {
   return (

@@ -1,4 +1,4 @@
-import { Float32Vector2 } from 'matrixgl';
+import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import {
   type BrushPoint,
   type BrushSettings,
@@ -302,6 +302,7 @@ export function emplaceQuads(
     const size = getSizeGivenPressure(settings, p.pressure);
     const opacity = getOpacityGivenPressure(settings, p.pressure);
     const quadVerts = constructQuadSixTex(p.position, size);
+    const color = settings.isEraser ? new Float32Vector3(1, 1, 1) : settings.color
 
     for (let k = 0; k < quadVerts.length; k += 2) {
       const pos = quadVerts[k];
@@ -309,9 +310,12 @@ export function emplaceQuads(
 
       buffer[i++] = pos.x;
       buffer[i++] = pos.y;
+      buffer[i++] = color.x
+      buffer[i++] = color.y
+      buffer[i++] = color.z
       buffer[i++] = tex.x;
       buffer[i++] = tex.y;
-      buffer[i++] = opacity;
+      buffer[i++] = settings.isEraser ? 1 - opacity : opacity;
     }
   }
 }

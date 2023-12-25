@@ -173,8 +173,8 @@ export default class Camera {
     logger(this.toString());
   }
 
-  mouseToWorld(event: PointerEvent, state: CanvasState): Float32Vector2 {
-    const p = mouseToNDC(event, state);
+  mouseToWorld(event: PointerEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+    const p = mouseToNDC(event, canvas);
     
     /**
      * Standard NDC coordinates put p in a [-1, 1] range with
@@ -239,23 +239,23 @@ export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vecto
   return new Int32Vector2(x, y);
 }
 
-export function mouseToNormalizedWithEvent(event: PointerEvent | MouseEvent, state: CanvasState): Float32Vector2 {
-  const rect = state.canvas.getBoundingClientRect();
-  const x = (event.clientX - rect.left) / state.canvas.clientWidth;
-  const y = (event.clientY - rect.top) / state.canvas.clientHeight;
+export function mouseToNormalizedWithEvent(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+  const rect = canvas.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / canvas.clientWidth;
+  const y = (event.clientY - rect.top) / canvas.clientHeight;
   return new Float32Vector2(x, 1.0 - y);
 }
 
-export function mouseToNormalized(mousePos: Float32Vector2, state: CanvasState): Float32Vector2 {
-  const rect = state.canvas.getBoundingClientRect();
+export function mouseToNormalized(mousePos: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
+  const rect = canvas.getBoundingClientRect();
   const x = (mousePos.x
-    - rect.left) / state.canvas.clientWidth;
-  const y = (mousePos.y - rect.top) / state.canvas.clientHeight;
+    - rect.left) / canvas.clientWidth;
+  const y = (mousePos.y - rect.top) / canvas.clientHeight;
   return new Float32Vector2(x, 1.0 - y);
 }
 
-export function mouseToNDC(event: PointerEvent, state: CanvasState): Float32Vector2 {
-  const p = mouseToNormalizedWithEvent(event, state);
+export function mouseToNDC(event: PointerEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+  const p = mouseToNormalizedWithEvent(event, canvas);
   p.x = (p.x - 0.5) * 2.0;
   p.y = (p.y - 0.5) * 2.0;
   return p;

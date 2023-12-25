@@ -150,7 +150,10 @@ export default class BoxFilterStabilizer implements Stabilizer {
 
     const shavedOff = this.currentPoints.slice(0, this.numPoints);
     const processed = process(shavedOff, this.numPoints, settings, this.cache);
-    EventManager.invoke('brushStrokCutoff', processed);
+    EventManager.invoke('brushStrokCutoff', {
+      pointData: processed,
+      currentSettings: settings,
+    });
 
     shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
     this.numPoints -= numDeleted;

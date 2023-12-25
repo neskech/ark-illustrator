@@ -110,6 +110,6 @@ export default class EventManager {
     if (!eventMapping[event]) return;
 
     const subscribers = eventMapping[event]!;
-    filterInPlace(subscribers, (o) => o.fn == fn);
+    filterInPlace(subscribers, (o) => o.fn != fn);
   }
 }

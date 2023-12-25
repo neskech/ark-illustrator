@@ -186,7 +186,7 @@ export default class FrameBuffer {
     this.assertOkStatus(gl);
   }
 
-  readPixelsTo(gl: GL, options: ReadPixelOptions, pixelBuf: Uint8Array) {
+  readPixelsTo(gl: GL,  pixelBuf: Uint8Array, options: ReadPixelOptions) {
     glOpErr(
       gl,
       gl.readPixels.bind(gl),

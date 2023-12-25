@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { clamp } from 'curve-interpolator';
+import { type Float32Vector3 } from 'matrixgl';
 import React, { useEffect, useRef, useState } from 'react';
+import { type BrushSettings } from '~/utils/canvas/tools/brush';
+import { hslToHex, hslToRGBNormalized } from '~/utils/misc/color';
 
 const DEGREE_OFFSET = 90;
 
 export interface ColorPickerProps {
   size: number;
+  brushSettings: BrushSettings;
 }
 
 interface Position {
@@ -18,6 +22,9 @@ interface PickerProps {
   y: number;
 }
 
+let pointerUp: (() => void) | null;
+let pointerMove: ((e: MouseEvent) => void) | null;
+
 function Picker({ x, y }: PickerProps) {
   return (
     <div
@@ -28,7 +35,7 @@ function Picker({ x, y }: PickerProps) {
 }
 
 function ColorPicker(props: ColorPickerProps) {
-  const innerSquareSize = Math.floor(props.size * 0.56)
+  const innerSquareSize = Math.floor(props.size * 0.56);
 
   const [isOuterHeld, setOuterHeld] = useState(false);
   const [degree, setDegree] = useState(0);
@@ -39,30 +46,32 @@ function ColorPicker(props: ColorPickerProps) {
   const outerCircle = useRef<HTMLDivElement>(null);
   const innerSquare = useRef<HTMLDivElement>(null);
 
-  const [color, setColor] = useState(getColorFromParams(degree, innerPos, innerSquareSize))
-
   /* TODO: Picker fucks us up. Forward the picker ref */
 
   useEffect(() => {
     removeEvents();
 
-    mouseUp = () => {
+    pointerUp = () => {
       setOuterHeld(false);
       setInnerHeld(false);
     };
-    document.addEventListener('mouseup', mouseUp);
+    document.addEventListener('pointerup', pointerUp);
 
-    mouseMove = (e: MouseEvent) => {
+    pointerMove = (e: MouseEvent) => {
       if (isOuterHeld && !isInnerHeld) {
         setDegree(calculateDegree(e, outerCircle.current!));
       } else if (isInnerHeld && !isOuterHeld) {
         setInnerPos(absoluteToRelative(e, innerSquare.current!));
       }
     };
-    document.addEventListener('mousemove', mouseMove);
+    document.addEventListener('pointermove', pointerMove);
 
     return removeEvents;
   }, [isOuterHeld, isInnerHeld]);
+
+  useEffect(() => {
+    props.brushSettings.color = getRGBFromParams(degree, innerPos, innerSquareSize);
+  }, [degree, innerPos]);
 
   return (
     <div
@@ -85,15 +94,14 @@ function ColorPicker(props: ColorPickerProps) {
       <Picker {...innerPos} />
 
       <div
-        className='absolute border-2 border-white'
+        className="absolute border-2 border-white"
         style={{
           width: `${Math.floor(props.size * 0.25)}px`,
           height: `${Math.floor(props.size * 0.25)}px`,
           backgroundColor: getColorFromParams(degree, innerPos, innerSquareSize),
-          transform: 'translate(-163%, -235%)'
+          transform: 'translate(-163%, -235%)',
         }}
-      >
-      </div>
+      ></div>
 
       <div
         className="flex flex-col items-center justify-center rounded-full border-2 bg-slate-800"
@@ -141,24 +149,20 @@ function getDegree(degree: number): number {
   return (degree + DEGREE_OFFSET) % 361;
 }
 
-function getColorFromParams(degree: number, boxPos: Position, innerSquareSize: number): string {
-  const saturation = Math.floor(50 * (boxPos.x / innerSquareSize + 0.5)) + 50
-  const lightness = Math.floor(50 * (boxPos.y / innerSquareSize + 0.5))
-  console.log(lightness, saturation)
-  return hslToHex(getDegree(degree), saturation, lightness)
+function getRGBFromParams(
+  degree: number,
+  boxPos: Position,
+  innerSquareSize: number
+): Float32Vector3 {
+  const saturation = Math.floor(50 * (boxPos.x / innerSquareSize + 0.5)) + 50;
+  const lightness = Math.floor(50 * (boxPos.y / innerSquareSize + 0.5));
+  return hslToRGBNormalized(getDegree(degree), saturation, lightness);
 }
 
-function hslToHex(h: number, s: number, l: number) {
-  l /= 100;
-  const a = (s * Math.min(l, 1 - l)) / 100;
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, '0'); // convert to Hex and prefix "0" if needed
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
+function getColorFromParams(degree: number, boxPos: Position, innerSquareSize: number): string {
+  const saturation = Math.floor(50 * (boxPos.x / innerSquareSize + 0.5)) + 50;
+  const lightness = Math.floor(50 * (boxPos.y / innerSquareSize + 0.5));
+  return hslToHex(getDegree(degree), saturation, lightness);
 }
 
 function positionByDegree(degree: number, radius: number): Position {
@@ -180,9 +184,6 @@ function calculateDegree(event: MouseEvent | React.MouseEvent, target: HTMLDivEl
   return degree;
 }
 
-let mouseUp: (() => void) | null;
-let mouseMove: ((e: MouseEvent) => void) | null;
-
 function absoluteToRelative(
   event: MouseEvent | React.MouseEvent,
   target: HTMLDivElement
@@ -199,6 +200,6 @@ function absoluteToRelative(
 }
 
 function removeEvents() {
-  if (mouseUp) document.removeEventListener('mouseup', mouseUp);
-  if (mouseMove) document.removeEventListener('mousemove', mouseMove);
+  if (pointerUp) document.removeEventListener('pointerup', pointerUp);
+  if (pointerMove) document.removeEventListener('pointermove', pointerMove);
 }

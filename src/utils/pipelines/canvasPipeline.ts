@@ -1,17 +1,16 @@
-import { type GL } from '../web/glUtils';
-import { VertexArrayObject } from '../web/vertexArray';
 import Buffer from '~/utils/web/buffer';
-import Shader from '../web/shader';
-import { type AppState } from '../mainRoutine';
-import { type BrushPoint } from '../canvas/tools/brush';
-import FrameBuffer from '../web/frameBuffer';
-import { clearScreen, emplaceQuads } from './util';
-import { MAX_POINTS_PER_FRAME } from './strokePipeline';
+import { type BrushSettings, type BrushPoint } from '../canvas/tools/brush';
 import EventManager from '../event/eventManager';
-import { Ok, type Result, type Unit, unit } from '../func/result';
+import { Ok, unit, type Result, type Unit } from '../func/result';
+import FrameBuffer from '../web/frameBuffer';
+import { type GL } from '../web/glUtils';
+import Shader from '../web/shader';
+import { VertexArrayObject } from '../web/vertexArray';
+import { MAX_POINTS_PER_FRAME } from './strokePipeline';
+import { clearScreen, emplaceQuads } from './util';
 
 const NUM_VERTICES_QUAD = 6;
-const VERTEX_SIZE = 5;
+const VERTEX_SIZE = 8;
 const SIZE_FLOAT = 4;
 
 export class CanvasPipeline {
@@ -21,7 +20,7 @@ export class CanvasPipeline {
   shader: Shader;
   frameBuffer: FrameBuffer;
 
-  public constructor(gl: GL, appState: Readonly<AppState>) {
+  public constructor(gl: GL, canvas: HTMLCanvasElement) {
     this.name = 'Canvas Pipeline';
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
@@ -30,8 +29,8 @@ export class CanvasPipeline {
     });
     this.shader = new Shader(gl, 'canvas');
     this.frameBuffer = new FrameBuffer(gl, {
-      width: appState.canvasState.canvas.width,
-      height: appState.canvasState.canvas.height,
+      width: canvas.width,
+      height: canvas.height,
       target: 'Regular',
       wrapX: 'Repeat',
       wrapY: 'Repeat',
@@ -42,7 +41,7 @@ export class CanvasPipeline {
     this.fillFramebufferWithWhite(gl);
   }
 
-  async init(gl: GL, appState: Readonly<AppState>): Promise<Result<Unit, string>> {
+  async init(gl: GL): Promise<Result<Unit, string>> {
     const res = await this.shader.constructAsync(gl, 'canvas');
     if (res.isErr()) return res;
 
@@ -52,11 +51,12 @@ export class CanvasPipeline {
     this.vertexArray
       .builder()
       .addAttribute(2, 'float', 'position')
+      .addAttribute(3, 'float', 'color')
       .addAttribute(2, 'float', 'texCord')
       .addAttribute(1, 'float', 'opacity')
       .build(gl);
 
-    this.setupEvents(gl, appState);
+    this.setupEvents(gl);
 
     const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE * SIZE_FLOAT;
     this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
@@ -67,11 +67,8 @@ export class CanvasPipeline {
     return Ok(unit);
   }
 
-  render(gl: GL, points: BrushPoint[], appState: Readonly<AppState>) {
+  render(gl: GL, points: BrushPoint[], brushSettings: Readonly<BrushSettings>) {
     if (points.length == 0) return;
-
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
-    const brushSettings = appState.settings.brushSettings[0];
 
     this.vertexArray.bind(gl);
     this.vertexBuffer.bind(gl);
@@ -79,6 +76,9 @@ export class CanvasPipeline {
     this.shader.use(gl);
     gl.activeTexture(gl.TEXTURE0);
     brushSettings.texture.map((t) => t.bind(gl));
+
+    if (brushSettings.isEraser) gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
     emplaceQuads(buf, points, brushSettings);
@@ -96,9 +96,17 @@ export class CanvasPipeline {
     this.vertexBuffer.unBind(gl);
   }
 
-  setupEvents(gl: GL, appState: Readonly<AppState>) {
-    EventManager.subscribe('brushStrokEnd', (p) => this.render(gl, p, appState), true);
-    EventManager.subscribe('brushStrokCutoff', (p) => this.render(gl, p, appState), true);
+  setupEvents(gl: GL) {
+    EventManager.subscribe(
+      'brushStrokEnd',
+      ({ pointData, currentSettings }) => this.render(gl, pointData, currentSettings),
+      true
+    );
+    EventManager.subscribe(
+      'brushStrokCutoff',
+      ({ pointData, currentSettings }) => this.render(gl, pointData, currentSettings),
+      true
+    );
   }
 
   getFrameBuffer(): FrameBuffer {
