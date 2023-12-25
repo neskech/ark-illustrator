@@ -142,17 +142,17 @@ export function trackCombined(options: CombinedTrackOptions) {
     );
 }
 
-export function untrack(name: string) {
-  if (benchmarkData.subjects.has(name)) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const subject = benchmarkData.subjects.get(name)!;
-    const logFreq = subject.loggingOptions.logFrequency;
-    if (logFreq && logFreq.type == 'time' && logFreq.interval)
-      clearInterval(logFreq.interval);
+// export function untrack(name: string) {
+//   if (benchmarkData.subjects.has(name)) {
+//     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+//     const subject = benchmarkData.subjects.get(name)!;
+//     const logFreq = subject.loggingOptions.logFrequency;
+//     if (logFreq && logFreq.type == 'time' && logFreq.interval)
+//       clearInterval(logFreq.interval);
 
-    benchmarkData.subjects.delete(name);
-  }
-}
+//     benchmarkData.subjects.delete(name);
+//   }
+// }
 
 export function printSubject(name: string) {
   requires(benchmarkData.subjects.has(name) || benchmarkData.combinedSubjects.has(name));

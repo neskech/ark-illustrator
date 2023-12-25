@@ -20,8 +20,7 @@ function isNone_<T>(o: Option_<T>): o is None_ {
   return o.__type === 'None';
 }
 
-
-export type NullToOption<T> = Option<NonNullable<T>>
+export type NullToOption<T> = Option<NonNullable<T>>;
 
 export class Option<T> {
   data: Option_<T>;

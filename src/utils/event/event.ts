@@ -10,6 +10,7 @@ type ArrayConcat<K extends unknown[], P extends unknown[]> =
         P
     : never
 
+
 type MultiArrayConcat<K extends unknown[][]> = 
     K extends [infer Head1 extends unknown[], infer Head2 extends unknown[], ...infer Rest extends unknown[][]] ?
         ArrayConcat<ArrayConcat<Head1, Head2>, MultiArrayConcat<Rest>>
@@ -17,7 +18,7 @@ type MultiArrayConcat<K extends unknown[][]> =
         Head 
     : K extends [] ?
         []
-    : never
+    : []
 
 type MakeEventMap<Ts extends object[]> = 
     Ts extends [infer Head] ?

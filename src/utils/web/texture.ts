@@ -290,7 +290,7 @@ export default class Texture {
     }
 
     this.setDimensions(frameBuffer.getWidth(), frameBuffer.getHeight());
-    frameBuffer.readPixelsTo(gl, options, pixelBuf);
+    frameBuffer.readPixelsTo(gl, pixelBuf, options);
 
     if (handleBinding) {
       this.unBind(gl);
