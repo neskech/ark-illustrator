@@ -83,7 +83,6 @@ function initEventListeners(canvas: HTMLCanvasElement) {
         currentTool: appState.inputState.currentTool.current,
         appState: appState,
         settings: appState.settings,
-        presetNumber: Some(0),
       });
     });
   });
@@ -101,7 +100,6 @@ function initEventListeners(canvas: HTMLCanvasElement) {
         currentTool: appState.inputState.currentTool.current,
         appState: appState,
         settings: appState.settings,
-        presetNumber: Some(0),
       });
     });
   });

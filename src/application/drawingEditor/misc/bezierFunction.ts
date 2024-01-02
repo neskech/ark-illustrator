@@ -2,7 +2,7 @@ import { Float32Vector2 } from 'matrixgl';
 import { assert, requires } from '../../general/contracts';
 import { add, copy, scale } from '../webgl/vector';
 
-export class BezierFunction {
+export default class BezierFunction {
   private controlPoints: Float32Vector2[];
 
   constructor() {
@@ -95,13 +95,13 @@ export class BezierFunction {
       assert(p2.x > p1.x);
     }
   }
-}
 
-export function getLinearBezier(): BezierFunction {
-  const fn = new BezierFunction();
-  fn.addPoint(new Float32Vector2(0, 0));
-  fn.addPoint(new Float32Vector2(1, 1));
-  return fn;
+  static getLinearBezier(): BezierFunction {
+    const fn = new BezierFunction();
+    fn.addPoint(new Float32Vector2(0, 0));
+    fn.addPoint(new Float32Vector2(1, 1));
+    return fn;
+  }
 }
 
 function factorial(n: number): number {

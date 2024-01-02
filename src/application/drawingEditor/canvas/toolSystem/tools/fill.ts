@@ -1,6 +1,7 @@
 import { requires } from '../../../../general/contracts';
+import { type FillSettings } from '../settings/fillSettings';
 import { Tool, type HandleEventArgs } from '../tool';
-import { type FillSettings } from '../settings';
+
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -33,17 +34,17 @@ export class Fill extends Tool {
   }
 
   mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings, presetNumber } = args;
+    const { appState, settings } = args;
     return false;
   }
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings, presetNumber } = args;
+    const { appState, settings } = args;
     return false;
   }
 
   mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings, presetNumber } = args;
+    const { appState, settings } = args;
     return false;
   }
 

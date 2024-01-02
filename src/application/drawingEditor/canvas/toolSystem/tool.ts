@@ -1,7 +1,5 @@
-import { type Option } from '~/application/general/option';
-import { type GlobalToolSettings } from './settings';
 import { type AppState } from '~/application/drawingEditor/mainRoutine';
-import { CanvasState } from '../canvas';
+import { type GlobalToolSettings } from './settings';
 
 export type EventString = keyof HTMLElementEventMap;
 export type CanvasEvent = HTMLElementEventMap[EventString];
@@ -11,7 +9,6 @@ export interface HandleEventArgs {
   event: CanvasEvent;
   eventString: EventString;
   settings: GlobalToolSettings;
-  presetNumber: Option<number>;
 }
 
 export abstract class Tool {

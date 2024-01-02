@@ -44,7 +44,8 @@ declare global {
   }
 
   interface ArrayConstructor {
-    tabulate: <T>(n: number, fn: (i: number) => T) => T[];
+    tabulate: <T>(numElements: number, fn: (i: number) => T) => T[];
+    fillWith: <T>(numElements: number, value: T) => T[]
   }
 }
 
@@ -62,6 +63,14 @@ export function tabulate<A>(n: number, fn: (i: number) => A): A[] {
     a.push(fn(i));
   }
   return a;
+}
+
+export function fillWith<A>(n: number, value: A): A[] {
+  const a: A[] = []
+  for (let i = 0; i < n; i++) {
+    a.push(value)
+  }
+  return a
 }
 
 export function pop<A>(a: A[]): Option<A> {
@@ -291,6 +300,10 @@ Array.tabulate = function (n, fn) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return tabulate(n, fn);
 };
+
+Array.fillWith = function (n, value) {
+  return fillWith(n, value)
+}
 
 Array.prototype.findOption = function (fn) {
   return find(this, fn);

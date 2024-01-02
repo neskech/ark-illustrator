@@ -32,17 +32,17 @@ export class Square extends Tool {
   }
 
   mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
+    const { appState: canvasState, settings } = args;
     return false;
   }
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
+    const { appState: canvasState, settings } = args;
     return false;
   }
 
   mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
+    const { appState: canvasState, settings } = args;
     return false;
   }
 

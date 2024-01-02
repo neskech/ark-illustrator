@@ -1,16 +1,14 @@
+import EventManager from '../../../eventSystem/eventManager';
+import { type AppState } from '../../mainRoutine';
 import GestureHandler from '../gesturesAndShortcuts/gestureHandler';
 import ShortcutHandler from '../gesturesAndShortcuts/shortcutHandler';
-import { Brush } from './tools/brush';
 import { type GlobalToolSettings } from './settings';
-import { CanvasEvent, type EventString } from './tool';
-import EventManager from '../../../eventSystem/eventManager';
+import { type CanvasEvent, type EventString } from './tool';
+import { Brush } from './tools/brush';
+import { Circle } from './tools/circle';
 import { Fill } from './tools/fill';
 import { Hand } from './tools/hand';
 import { Square } from './tools/square';
-import { Circle } from './tools/circle';
-import { AppState, appState } from '../../mainRoutine';
-import { Option } from '~/application/general/option';
-import { CanvasState } from '../canvas';
 
 export type ToolMap = {
   brush: Brush;
@@ -50,9 +48,8 @@ export type HandlerArgs = {
   gestures: GestureHandler;
   shortcuts: ShortcutHandler;
   event: CanvasEvent;
-  appState: AppState
+  appState: AppState;
   settings: GlobalToolSettings;
-  presetNumber: Option<number>;
 };
 
 export function handleEvent({
@@ -63,7 +60,6 @@ export function handleEvent({
   event,
   appState,
   settings,
-  presetNumber,
 }: HandlerArgs): void {
   const tool = map[currentTool];
   const evStr: EventString = event.type as EventString; //TODO: pain point
@@ -75,7 +71,6 @@ export function handleEvent({
     appState,
     eventString: evStr,
     settings,
-    presetNumber,
   });
 
   dirty = gestures.handleEvent(event, appState, evStr) || dirty;

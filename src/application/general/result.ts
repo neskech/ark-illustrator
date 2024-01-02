@@ -28,6 +28,8 @@ export function assertIsError(e: unknown): asserts e is Error {
   assert(e instanceof Error);
 }
 
+class ResultError extends Error {}
+
 export class Result<T, E> {
   data: Result_<T, E>;
 
@@ -106,7 +108,7 @@ export class Result<T, E> {
 
   unwrap(): T {
     if (isOk_(this.data)) return this.data.value;
-    throw new Error('Tried unwrapping result to Ok, but had type Err');
+    throw new ResultError('Tried unwrapping result to Ok, but had type Err');
   }
 
   unwrapOrDefault(default_: T): T {
@@ -121,7 +123,7 @@ export class Result<T, E> {
 
   expect(errMsg: string): T {
     if (isOk_(this.data)) return this.data.value;
-    throw new Error(errMsg);
+    throw new ResultError(errMsg);
   }
 
   toOption(): Option<T> {
@@ -151,7 +153,7 @@ export class Result<T, E> {
     return errCase(this.data.value);
   }
 
-  matchEffect<L, R>(okCase: (t: T) => L, errCase: (e: E) => R): void {
+  matchEffect(okCase: (t: T) => void, errCase: (e: E) => void): void {
     if (isOk_(this.data)) okCase(this.data.value);
     else errCase(this.data.value);
   }
@@ -192,12 +194,12 @@ export class Result<T, E> {
 
   unwrapErr(): E {
     if (isErr_(this.data)) return this.data.value;
-    throw new Error('Tried unwrapping result to type Err, but had type Ok');
+    throw new ResultError('Tried unwrapping result to type Err, but had type Ok');
   }
 
   expectErr(errMsg: string): E {
     if (isErr_(this.data)) return this.data.value;
-    throw new Error(errMsg);
+    throw new ResultError(errMsg);
   }
 
   mapErr<J>(fn: (e: E) => J): Result<T, J> {

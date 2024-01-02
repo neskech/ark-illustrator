@@ -1,21 +1,17 @@
 import { type GL } from '~/application/drawingEditor/webgl/glUtils';
-import { type BrushSettings, defaultBrushSettings } from './tools/brush';
+import { defaultBrushSettings, type BrushSettings } from './settings/brushSettings';
+import { defaultFillSettings, type FillSettings } from './settings/fillSettings';
+import SettingsPreset from './settingsPreset';
 
-export interface FillSettings {
-  tolerance: number;
-}
 
 export interface GlobalToolSettings {
-  brushSettings: [BrushSettings, BrushSettings, BrushSettings];
+  brushSettings: SettingsPreset<BrushSettings>;
   fillSettings: FillSettings;
 }
 
 export function getDefaultSettings(gl: GL): GlobalToolSettings {
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    brushSettings: [defaultBrushSettings(gl), defaultBrushSettings(gl), defaultBrushSettings(gl)],
-    fillSettings: {
-      tolerance: 0.0,
-    },
+    brushSettings: new SettingsPreset(3, defaultBrushSettings(gl)),
+    fillSettings: defaultFillSettings(),
   };
 }
