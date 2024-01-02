@@ -8,11 +8,10 @@ import {
 } from 'matrixgl';
 import { Option } from '../../general/option';
 import { Err, Ok, Result, unit, type Unit } from '../../general/result';
-import { GLObject, glOpErr, type GL } from './glUtils';
+import { GLObject, type GL } from './glUtils';
 import type Texture from './texture';
 import { type Int32Vector2, type Int32Vector3, type Int32Vector4 } from './vector';
 
-//TODO: make all err based code result based
 
 export default class Shader {
   private vertexShaderId: GLObject<WebGLShader>;
@@ -23,15 +22,15 @@ export default class Shader {
   private linked: boolean;
 
   constructor(gl: GL, name = 'unknown') {
-    const vId = Option.fromNull(glOpErr(gl, gl.createShader.bind(gl), gl.VERTEX_SHADER));
+    const vId = Option.fromNull(gl.createShader(gl.VERTEX_SHADER));
     const vgId = vId.expect("Couldn't create vertex shader");
     this.vertexShaderId = new GLObject(vgId, 'vertex shader');
 
-    const fId = Option.fromNull(glOpErr(gl, gl.createShader.bind(gl), gl.FRAGMENT_SHADER));
+    const fId = Option.fromNull(gl.createShader(gl.FRAGMENT_SHADER));
     const fgId = fId.expect("Couldn't create fragment shader");
     this.fragmentShaderId = new GLObject(fgId, 'fragment shader');
 
-    const pId = Option.fromNull(glOpErr(gl, gl.createProgram.bind(gl)));
+    const pId = Option.fromNull(gl.createProgram());
     const pgId = pId.expect("Couldn't create shader program");
     this.programId = new GLObject(pgId, 'shader program');
 
@@ -64,10 +63,10 @@ export default class Shader {
   compileFromSource(gl: GL, vertexSource: string, fragmentSource: string) {
     if (this.compiled) throw new Error('Tried compiling shader twice');
 
-    glOpErr(gl, gl.shaderSource.bind(gl), this.vertexShaderId.innerId(), vertexSource);
-    glOpErr(gl, gl.shaderSource.bind(gl), this.fragmentShaderId.innerId(), fragmentSource);
-    glOpErr(gl, gl.compileShader.bind(gl), this.vertexShaderId.innerId());
-    glOpErr(gl, gl.compileShader.bind(gl), this.fragmentShaderId.innerId());
+    gl.shaderSource(this.vertexShaderId.innerId(), vertexSource);
+    gl.shaderSource(this.fragmentShaderId.innerId(), fragmentSource);
+    gl.compileShader(this.vertexShaderId.innerId());
+    gl.compileShader(this.fragmentShaderId.innerId());
 
     //defer checking compilation status until linking time
     this.compiled = true;
@@ -78,15 +77,9 @@ export default class Shader {
 
     if (this.linked) throw new Error('tried linking shader twice');
 
-    glOpErr(gl, gl.attachShader.bind(gl), this.programId.innerId(), this.vertexShaderId.innerId());
-    glOpErr(
-      gl,
-      gl.attachShader.bind(gl),
-      this.programId.innerId(),
-      this.fragmentShaderId.innerId()
-    );
-
-    glOpErr(gl, gl.linkProgram.bind(gl), this.programId.innerId());
+    gl.attachShader(this.programId.innerId(), this.vertexShaderId.innerId());
+    gl.attachShader(this.programId.innerId(), this.fragmentShaderId.innerId());
+    gl.linkProgram(this.programId.innerId());
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const success = gl.getProgramParameter(this.programId.innerId(), gl.LINK_STATUS);
@@ -110,12 +103,7 @@ export default class Shader {
     return Ok(unit);
   }
 
-  async construct(gl: GL, shaderName: string) {
-    await this.compileFromFile(gl, shaderName);
-    this.link(gl);
-  }
-
-  async constructAsync(gl: GL, shaderName: string): Promise<Result<Unit, string>> {
+  async construct(gl: GL, shaderName: string): Promise<Result<Unit, string>> {
     const result = await this.compileFromFile(gl, shaderName);
     if (result.isErr()) return result;
 
@@ -125,18 +113,17 @@ export default class Shader {
     return Ok(unit);
   }
 
-  constructFromSource(gl: GL, vertexSource: string, fragmentSource: string): Result<void, string> {
+  constructFromSource(gl: GL, vertexSource: string, fragmentSource: string): Result<Unit, string> {
     this.compileFromSource(gl, vertexSource, fragmentSource);
-    const res = Result.fromError<void, string>(() => this.link(gl));
-    return res;
+    return this.link(gl);
   }
 
   use(gl: GL) {
-    glOpErr(gl, gl.useProgram.bind(gl), this.programId.innerId());
+    gl.useProgram(this.programId.innerId())
   }
 
   stopUsing(gl: GL) {
-    glOpErr(gl, gl.useProgram.bind(gl), null);
+    gl.useProgram(null)
   }
 
   destroy(gl: GL) {

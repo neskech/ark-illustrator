@@ -1,5 +1,5 @@
 import { Option } from '../../general/option';
-import { GLObject, type GL, glOpErr } from './glUtils';
+import { GLObject, type GL } from './glUtils';
 
 type AttributeType = 'float' | 'integer';
 
@@ -76,7 +76,7 @@ export class VertexArrayObject {
 
   constructor(gl: GL) {
     this.debugData = null;
-    const vId = Option.fromNull(glOpErr(gl, gl.createVertexArray.bind(gl)));
+    const vId = Option.fromNull(gl.createVertexArray());
     const glId = new GLObject(vId.expect("couldn't create new vertex array object"));
     this.id = glId;
   }
@@ -104,16 +104,16 @@ export class VertexArrayObject {
   }
 
   bind(gl: GL) {
-    glOpErr(gl, gl.bindVertexArray.bind(gl), this.id.innerId());
+    gl.bindVertexArray(this.id.innerId())
   }
 
   unBind(gl: GL) {
-    glOpErr(gl, gl.bindVertexArray.bind(gl), null);
+    gl.bindVertexArray(null)
   }
 
   destroy(gl: GL): void {
     this.id.destroy((id) => {
-      glOpErr(gl, gl.deleteVertexArray.bind(gl), id);
+      gl.deleteVertexArray(id)
     });
   }
 }

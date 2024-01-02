@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { unreachable } from '../../general/funUtils';
 import { Option } from '../../general/option';
-import { type GL, GLObject, glOpErr } from './glUtils';
+import { type GL, GLObject } from './glUtils';
 
 type BufferType = 'IndexBuffer' | 'VertexBuffer' | 'Uniform Buffer';
 type Usage = 'Static Draw' | 'Dynamic Draw' | 'Stream Draw';
@@ -47,7 +47,7 @@ export default class GLBuffer {
   private sizeBytes;
 
   constructor(gl: GL, { btype, usage, autoResizing }: BufferOptions) {
-    const bId = Option.fromNull(glOpErr(gl, gl.createBuffer.bind(gl)));
+    const bId = Option.fromNull(gl.createBuffer());
     const gId = bId.expect("Couldn't create vertex buffer");
     this.id = new GLObject(gId, 'buffer');
 
@@ -62,11 +62,7 @@ export default class GLBuffer {
     const usage = usageToEnum(gl, this.usage);
     this.sizeBytes = sizeBytes;
 
-    function bufferEmptyData() {
-      gl.bufferData(target, sizeBytes, usage);
-    }
-
-    glOpErr(gl, bufferEmptyData);
+    gl.bufferData(target, sizeBytes, usage);
   }
 
   allocateWithData(gl: GL, data: ArrayBufferView, srcOffset = 0) {
@@ -74,7 +70,7 @@ export default class GLBuffer {
     const usage = usageToEnum(gl, this.usage);
     this.sizeBytes = data.byteLength;
 
-    glOpErr(gl, gl.bufferData.bind(gl), target, data, usage, srcOffset);
+    gl.bufferData(target, data, usage, srcOffset)
   }
 
   resize(gl: GL, size: number) {
@@ -82,11 +78,7 @@ export default class GLBuffer {
     const usage = usageToEnum(gl, this.usage);
     this.sizeBytes = size;
 
-    function bufferEmptyData() {
-      gl.bufferData(target, size, usage);
-    }
-
-    glOpErr(gl, bufferEmptyData);
+    gl.bufferData(target, size, usage);
   }
 
   addData(gl: GL, data: ArrayBufferView, dstOffsetBytes = 0, srcOffsetBytes = 0) {
@@ -103,17 +95,17 @@ export default class GLBuffer {
       Entire buffer::\n
       ${this.toString()}`);
 
-    glOpErr(gl, gl.bufferSubData.bind(gl), target, dstOffsetBytes, data, srcOffsetBytes);
+    gl.bufferSubData(target, dstOffsetBytes, data, srcOffsetBytes)
   }
 
   bind(gl: GL) {
     const target = bufTypeToEnum(gl, this.bufType);
-    glOpErr(gl, gl.bindBuffer.bind(gl), target, this.id.innerId());
+    gl.bindBuffer(target, this.id.innerId())
   }
 
   unBind(gl: GL) {
     const target = bufTypeToEnum(gl, this.bufType);
-    glOpErr(gl, gl.bindBuffer.bind(gl), target, null);
+    gl.bindBuffer(target, null)
   }
 
   toString(): string {
@@ -130,7 +122,7 @@ export default class GLBuffer {
 
   destroy(gl: GL) {
     this.id.destroy((id) => {
-      glOpErr(gl, gl.deleteBuffer.bind(gl), id);
+      gl.deleteBuffer(id)
     });
   }
 }

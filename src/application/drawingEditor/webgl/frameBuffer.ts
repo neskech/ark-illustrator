@@ -1,7 +1,7 @@
 import { requires } from '../../general/contracts';
 import { unreachable } from '../../general/funUtils';
 import { Option } from '../../general/option';
-import { type GL, GLObject, glOpErr } from './glUtils';
+import { type GL, GLObject } from './glUtils';
 import Texture from './texture';
 import { type TextureOptions } from './texture';
 
@@ -94,7 +94,7 @@ export default class FrameBuffer {
   private attachedTexture: Texture;
 
   constructor(gl: GL, options: FrameBufferOptions) {
-    const fId = Option.fromNull(glOpErr(gl, gl.createFramebuffer.bind(gl)));
+    const fId = Option.fromNull(gl.createFramebuffer());
     const fgId = fId.expect("Couldn't create frame buffer");
     this.id = new GLObject(fgId);
     this.target = options.target;
@@ -129,9 +129,7 @@ export default class FrameBuffer {
       readBuffer.bind(gl);
     }
 
-    glOpErr(
-      gl,
-      gl.blitFramebuffer.bind(gl),
+    gl.blitFramebuffer(
       blitOptions.srcBottomLeft[0],
       blitOptions.srcBottomLeft[1],
       blitOptions.srcTopLeft[0],
@@ -158,9 +156,7 @@ export default class FrameBuffer {
 
     this.bind(gl);
     this.attachedTexture.bind(gl);
-    glOpErr(
-      gl,
-      gl.framebufferTexture2D.bind(gl),
+    gl.framebufferTexture2D(
       targetToEnum(gl, this.target),
       gl.COLOR_ATTACHMENT0,
       gl.TEXTURE_2D,
@@ -179,26 +175,23 @@ export default class FrameBuffer {
   }
 
   readPixelsTo(gl: GL, pixelBuf: Uint8Array, options: ReadPixelOptions) {
-    glOpErr(
-      gl,
-      gl.readPixels.bind(gl),
+    gl.readPixels(
       options.lowerLeftX,
       options.lowerLeftY,
       options.width,
       options.height,
       formatToEnum(gl, options.format),
       gl.UNSIGNED_BYTE,
-      pixelBuf,
-      0
+      pixelBuf
     );
   }
 
   bind(gl: GL) {
-    glOpErr(gl, gl.bindFramebuffer.bind(gl), targetToEnum(gl, this.target), this.id.innerId());
+    gl.bindFramebuffer(targetToEnum(gl, this.target), this.id.innerId())
   }
 
   unBind(gl: GL) {
-    glOpErr(gl, gl.bindFramebuffer.bind(gl), targetToEnum(gl, this.target), null);
+    gl.bindFramebuffer(targetToEnum(gl, this.target), null)
   }
 
   getWidth() {

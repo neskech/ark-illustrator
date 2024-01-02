@@ -60,17 +60,6 @@ export function fetchWebGLContext(canvas: HTMLCanvasElement, debug = false): Opt
   return debugCtx;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type GLFun = (...args: any[]) => any;
-
-export function glOpErr<F extends GLFun>(gl: GL, fn: F, ...args: Parameters<F>): ReturnType<F> {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const res = fn.apply(gl, args);
-  checkError(gl, fn.name);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return res;
-}
-
 export function checkError(gl: GL, fnName = 'unknown') {
   ensures(() => {
     const err = gl.getError();
@@ -110,10 +99,4 @@ export type Color = [number, number, number, number];
 export function colorTypeToPacked(c: Color): number {
   const [r, g, b, a] = c;
   return (r << 24) | (g << 16) | (b << 8) | a;
-}
-
-export function benchmarkLog(msg: string, f: () => void) {
-  console.time(msg);
-  f();
-  console.timeEnd(msg);
 }
