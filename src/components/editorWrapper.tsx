@@ -3,7 +3,7 @@ import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDiss
 import { Box, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
-import { init } from '~/utils/mainRoutine';
+import { init } from '~/application/drawingEditor/mainRoutine';
 import type EditorProps from './editors/types';
 import { type SettingsObject } from './editors/types';
 
@@ -22,7 +22,7 @@ function LoadingFallback(): React.JSX.Element {
 }
 
 function ErrorFallback({ error }: { error: string }): React.JSX.Element {
-  console.error(error)
+  console.error(error);
   return (
     <Box className="align absolute z-10 flex h-full w-full touch-none select-none flex-col items-center justify-center gap-7 bg-black text-white">
       <SentimentVeryDissatisfiedIcon sx={{ width: 100, height: 100, color: '#43a333' }} />
@@ -43,7 +43,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
         .then((result) => {
           result.match(
             (app) => {
-              setSettings({settings: app.settings, selectedTool: app.inputState.currentTool });
+              setSettings({ settings: app.settings, selectedTool: app.inputState.currentTool });
               setState({ type: 'finished' });
             },
             (e) => setState({ type: 'error', errorMsg: e })
@@ -68,7 +68,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
         <></>
       )}
 
-      {settings && <EditorComponent settings={settings}/>}
+      {settings && <EditorComponent settings={settings} />}
       <canvas
         ref={canvasRef}
         width={1000}

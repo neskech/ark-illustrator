@@ -1,14 +1,14 @@
 import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { useEffect, useState } from 'react';
-import { type BrushSettings } from '~/utils/canvas/tools/brush';
-import EventManager from '~/utils/event/eventManager';
-import { rgbaToHsl } from '~/utils/misc/color';
-import type FrameBuffer from '~/utils/web/frameBuffer';
-import { type GL } from '~/utils/web/glUtils';
-import { Int32Vector3 } from '~/utils/web/vector';
-import { mouseToNormalized } from '../utils/canvas/camera';
-import { hslToHex } from '../utils/misc/color';
-import { EyeDropperArgs } from '~/utils/event/eventTypes/canvasEvents';
+import { type BrushSettings } from '~/application/drawingEditor/canvas/tools/brush';
+import EventManager from '~/application/eventSystem/eventManager';
+import { rgbaToHsl } from '~/application/drawingEditor/misc/color';
+import type FrameBuffer from '~/application/drawingEditor/webgl/frameBuffer';
+import { type GL } from '~/application/drawingEditor/webgl/glUtils';
+import { Int32Vector3 } from '~/application/drawingEditor/webgl/vector';
+import { mouseToNormalized } from '../application/drawingEditor/canvas/camera';
+import { hslToHex } from '../application/drawingEditor/misc/color';
+import { EyeDropperArgs } from '~/application/eventSystem/eventTypes/canvasEvents';
 
 export interface EyeDropperProps {
   brushSettings: BrushSettings;
@@ -30,16 +30,16 @@ function EyeDropper({ brushSettings }: EyeDropperProps) {
   const [color, setColor] = useState<Int32Vector3>(new Int32Vector3(0, 0, 0));
 
   useEffect(() => {
-    removeEvents()
+    removeEvents();
 
     toggle = (obj: EyeDropperArgs) => {
       setIsVisible((v) => !v);
       renderObjects = {
         canvasFramebuffer: obj.canvasFramebuffer,
         canvas: obj.canvas,
-        gl: obj.gl
+        gl: obj.gl,
       };
-      obj.originPosition.map(p => setPosition(p))
+      obj.originPosition.map((p) => setPosition(p));
     };
     EventManager.subscribe('toggleEyeDropper', toggle);
 
@@ -56,7 +56,7 @@ function EyeDropper({ brushSettings }: EyeDropperProps) {
     document.addEventListener('pointerup', pointerUp);
     document.addEventListener('pointercancel', pointerUp);
 
-    return removeEvents
+    return removeEvents;
   }, [isVisible, color]);
 
   useEffect(() => {
@@ -99,21 +99,19 @@ function EyeDropper({ brushSettings }: EyeDropperProps) {
 
 function getHslhex(color: Int32Vector3): string {
   const hsl = rgbaToHsl(color.x, color.y, color.z);
-  hsl.x = Math.floor(hsl.x * 360)
-  hsl.y = Math.floor(hsl.y * 100)
-  hsl.z = Math.floor(hsl.z * 100)
+  hsl.x = Math.floor(hsl.x * 360);
+  hsl.y = Math.floor(hsl.y * 100);
+  hsl.z = Math.floor(hsl.z * 100);
   return hslToHex(hsl.x, hsl.y, hsl.z);
 }
 
 function removeEvents() {
-    if (toggle)
-        EventManager.unSubscribe('toggleEyeDropper', toggle)
-    if (pointerMove)
-        document.removeEventListener('pointermove', pointerMove)
-    if (pointerUp) {
-        document.removeEventListener('pointerup', pointerUp)
-        document.removeEventListener('pointercancel', pointerUp)
-    }
+  if (toggle) EventManager.unSubscribe('toggleEyeDropper', toggle);
+  if (pointerMove) document.removeEventListener('pointermove', pointerMove);
+  if (pointerUp) {
+    document.removeEventListener('pointerup', pointerUp);
+    document.removeEventListener('pointercancel', pointerUp);
+  }
 }
 
 export default EyeDropper;

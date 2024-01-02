@@ -6,7 +6,7 @@ import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import { Box, Button } from '@mui/material';
 import { useState } from 'react';
-import { type ToolType as ToolType_ } from '~/utils/canvas/tools/handler';
+import { type ToolType as ToolType_ } from '~/application/drawingEditor/canvas/tools/handler';
 import { type SettingsObject } from '../types';
 
 export interface LeftBarProps {

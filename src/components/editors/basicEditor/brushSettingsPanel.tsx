@@ -1,6 +1,6 @@
 import { Box, Slider, Typography } from '@mui/material';
 import { useState } from 'react';
-import { type BrushSettings } from '~/utils/canvas/tools/brush';
+import { type BrushSettings } from '~/application/drawingEditor/canvas/tools/brush';
 
 export interface BrushSettingsProps {
   brushSettings: BrushSettings;
@@ -8,7 +8,6 @@ export interface BrushSettingsProps {
 }
 
 function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
-
   const [size, setSize_] = useState<number>(brushSettings.size);
   const setSize = (e: Event, val: number) => {
     brushSettings.size = val;
@@ -160,7 +159,7 @@ function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
           max={0.1}
           step={0.01}
           className="absolute left-11"
-          sx={{ color: '#3c69cf',width: '100%' }}
+          sx={{ color: '#3c69cf', width: '100%' }}
           onChange={(e, val) => setFlow(e, val as number)}
         />
       </Box>

@@ -2,8 +2,8 @@
 import { clamp } from 'curve-interpolator';
 import { type Float32Vector3 } from 'matrixgl';
 import React, { useEffect, useRef, useState } from 'react';
-import { type BrushSettings } from '~/utils/canvas/tools/brush';
-import { hslToHex, hslToRGBNormalized } from '~/utils/misc/color';
+import { type BrushSettings } from '~/application/drawingEditor/canvas/tools/brush';
+import { hslToHex, hslToRGBNormalized } from '~/application/drawingEditor/misc/color';
 
 const DEGREE_OFFSET = 90;
 
@@ -94,7 +94,7 @@ function ColorPicker(props: ColorPickerProps) {
         if (target.id != 'circle') return;
         setDegree(calculateDegree(e, outerCircle.current!));
         setOuterHeld(true);
-        setInnerHeld(false)
+        setInnerHeld(false);
       }}
       style={{
         background: 'conic-gradient(#fc0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
