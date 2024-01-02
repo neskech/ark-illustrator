@@ -10,7 +10,7 @@ import {
   getSpacingFromBrushSettings,
   shiftDeleteElements,
 } from './stabilizer';
-import { incrementalLog, trackRuntime } from '~/application/drawingEditor/misc/benchmarking';
+import { incrementalLog, trackRuntime } from '~/application/general/benchmarking';
 import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
 import EventManager from '~/application/eventSystem/eventManager';
 

@@ -13,7 +13,6 @@ import {
 import { useState } from 'react';
 import Draggable from 'react-draggable';
 import { type BrushSettings } from '~/application/drawingEditor/canvas/tools/brush';
-import { appState } from '~/application/drawingEditor/mainRoutine';
 import CheckIcon from '@mui/icons-material/Check';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { getSpacingFromBrushSettings } from '../../../application/drawingEditor/canvas/utils/stabilizing/stabilizer';
@@ -28,68 +27,65 @@ const PaperComponent = (props: PaperProps) => {
 
 interface Props {
   open: boolean;
+  brushSettings: BrushSettings;
   onClose: () => void;
-}
-
-function getBrushSettings(): BrushSettings | null {
-  return appState?.settings.brushSettings[0];
 }
 
 /* This is nasty I KNOW!!!! */
 export let allowLimitedStrokeLength = true;
 
-export const SettingsDialog = (props: Props) => {
-  const [size, setSize_] = useState<number>(getBrushSettings()!.size);
+export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
+  const [size, setSize_] = useState<number>(brushSettings.size);
   const setSize = (e: Event, val: number) => {
-    getBrushSettings()!.size = val;
+    brushSettings.size = val;
     setSize_(val);
   };
 
-  const [minSize, setMinSize_] = useState<number>(getBrushSettings()!.minSize);
+  const [minSize, setMinSize_] = useState<number>(brushSettings.minSize);
   const setMinSize = (e: Event, val: number) => {
-    getBrushSettings()!.minSize = val;
+    brushSettings.minSize = val;
     setMinSize_(val);
   };
 
-  const [maxSize, setMaxSize_] = useState<number>(getBrushSettings()!.maxSize);
+  const [maxSize, setMaxSize_] = useState<number>(brushSettings.maxSize);
   const setMaxSize = (e: Event, val: number) => {
-    getBrushSettings()!.maxSize = val;
+    brushSettings.maxSize = val;
     setMaxSize_(val);
   };
 
-  const [opacity, setOpacity_] = useState<number>(getBrushSettings()!.opacity);
+  const [opacity, setOpacity_] = useState<number>(brushSettings.opacity);
   const setOpacity = (e: Event, val: number) => {
-    getBrushSettings()!.opacity = val;
+    brushSettings.opacity = val;
     setOpacity_(val);
   };
 
-  const [minOpacity, setMinOpacity_] = useState<number>(getBrushSettings()!.minOpacity);
+  const [minOpacity, setMinOpacity_] = useState<number>(brushSettings.minOpacity);
   const setMinOpacity = (e: Event, val: number) => {
-    getBrushSettings()!.minOpacity = val;
+    brushSettings.minOpacity = val;
     setMinOpacity_(val);
   };
 
-  const [maxOpacity, setMaxOpacity_] = useState<number>(getBrushSettings()!.maxOpacity);
+  const [maxOpacity, setMaxOpacity_] = useState<number>(brushSettings.maxOpacity);
   const setMaxOpacity = (e: Event, val: number) => {
-    getBrushSettings()!.maxOpacity = val;
+    brushSettings.maxOpacity = val;
     setMaxOpacity_(val);
   };
 
-  const [flow, setFlow_] = useState<number>(getBrushSettings()!.flow);
+  const [flow, setFlow_] = useState<number>(brushSettings.flow);
   const setFlow = (e: Event, val: number) => {
-    getBrushSettings()!.flow = val;
+    brushSettings.flow = val;
     setFlow_(val);
   };
 
-  const [smoothing, setSmoothing_] = useState<number>(getBrushSettings()!.stabilization);
+  const [smoothing, setSmoothing_] = useState<number>(brushSettings.stabilization);
   const setSmoothing = (e: Event, val: number) => {
-    getBrushSettings()!.stabilization = val;
+    brushSettings.stabilization = val;
     setSmoothing_(val);
   };
 
-  const [spacing, setSpacing_] = useState<number>(getSpacingFromBrushSettings(getBrushSettings()!));
+  const [spacing, setSpacing_] = useState<number>(getSpacingFromBrushSettings(brushSettings));
   const setSpacing = (e: Event, val: number) => {
-    getBrushSettings()!.spacing = val;
+    brushSettings.spacing = val;
     setSpacing_(val);
   };
 
@@ -101,9 +97,9 @@ export const SettingsDialog = (props: Props) => {
     setLimitStrokeLength_(val);
   };
 
-  return getBrushSettings() ? (
-    <Dialog PaperComponent={PaperComponent} open={props.open} style={{}}>
-      <Button variant="contained" onClick={() => props.onClose()} sx={{ marginBottom: '50px' }}>
+  return (
+    <Dialog PaperComponent={PaperComponent} open={open} style={{}}>
+      <Button variant="contained" onClick={() => onClose()} sx={{ marginBottom: '50px' }}>
         <CancelIcon />
       </Button>
 
@@ -233,7 +229,5 @@ export const SettingsDialog = (props: Props) => {
         </ToggleButtonGroup>
       </Stack>
     </Dialog>
-  ) : (
-    <div> </div>
   );
 };

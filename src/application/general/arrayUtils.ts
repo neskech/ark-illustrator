@@ -27,8 +27,12 @@ declare global {
     scanInclNoBaseCase: (fn: Reducer<T, T>) => T[];
     filterInPlace: (fn: Predicate<T>) => void;
     mapInPlace: (fn: (t: T) => T) => T[];
-    min: (fn: (t1: T, t2: T) => number) => T extends number ? number : never;
-    max: (fn: (t1: T, t2: T) => number) => T extends number ? number : never;
+    min: () => T extends number ? number : never;
+    max: () => T extends number ? number : never;
+  }
+
+  interface ArrayConstructor {
+    tabulate: <T>(n: number, fn: (i: number) => T) => T[];
   }
 }
 
@@ -212,6 +216,11 @@ export function max(a: number[]): number {
   requires(a.length > 0);
   return a.reduce((a, b) => Math.max(a, b), -Infinity);
 }
+
+Array.tabulate = function (n, fn) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return tabulate(n, fn);
+};
 
 Array.prototype.findOption = function (fn) {
   return find(this, fn);
