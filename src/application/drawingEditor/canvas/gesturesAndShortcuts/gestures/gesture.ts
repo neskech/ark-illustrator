@@ -1,5 +1,5 @@
 import { Float32Vector2 } from 'matrixgl';
-import { type AppState } from '~/application/drawingEditor/mainRoutine';
+import { type AppState } from '~/application/drawingEditor/application';
 import { mouseToNormalized } from '../../camera';
 
 export interface PointerPos {

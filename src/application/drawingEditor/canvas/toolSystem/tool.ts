@@ -1,4 +1,4 @@
-import { type AppState } from '~/application/drawingEditor/mainRoutine';
+import { type AppState } from '~/application/drawingEditor/application';
 import { type GlobalToolSettings } from './settings';
 
 export type EventString = keyof HTMLElementEventMap;

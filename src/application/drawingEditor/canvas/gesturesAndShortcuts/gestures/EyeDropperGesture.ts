@@ -2,7 +2,7 @@ import { assert } from '~/application/general/contracts';
 import EventManager from '~/application/eventSystem/eventManager';
 import { noOp } from '~/application/general/funUtils';
 import { None, Some, type Option } from '~/application/general/option';
-import { type AppState } from '~/application/drawingEditor/mainRoutine';
+import { type AppState } from '~/application/drawingEditor/application';
 import { type Gesture, type PointerPos } from './gesture';
 
 const EYEDROPPER_DELAY_MILLIS = 500;

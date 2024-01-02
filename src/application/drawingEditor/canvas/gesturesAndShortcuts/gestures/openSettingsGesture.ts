@@ -1,5 +1,5 @@
 import { type PointerPos, type Gesture } from './gesture';
-import { type AppState } from '~/application/drawingEditor/mainRoutine';
+import { type AppState } from '~/application/drawingEditor/application';
 import { assert } from '~/application/general/contracts';
 import EventManager from '~/application/eventSystem/eventManager';
 

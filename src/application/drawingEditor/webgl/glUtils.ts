@@ -1,4 +1,7 @@
+import { Option } from '~/application/general/option';
 import { ensures, requires } from '../../general/contracts';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+const WebGLDebugUtils = require('webgl-debug');
 
 export type GL = WebGL2RenderingContext;
 
@@ -33,6 +36,28 @@ export class GLObject<T> {
   destroy(destructor: (id: T) => void) {
     if (this.isValid()) destructor(this.id);
   }
+}
+
+export function fetchWebGLContext(canvas: HTMLCanvasElement, debug = false): Option<GL> {
+  const context = Option.fromNull(
+    canvas.getContext('webgl2', {
+      preserveDrawingBuffer: true,
+    })
+  );
+
+  function throwOnGLError(err: string, funcName: string, _: unknown[]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const errStr: string = WebGLDebugUtils.glEnumToString(err) as string;
+    throw new Error(errStr + 'was caused by call to ' + funcName);
+  }
+
+  const debugCtx = context.map((ctx) => {
+    if (!debug) return ctx;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    return WebGLDebugUtils.makeDebugContext(ctx, throwOnGLError) as GL;
+  });
+
+  return debugCtx;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

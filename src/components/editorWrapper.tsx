@@ -3,9 +3,9 @@ import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDiss
 import { Box, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
-import { init } from '~/application/drawingEditor/mainRoutine';
 import type EditorProps from './editors/types';
 import { type SettingsObject } from './editors/types';
+import EditorApplication from '../application/drawingEditor/application';
 
 interface EditorWrapperProps {
   EditorComponent: React.ComponentType<EditorProps>;
@@ -39,7 +39,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
 
   useEffect(() => {
     function initialize() {
-      init(canvasRef.current!)
+      EditorApplication.init(canvasRef.current!)
         .then((result) => {
           result.match(
             (app) => {

@@ -1,5 +1,5 @@
 import EventManager from '../../../eventSystem/eventManager';
-import { type AppState } from '../../mainRoutine';
+import { type AppState } from '../../application';
 import GestureHandler from '../gesturesAndShortcuts/gestureHandler';
 import ShortcutHandler from '../gesturesAndShortcuts/shortcutHandler';
 import { type GlobalToolSettings } from './settings';

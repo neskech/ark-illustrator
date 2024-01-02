@@ -1,5 +1,5 @@
 import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
-import { type AppState } from '~/application/drawingEditor/mainRoutine';
+import { type AppState } from '~/application/drawingEditor/application';
 import { angle } from '~/application/drawingEditor/webgl/vector';
 import { assert } from '~/application/general/contracts';
 import { displacement } from '../../../webgl/vector';

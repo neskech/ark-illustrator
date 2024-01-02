@@ -6,7 +6,7 @@ import {
   areValidPositions,
   getFingerDelta,
 } from './gesture';
-import { type AppState } from '~/application/drawingEditor/mainRoutine';
+import { type AppState } from '~/application/drawingEditor/application';
 import { add, copy, midpoint, scale } from '~/application/drawingEditor/webgl/vector';
 import { assert } from '~/application/general/contracts';
 import { equalsNoOrder } from '~/application/general/arrayUtils';
