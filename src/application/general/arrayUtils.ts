@@ -2,8 +2,16 @@ import assert from 'assert';
 import { requires } from './contracts';
 import { None, Option, Some } from './option';
 
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
 type Predicate<A> = (a: A, index?: number) => boolean;
-type Reducer<A, B> = (accum: B, curr: A, index?: number) => B;
+type Reducer<A, B> = (accum: B, curr: A, index: number) => B;
 
 declare global {
   interface Array<T> {
@@ -11,8 +19,8 @@ declare global {
     findOption: (fn: Predicate<T>) => Option<T>;
     numberSatisfying: (fn: Predicate<T>) => number;
     equalsNoOrder: (t: T[]) => boolean;
-    indexOfOption: (el: T, fromIndex?: number) => Option<number>;
-    lastIndexOfOption: (el: T, fromIndex?: number) => Option<number>;
+    indexOfOption: (el: T, fromIndex: number) => Option<number>;
+    lastIndexOfOption: (el: T, fromIndex: number) => Option<number>;
     zip: <B>(b: B[]) => [T, B][];
     zipWith: <B, C>(b: B[], fn: (t: T, b: B) => C) => C[];
     unZip: () => T extends [infer A, infer B] ? [A, B] : never;
@@ -27,6 +35,10 @@ declare global {
     scanInclNoBaseCase: (fn: Reducer<T, T>) => T[];
     filterInPlace: (fn: Predicate<T>) => void;
     mapInPlace: (fn: (t: T) => T) => T[];
+    chunks: (chunkSize: number, fn: (t: T[], startIndex: number) => void) => void;
+    mapChunks: <B>(chunkSize: number, fn: (t: T[], startIndex: number) => B) => B[];
+    chunksIdx: (chunkSize: number, fn: (startIndex: number, endIndex: number) => void) => void;
+    mapChunksIdx: <B>(chunkSize: number, fn: (startIndex: number, endIndex: number) => B) => B[];
     min: () => T extends number ? number : never;
     max: () => T extends number ? number : never;
   }
@@ -35,6 +47,14 @@ declare global {
     tabulate: <T>(n: number, fn: (i: number) => T) => T[];
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! EXPORTED FUNCTIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 export function tabulate<A>(n: number, fn: (i: number) => A): A[] {
   const a: A[] = [];
@@ -48,7 +68,7 @@ export function pop<A>(a: A[]): Option<A> {
   return Option.fromNull(a.pop());
 }
 
-export function find<A>(a: A[], fn: (a: A, i?: number) => boolean): Option<A> {
+export function find<A>(a: A[], fn: (a: A, i: number) => boolean): Option<A> {
   return Option.fromNull(a.find(fn));
 }
 
@@ -66,13 +86,13 @@ export function equalsNoOrder<A>(a: A[], b: A[]): boolean {
   return a.every((el) => b.indexOf(el) != -1);
 }
 
-export function indexOf<A>(a: A[], el: A, fromIndex?: number): Option<number> {
+export function indexOf<A>(a: A[], el: A, fromIndex: number): Option<number> {
   const res = a.indexOf(el, fromIndex);
   if (res < 0) return None();
   return Some(res);
 }
 
-export function lastIndexOf<A>(a: A[], el: A, fromIndex?: number): Option<number> {
+export function lastIndexOf<A>(a: A[], el: A, fromIndex: number): Option<number> {
   const res = a.lastIndexOf(el, fromIndex);
   if (res < 0) return None();
   return Some(res);
@@ -150,9 +170,51 @@ export function mapInPlace<A>(a: A[], fn: (a: A) => A): A[] {
   return a;
 }
 
+export function chunks<A>(a: A[], chunkSize: number, fn: (a: A[], startIndex: number) => void) {
+  for (let i = 0; i < a.length; i += chunkSize) {
+    const slice = a.slice(i, Math.min(a.length, i + chunkSize));
+    fn(slice, i);
+  }
+}
+
+export function mapChunks<A, B>(
+  a: A[],
+  chunkSize: number,
+  fn: (a: A[], startIndex: number) => B
+): B[] {
+  const accum = [];
+  for (let i = 0; i < a.length; i += chunkSize) {
+    const slice = a.slice(i, Math.min(a.length, i + chunkSize));
+    accum.push(fn(slice, i));
+  }
+  return accum;
+}
+
+export function chunksIdx<A>(
+  a: A[],
+  chunkSize: number,
+  fn: (startIndex: number, endIndex: number) => void
+) {
+  for (let i = 0; i < a.length; i += chunkSize) {
+    fn(i, Math.min(a.length, i + chunkSize));
+  }
+}
+
+export function mapChunksIdx<A, B>(
+  a: A[],
+  chunkSize: number,
+  fn: (startIndex: number, endIndex: number) => B
+): B[] {
+  const accum = [];
+  for (let i = 0; i < a.length; i += chunkSize) {
+    accum.push(fn(i, Math.min(a.length, i + chunkSize)));
+  }
+  return accum;
+}
+
 export function scan<A, B>(
   a: A[],
-  fn: (accum: B, curr: A, index?: number) => B,
+  fn: (accum: B, curr: A, index: number) => B,
   baseCase: B
 ): [B[], B] {
   const accumList = [];
@@ -166,7 +228,7 @@ export function scan<A, B>(
 
 export function scanIncl<A, B>(
   a: A[],
-  fn: (accum: B, curr: A, index?: number) => B,
+  fn: (accum: B, curr: A, index: number) => B,
   baseCase: B
 ): B[] {
   const accumList = [];
@@ -178,7 +240,7 @@ export function scanIncl<A, B>(
   return accumList;
 }
 
-export function scanNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index?: number) => A): [A[], A] {
+export function scanNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index: number) => A): [A[], A] {
   requires(a.length > 0);
 
   const accumList = [];
@@ -190,7 +252,7 @@ export function scanNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index?: number
   return [accumList, accum];
 }
 
-export function scanInclNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index?: number) => A): A[] {
+export function scanInclNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index: number) => A): A[] {
   requires(a.length > 0);
 
   const accumList = [];
@@ -202,7 +264,7 @@ export function scanInclNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index?: nu
   return accumList;
 }
 
-export function reduceNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index?: number) => A): A {
+export function reduceNoBaseCase<A>(a: A[], fn: (accum: A, curr: A, index: number) => A): A {
   requires(a.length > 0);
   return a.reduce(fn, a[0]);
 }
@@ -216,6 +278,14 @@ export function max(a: number[]): number {
   requires(a.length > 0);
   return a.reduce((a, b) => Math.max(a, b), -Infinity);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! PROTOTYPE FUNCTIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 Array.tabulate = function (n, fn) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -300,6 +370,24 @@ Array.prototype.filterInPlace = function (fn) {
 Array.prototype.filterInPlace = function (fn) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return filterInPlace(this, fn);
+};
+
+Array.prototype.mapInPlace = function (fn) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return filterInPlace(this, fn);
+};
+
+Array.prototype.chunks = function (chunkSize, fn) {
+  chunks(this, chunkSize, fn);
+};
+
+Array.prototype.mapChunks = function (chunkSize, fn) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return mapChunks(this, chunkSize, fn);
+};
+
+Array.prototype.mapChunksIdx = function (chunkSize, fn) {
+   return mapChunksIdx(this, chunkSize, fn);
 };
 
 Array.prototype.mapInPlace = function (fn) {

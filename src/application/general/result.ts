@@ -1,3 +1,4 @@
+import { assert } from 'console';
 import { type Option, Some, None } from './option';
 
 type Ok_<T> = { __type: 'Ok'; value: T };
@@ -22,6 +23,10 @@ function isErr_<T, E>(r: Result_<T, E>): r is Err_<E> {
 
 export type Unit = { __type: 'Unit' };
 export const unit: Unit = { __type: 'Unit' };
+
+export function assertIsError(e: unknown): asserts e is Error {
+  assert(e instanceof Error);
+}
 
 export class Result<T, E> {
   data: Result_<T, E>;
@@ -58,6 +63,44 @@ export class Result<T, E> {
       return Ok(val);
     } catch (err) {
       return Err(err as E);
+    }
+  }
+
+  static async fromExceptionAsync<T>(p: Promise<T>): Promise<Result<T, unknown>> {
+    try {
+      const val = await p;
+      return Ok(val);
+    } catch (err) {
+      return Err(err);
+    }
+  }
+
+  static async fromErrorAsync<T>(p: Promise<T>): Promise<Result<T, Error>> {
+    try {
+      const val = await p;
+      return Ok(val);
+    } catch (err) {
+      assertIsError(err);
+      return Err(err);
+    }
+  }
+
+  static async multipleExceptionAsync<T>(promises: Promise<T>[]): Promise<Result<T[], unknown>> {
+    try {
+      const result = await Promise.all(promises)
+      return Ok(result)
+    } catch (err) {
+      return Err(err);
+    }
+  }
+
+  static async multipleErrorAsync<T>(promises: Promise<T>[]): Promise<Result<T[], Error>> {
+    try {
+      const result = await Promise.all(promises)
+      return Ok(result)
+    } catch (err) {
+      assertIsError(err);
+      return Err(err);
     }
   }
 

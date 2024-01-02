@@ -1,13 +1,13 @@
 import Buffer from '~/application/drawingEditor/webgl/buffer';
-import { type BrushSettings, type BrushPoint } from '../../canvas/toolSystem/tools/brush';
 import EventManager from '../../../eventSystem/eventManager';
-import { Ok, unit, type Result, type Unit } from '../../../general/result';
+import { type BrushPoint, type BrushSettings } from '../../canvas/toolSystem/tools/brush';
 import FrameBuffer from '../../webgl/frameBuffer';
 import { type GL } from '../../webgl/glUtils';
-import Shader from '../../webgl/shader';
+import type Shader from '../../webgl/shader';
 import { VertexArrayObject } from '../../webgl/vertexArray';
-import { MAX_POINTS_PER_FRAME } from './strokePipeline';
+import type AssetManager from '../assetManager';
 import { clearScreen, emplaceQuads } from '../util';
+import { MAX_POINTS_PER_FRAME } from './strokePipeline';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 8;
@@ -20,14 +20,13 @@ export class CanvasPipeline {
   shader: Shader;
   frameBuffer: FrameBuffer;
 
-  public constructor(gl: GL, canvas: HTMLCanvasElement) {
+  public constructor(gl: GL, canvas: HTMLCanvasElement, assetManager: AssetManager) {
     this.name = 'Canvas Pipeline';
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
-    this.shader = new Shader(gl, 'canvas');
     this.frameBuffer = new FrameBuffer(gl, {
       width: canvas.width,
       height: canvas.height,
@@ -39,12 +38,10 @@ export class CanvasPipeline {
       format: 'RGBA',
     });
     this.fillFramebufferWithWhite(gl);
+    this.shader = assetManager.getShader('canvas');
   }
 
-  async init(gl: GL): Promise<Result<Unit, string>> {
-    const res = await this.shader.constructAsync(gl, 'canvas');
-    if (res.isErr()) return res;
-
+  init(gl: GL) {
     this.vertexArray.bind(gl);
     this.vertexBuffer.bind(gl);
 
@@ -63,8 +60,6 @@ export class CanvasPipeline {
 
     this.vertexArray.unBind(gl);
     this.vertexBuffer.unBind(gl);
-
-    return Ok(unit);
   }
 
   render(gl: GL, points: BrushPoint[], brushSettings: Readonly<BrushSettings>) {

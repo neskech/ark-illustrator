@@ -5,16 +5,17 @@ import EventManager from '../eventSystem/eventManager';
 import { Option, Some } from '../general/option';
 import { Ok, type Result, Err } from '../general/result';
 import { MasterPipeline } from './renderer/pipelines/MasterPipeline';
+import AssetManager from './renderer/assetManager';
 
 export interface AppState {
   canvasState: CanvasState;
   settings: GlobalToolSettings;
   inputState: InputState;
   renderer: MasterPipeline;
+  assetManager: AssetManager
 }
 
-/* Temp export so frontend can acces */
-export let appState: AppState;
+let appState: AppState;
 
 export async function init(canvas: HTMLCanvasElement): Promise<Result<AppState, string>> {
   if (appState) return Ok(appState);
@@ -33,18 +34,25 @@ export async function init(canvas: HTMLCanvasElement): Promise<Result<AppState, 
 
   gl.viewport(0, 0, canvas.width, canvas.height);
 
+  const assetManager = new AssetManager()
+
+  const resShader = await assetManager.initShaders(gl)
+  if (resShader.isErr()) return Err(resShader.unwrapErr())
+  const resTexture = await assetManager.initTextures(gl)
+  if (resTexture.isErr()) return Err(resTexture.unwrapErr())
+
   const settings = getDefaultSettings(gl);
   appState = {
     settings,
     canvasState: getDefaultCanvasState(canvas),
     inputState: getDefaultToolState(settings),
-    renderer: new MasterPipeline(gl, canvas),
+    renderer: new MasterPipeline(gl, canvas, assetManager),
+    assetManager
   };
 
   initEventListeners(canvas);
 
-  const res = await appState.renderer.init(appState.canvasState.camera);
-  if (res.isErr()) return Err(res.unwrapErr());
+  appState.renderer.init(appState.canvasState.camera);
 
   EventManager.invokeVoid('appStateMutated');
 

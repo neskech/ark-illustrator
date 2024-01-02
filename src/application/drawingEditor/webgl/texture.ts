@@ -5,8 +5,8 @@ import { unreachable } from '../../general/funUtils';
 import { None, Option, Some } from '../../general/option';
 import type FrameBuffer from './frameBuffer';
 import { type ReadPixelOptions } from './frameBuffer';
-import { GLObject, glOpErr, type GL, type Color, colorTypeToPacked, checkError } from './glUtils';
-import { Err, Ok, type Result, type Unit, unit } from '../../general/result';
+import { GLObject, glOpErr, type GL, checkError } from './glUtils';
+import { Err, Ok, Result, type Unit, unit } from '../../general/result';
 
 type TextureFilter = 'Linear' | 'Nearest';
 type TextureWrap = 'Clamp To Edge' | 'Repeat' | 'Mirrored Repeat';
@@ -231,6 +231,34 @@ export default class Texture {
 
     img.src = url;
     img.crossOrigin = 'anonymous';
+  }
+
+  async allocateFromImageUrlAsync(gl: GL, url: string): Promise<Result<Unit, string>> {
+    function asyncImgLoad(img: HTMLImageElement, url: string) {
+      return new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+        img.crossOrigin = 'anonymous';
+      });
+    }
+
+    const img = new Image();
+    const res = await Result.fromErrorAsync(asyncImgLoad(img, url));
+    if (res.isErr()) return Err(res.unwrapErr().message);
+
+    this.bind(gl);
+
+    const format = formatToEnum(gl, this.options.format);
+    const mipMapLevels = 0;
+    const texelType = gl.UNSIGNED_BYTE;
+    gl.texImage2D(gl.TEXTURE_2D, mipMapLevels, format, format, texelType, img);
+    checkError(gl, 'texImage2D');
+    this.setDimensions(img.width, img.height);
+
+    this.unBind(gl);
+
+    return Ok(unit)
   }
 
   allocateFromSubFramebuffer(gl: GL, options: CopySubTextureOptions) {

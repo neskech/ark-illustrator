@@ -10,9 +10,9 @@ import {
   getSpacingFromBrushSettings,
   shiftDeleteElements,
 } from './stabilizer';
-import { incrementalLog, trackRuntime } from '~/application/general/benchmarking';
 import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
 import EventManager from '~/application/eventSystem/eventManager';
+import Benchmarker, { incrementalLog } from '../../../../general/benchmarking';
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
@@ -197,7 +197,7 @@ function process(
   return addPointsCartmollInterpolation3D(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
 }
 
-const process_ = trackRuntime(process, {
+const process_ = Benchmarker.trackRuntime(process, {
   name: 'process',
   logFrequency: incrementalLog(500),
   tenPercentHigh: true,

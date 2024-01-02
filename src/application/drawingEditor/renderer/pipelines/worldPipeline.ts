@@ -1,11 +1,11 @@
 import { Float32Vector2 } from 'matrixgl';
 import Buffer from '~/application/drawingEditor/webgl/buffer';
 import type Camera from '../../canvas/camera';
-import { Ok, unit, type Result, type Unit } from '../../../general/result';
 import { type GL } from '../../webgl/glUtils';
-import Shader from '../../webgl/shader';
+import type Shader from '../../webgl/shader';
 import type Texture from '../../webgl/texture';
 import { VertexArrayObject } from '../../webgl/vertexArray';
+import type AssetManager from '../assetManager';
 import { clearScreen, constructQuadSixWidthHeightTexture } from '../util';
 
 const CANVAS_ORIGIN = new Float32Vector2(0, 0);
@@ -20,20 +20,17 @@ export class WorldPipeline {
   shader: Shader;
   rot = 0;
 
-  public constructor(gl: GL) {
+  public constructor(gl: GL, assetManager: AssetManager) {
     this.name = 'World Pipeline';
     this.vertexArray = new VertexArrayObject(gl);
     this.vertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
-    this.shader = new Shader(gl, 'world');
+    this.shader = assetManager.getShader('world')
   }
 
-  async init(gl: GL, camera: Camera): Promise<Result<Unit, string>> {
-    const res = await this.shader.constructAsync(gl, 'world');
-    if (res.isErr()) return res;
-
+  init(gl: GL, camera: Camera) {
     this.vertexArray.bind(gl);
     this.vertexBuffer.bind(gl);
 
@@ -57,8 +54,6 @@ export class WorldPipeline {
 
     this.vertexArray.unBind(gl);
     this.vertexBuffer.unBind(gl);
-
-    return Ok(unit);
   }
 
   render(gl: GL, canvasTexture: Texture, camera: Camera) {

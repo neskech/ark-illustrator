@@ -1,13 +1,13 @@
 import { Float32Vector2 } from 'matrixgl';
 import Buffer from '~/application/drawingEditor/webgl/buffer';
-import { type BrushPoint, type BrushSettings } from '../../canvas/toolSystem/tools/brush';
 import EventManager from '../../../eventSystem/eventManager';
-import { Ok, unit, type Result, type Unit } from '../../../general/result';
+import { type BrushPoint, type BrushSettings } from '../../canvas/toolSystem/tools/brush';
 import FrameBuffer from '../../webgl/frameBuffer';
 import { type GL } from '../../webgl/glUtils';
-import Shader from '../../webgl/shader';
+import type Shader from '../../webgl/shader';
 import type Texture from '../../webgl/texture';
 import { VertexArrayObject } from '../../webgl/vertexArray';
+import type AssetManager from '../assetManager';
 import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from '../util';
 
 export const MAX_POINTS_PER_FRAME = 10000;
@@ -40,7 +40,7 @@ export class StrokePipeline {
 
   frameBuffer: FrameBuffer;
 
-  public constructor(gl: GL, canvas: HTMLCanvasElement) {
+  public constructor(gl: GL, canvas: HTMLCanvasElement, assetManager: AssetManager) {
     this.name = 'Stroke Preview Pipeline';
 
     this.strokeVertexArray = new VertexArrayObject(gl);
@@ -55,9 +55,6 @@ export class StrokePipeline {
       usage: 'Static Draw',
     });
 
-    this.strokeShader = new Shader(gl, 'stroke');
-    this.fullScreenBlitShader = new Shader(gl, 'blit');
-
     this.frameBuffer = new FrameBuffer(gl, {
       width: canvas.width,
       height: canvas.height,
@@ -69,15 +66,11 @@ export class StrokePipeline {
       format: 'RGBA',
     });
     this.fillFramebufferWithWhite(gl);
+    this.strokeShader = assetManager.getShader('stroke')
+    this.fullScreenBlitShader = assetManager.getShader('blit')
   }
 
-  async init(gl: GL, canvasFramebuffer: FrameBuffer): Promise<Result<Unit, string>> {
-    const res1 = await this.strokeShader.constructAsync(gl, 'stroke');
-    const res2 = await this.fullScreenBlitShader.constructAsync(gl, 'blit');
-
-    if (res1.isErr()) return res1;
-    if (res2.isErr()) return res2;
-
+  init(gl: GL, canvasFramebuffer: FrameBuffer) {
     this.setupEvents(gl, canvasFramebuffer);
 
     this.strokeVertexArray.bind(gl);
@@ -114,8 +107,6 @@ export class StrokePipeline {
 
     this.fullScreenBlitVertexArray.unBind(gl);
     this.fullScreenBlitVertexBuffer.unBind(gl);
-
-    return Ok(unit);
   }
 
   private renderCanvasTexture(gl: GL, canvasTexture: Texture) {

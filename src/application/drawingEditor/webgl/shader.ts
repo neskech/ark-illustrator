@@ -1,8 +1,3 @@
-import { zip } from '../../general/arrayUtils';
-import { Option } from '../../general/option';
-import { type GL, GLObject, glOpErr } from './glUtils';
-import type Texture from './texture';
-import { Err, Ok, Result, type Unit, unit } from '../../general/result';
 import {
   type Float32Vector2,
   type Float32Vector3,
@@ -11,6 +6,10 @@ import {
   type Matrix3x3,
   type Matrix4x4,
 } from 'matrixgl';
+import { Option } from '../../general/option';
+import { Err, Ok, Result, unit, type Unit } from '../../general/result';
+import { GLObject, glOpErr, type GL } from './glUtils';
+import type Texture from './texture';
 import { type Int32Vector2, type Int32Vector3, type Int32Vector4 } from './vector';
 
 //TODO: make all err based code result based
@@ -44,13 +43,17 @@ export default class Shader {
   async compileFromFile(gl: GL, shaderName: string): Promise<Result<Unit, string>> {
     try {
       this.name = shaderName;
-      const vert = await fetch(`shaders/${shaderName}.vert`);
-      const vertText = await vert.text();
+      const vert = await Result.fromErrorAsync(fetch(`shaders/${shaderName}.vert`));
+      if (vert.isErr()) return Err(vert.unwrapErr().message);
+      const vertText = await Result.fromErrorAsync(vert.unwrap().text());
+      if (vertText.isErr()) return Err(vertText.unwrapErr().message);
 
-      const frag = await fetch(`shaders/${shaderName}.frag`);
-      const fragText = await frag.text();
+      const frag = await Result.fromErrorAsync(fetch(`shaders/${shaderName}.frag`));
+      if (frag.isErr()) return Err(frag.unwrapErr().message);
+      const fragText = await Result.fromErrorAsync(frag.unwrap().text());
+      if (fragText.isErr()) return Err(fragText.unwrapErr().message);
 
-      this.compileFromSource(gl, vertText, fragText);
+      this.compileFromSource(gl, vertText.unwrap(), fragText.unwrap());
       return Ok(unit);
     } catch (err) {
       if (err instanceof Error) return Err(err.message);
@@ -126,16 +129,6 @@ export default class Shader {
     this.compileFromSource(gl, vertexSource, fragmentSource);
     const res = Result.fromError<void, string>(() => this.link(gl));
     return res;
-  }
-
-  static async parallelCompile(gl: GL, shaders: Shader[], sourceFiles: string[]) {
-    for (const [shader, file] of zip(shaders, sourceFiles)) {
-      await shader.compileFromFile(gl, file);
-    }
-
-    for (const shader of shaders) {
-      shader.link(gl);
-    }
   }
 
   use(gl: GL) {

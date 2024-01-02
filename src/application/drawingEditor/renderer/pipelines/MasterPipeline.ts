@@ -1,7 +1,6 @@
 import type Camera from '../../canvas/camera';
 import EventManager from '../../../eventSystem/eventManager';
 import { todo } from '../../../general/funUtils';
-import { Ok, unit, type Result, type Unit } from '../../../general/result';
 import type FrameBuffer from '../../webgl/frameBuffer';
 import { type GL } from '../../webgl/glUtils';
 import { renderWithErrorWrapper } from '../../webgl/renderPipeline';
@@ -9,6 +8,7 @@ import { CanvasPipeline } from './canvasPipeline';
 import { StrokePipeline } from './strokePipeline';
 import { clearScreen } from '../util';
 import { WorldPipeline } from './worldPipeline';
+import type AssetManager from '../assetManager';
 
 export class MasterPipeline {
   private canvasPipeline: CanvasPipeline;
@@ -16,22 +16,17 @@ export class MasterPipeline {
   private worldPipeline: WorldPipeline;
   private gl: GL;
 
-  constructor(gl: GL, canvas: HTMLCanvasElement) {
-    this.canvasPipeline = new CanvasPipeline(gl, canvas);
-    this.strokePipeline = new StrokePipeline(gl, canvas);
-    this.worldPipeline = new WorldPipeline(gl);
+  constructor(gl: GL, canvas: HTMLCanvasElement, assetManager: AssetManager) {
+    this.canvasPipeline = new CanvasPipeline(gl, canvas, assetManager);
+    this.strokePipeline = new StrokePipeline(gl, canvas, assetManager);
+    this.worldPipeline = new WorldPipeline(gl, assetManager);
     this.gl = gl;
   }
 
-  async init(camera: Camera): Promise<Result<Unit, string>> {
-    const canv = await this.canvasPipeline.init(this.gl);
-    if (canv.isErr()) return canv.mapErr((e) => `Canvas pipeline error\n\n${e}`);
-
-    const stroke = await this.strokePipeline.init(this.gl, this.canvasPipeline.getFrameBuffer());
-    if (stroke.isErr()) return stroke.mapErr((e) => `Stroke pipeline error\n\n${e}`);
-
-    const world = await this.worldPipeline.init(this.gl, camera);
-    if (world.isErr()) return world.mapErr((e) => `World pipeline error\n\n${e}`);
+  init(camera: Camera) {
+    this.canvasPipeline.init(this.gl);
+    this.strokePipeline.init(this.gl, this.canvasPipeline.getFrameBuffer());
+    this.worldPipeline.init(this.gl, camera);
 
     EventManager.subscribe('appStateMutated', () => this.render(camera));
 
@@ -45,8 +40,6 @@ export class MasterPipeline {
     this.gl.disable(this.gl.DEPTH_TEST);
     this.gl.enable(this.gl.BLEND);
     this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-
-    return Ok(unit);
   }
 
   render(camera: Camera) {
