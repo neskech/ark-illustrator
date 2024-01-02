@@ -1,7 +1,7 @@
 import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
 import { type AppState } from '~/application/drawingEditor/mainRoutine';
 import { distance } from '~/application/drawingEditor/webgl/vector';
-import { assert } from '~/application/drawingEditor/contracts';
+import { assert } from '~/application/general/contracts';
 import { equalsNoOrder } from '~/application/general/arrayUtils';
 
 const ZOOM_FACTOR = 1 / 300;

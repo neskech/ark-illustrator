@@ -1,5 +1,6 @@
-import { requires } from '../../contracts';
-import { Tool, type HandleEventArgs } from './tool';
+import { requires } from '../../../../general/contracts';
+import { Tool, type HandleEventArgs } from '../tool';
+import { type FillSettings } from '../settings';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -8,15 +9,13 @@ import { Tool, type HandleEventArgs } from './tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const ZOOM_SENSITIVITY = 1.0;
-
-export class Zoom extends Tool {
+export class Fill extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs): boolean {
-    requires(this.areValidRotationSettings());
+    requires(this.areValidFillSettings(args.settings.fillSettings));
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
@@ -34,22 +33,22 @@ export class Zoom extends Tool {
   }
 
   mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
+    const { appState, settings, presetNumber } = args;
     return false;
   }
 
   mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
+    const { appState, settings, presetNumber } = args;
     return false;
   }
 
   mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
+    const { appState, settings, presetNumber } = args;
     return false;
   }
 
-  areValidRotationSettings(): boolean {
-    return 0 <= ZOOM_SENSITIVITY && ZOOM_SENSITIVITY <= 1;
+  areValidFillSettings(f: FillSettings): boolean {
+    return 0 <= f.tolerance && f.tolerance <= 1;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@ import {
 } from './gesture';
 import { type AppState } from '~/application/drawingEditor/mainRoutine';
 import { add, copy, midpoint, scale } from '~/application/drawingEditor/webgl/vector';
-import { assert } from '~/application/drawingEditor/contracts';
+import { assert } from '~/application/general/contracts';
 import { equalsNoOrder } from '~/application/general/arrayUtils';
 
 const PAN_FACTOR = 1.5;

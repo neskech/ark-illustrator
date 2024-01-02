@@ -1,4 +1,4 @@
-import { requires } from '../contracts';
+import { requires } from '../../general/contracts';
 import { unreachable } from '../../general/funUtils';
 import { Option } from '../../general/option';
 import { type GL, GLObject, glOpErr } from './glUtils';

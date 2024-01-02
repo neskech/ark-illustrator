@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 import { reduce } from 'curve-interpolator';
-import { requires } from '../drawingEditor/contracts';
+import { requires } from './contracts';
 
 const MAX_DATA_SIZE = 10e6;
 const DATA_DELETE_PROPORTION = 0.1;

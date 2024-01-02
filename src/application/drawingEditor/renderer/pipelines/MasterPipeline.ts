@@ -1,13 +1,13 @@
-import type Camera from '../canvas/camera';
-import EventManager from '../../eventSystem/eventManager';
-import { todo } from '../../general/funUtils';
-import { Ok, unit, type Result, type Unit } from '../../general/result';
-import type FrameBuffer from '../webgl/frameBuffer';
-import { type GL } from '../webgl/glUtils';
-import { renderWithErrorWrapper } from '../webgl/renderPipeline';
+import type Camera from '../../canvas/camera';
+import EventManager from '../../../eventSystem/eventManager';
+import { todo } from '../../../general/funUtils';
+import { Ok, unit, type Result, type Unit } from '../../../general/result';
+import type FrameBuffer from '../../webgl/frameBuffer';
+import { type GL } from '../../webgl/glUtils';
+import { renderWithErrorWrapper } from '../../webgl/renderPipeline';
 import { CanvasPipeline } from './canvasPipeline';
 import { StrokePipeline } from './strokePipeline';
-import { clearScreen } from './util';
+import { clearScreen } from '../util';
 import { WorldPipeline } from './worldPipeline';
 
 export class MasterPipeline {

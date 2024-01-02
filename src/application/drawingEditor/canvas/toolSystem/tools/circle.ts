@@ -1,6 +1,5 @@
-import { requires } from '../../contracts';
-import { Tool, type HandleEventArgs } from './tool';
-import { type FillSettings } from './settings';
+import { requires } from '../../../../general/contracts';
+import { Tool, type HandleEventArgs } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -9,13 +8,13 @@ import { type FillSettings } from './settings';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export class Fill extends Tool {
+export class Circle extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs): boolean {
-    requires(this.areValidFillSettings(args.settings.fillSettings));
+    requires(this.areValidCircleSettings());
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
@@ -47,8 +46,8 @@ export class Fill extends Tool {
     return false;
   }
 
-  areValidFillSettings(f: FillSettings): boolean {
-    return 0 <= f.tolerance && f.tolerance <= 1;
+  areValidCircleSettings(): boolean {
+    return true;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

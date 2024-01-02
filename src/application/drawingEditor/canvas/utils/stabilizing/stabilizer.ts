@@ -1,6 +1,6 @@
-import { MAX_POINTS_PER_FRAME } from '~/application/drawingEditor/pipelines/strokePipeline';
-import { type BrushPoint, type BrushSettings } from '../../tools/brush';
-import { requires } from '~/application/drawingEditor/contracts';
+import { MAX_POINTS_PER_FRAME } from '~/application/drawingEditor/renderer/pipelines/strokePipeline';
+import { type BrushPoint, type BrushSettings } from '../../toolSystem/tools/brush';
+import { requires } from '~/application/general/contracts';
 
 export default interface Stabilizer {
   addPoint: (p: BrushPoint, settings: Readonly<BrushSettings>) => void;

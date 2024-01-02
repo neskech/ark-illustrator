@@ -1,4 +1,4 @@
-import { ensures, requires } from "../contracts";
+import { ensures, requires } from '../../general/contracts';
 
 export type GL = WebGL2RenderingContext;
 
@@ -14,10 +14,12 @@ export class GLObject<T> {
   }
 
   innerId(): T {
-    requires(this.isValid(), 'Tried to access invalid GL id' +
-            `\nOn gl object of type ${this.forGLObjectOfType}`)
+    requires(
+      this.isValid(),
+      'Tried to access invalid GL id' + `\nOn gl object of type ${this.forGLObjectOfType}`
+    );
 
-    return this.id
+    return this.id;
   }
 
   isValid(): boolean {
@@ -29,67 +31,64 @@ export class GLObject<T> {
   }
 
   destroy(destructor: (id: T) => void) {
-     if (this.isValid()) 
-        destructor(this.id)
+    if (this.isValid()) destructor(this.id);
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type GLFun = (...args: any[]) => any
+type GLFun = (...args: any[]) => any;
 
 export function glOpErr<F extends GLFun>(gl: GL, fn: F, ...args: Parameters<F>): ReturnType<F> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const res = fn.apply(gl, args);
-    checkError(gl, fn.name);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return res
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const res = fn.apply(gl, args);
+  checkError(gl, fn.name);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return res;
 }
 
-export function checkError(gl: GL, fnName='unknown') {
+export function checkError(gl: GL, fnName = 'unknown') {
   ensures(() => {
-    const err = gl.getError()
+    const err = gl.getError();
 
     switch (err) {
-
       case gl.INVALID_ENUM:
-        console.error(`Invalid enum error for webgl function '${fnName}'`)
+        console.error(`Invalid enum error for webgl function '${fnName}'`);
         return false;
 
       case gl.INVALID_VALUE:
-        console.error(`Invalid valid error for webgl function '${fnName}'`)
+        console.error(`Invalid valid error for webgl function '${fnName}'`);
         return false;
 
       case gl.INVALID_OPERATION:
-        console.error(`Invalid operation error for webgl function '${fnName}'`)
+        console.error(`Invalid operation error for webgl function '${fnName}'`);
         return false;
 
       case gl.INVALID_FRAMEBUFFER_OPERATION:
-        console.error(`Invalid framebuffer operation error for webgl function '${fnName}'`)
+        console.error(`Invalid framebuffer operation error for webgl function '${fnName}'`);
         return false;
 
       case gl.OUT_OF_MEMORY:
-        console.error(`Out of memory error for webgl function '${fnName}'`)
+        console.error(`Out of memory error for webgl function '${fnName}'`);
         return false;
 
       case gl.CONTEXT_LOST_WEBGL:
-        console.error(`Context lost error for webgl function '${fnName}'`)
+        console.error(`Context lost error for webgl function '${fnName}'`);
         return false;
 
       default:
         return true;
     }
-  })
+  });
 }
 
-export type Color = [number, number, number, number]
+export type Color = [number, number, number, number];
 export function colorTypeToPacked(c: Color): number {
-   const [r, g, b, a] = c;
-   return (r << 24) | (g << 16) | (b << 8) | a;
+  const [r, g, b, a] = c;
+  return (r << 24) | (g << 16) | (b << 8) | a;
 }
 
 export function benchmarkLog(msg: string, f: () => void) {
-   console.time(msg);
-   f();
-   console.timeEnd(msg);
+  console.time(msg);
+  f();
+  console.timeEnd(msg);
 }
-

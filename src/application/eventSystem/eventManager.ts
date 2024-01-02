@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/ban-types */
-import { assert } from '../drawingEditor/contracts';
+import { assert } from '../general/contracts';
 import { filterInPlace, find } from '../general/arrayUtils';
 import type EventMap from './event';
 import type Func from './util';

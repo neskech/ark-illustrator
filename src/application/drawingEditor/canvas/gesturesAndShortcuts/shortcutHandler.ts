@@ -1,5 +1,5 @@
 import { type AppState } from '~/application/drawingEditor/mainRoutine';
-import { type CanvasEvent, type EventString } from '../tools/tool';
+import { type CanvasEvent, type EventString } from '../toolSystem/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { mouseToNormalized, mouseToNormalizedWithEvent } from '../camera';
 import { dot, scale } from '~/application/drawingEditor/webgl/vector';

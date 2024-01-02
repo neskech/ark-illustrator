@@ -1,4 +1,4 @@
-import { assert } from '~/application/drawingEditor/contracts';
+import { assert } from '~/application/general/contracts';
 import EventManager from '~/application/eventSystem/eventManager';
 import { noOp } from '~/application/general/funUtils';
 import { None, Some, type Option } from '~/application/general/option';

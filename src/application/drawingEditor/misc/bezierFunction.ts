@@ -1,5 +1,5 @@
 import { Float32Vector2 } from 'matrixgl';
-import { assert, requires } from '../contracts';
+import { assert, requires } from '../../general/contracts';
 import { add, copy, scale } from '../webgl/vector';
 
 export class BezierFunction {

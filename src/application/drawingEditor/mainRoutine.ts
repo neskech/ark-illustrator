@@ -1,10 +1,10 @@
 import { type CanvasState, getDefaultCanvasState } from './canvas/canvas';
-import { type InputState, getDefaultToolState, handleEvent } from './canvas/tools/handler';
-import { type GlobalToolSettings, getDefaultSettings } from './canvas/tools/settings';
+import { type InputState, getDefaultToolState, handleEvent } from './canvas/toolSystem/handler';
+import { type GlobalToolSettings, getDefaultSettings } from './canvas/toolSystem/settings';
 import EventManager from '../eventSystem/eventManager';
 import { Option, Some } from '../general/option';
 import { Ok, type Result, Err } from '../general/result';
-import { MasterPipeline } from './pipelines/MasterPipeline';
+import { MasterPipeline } from './renderer/pipelines/MasterPipeline';
 
 export interface AppState {
   canvasState: CanvasState;

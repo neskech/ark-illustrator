@@ -1,6 +1,6 @@
 import { Float32Vector4, Float32Vector3 } from 'matrixgl';
 import { Int32Vector3 } from '../webgl/vector';
-import { requires } from '../contracts';
+import { requires } from '../../general/contracts';
 
 export function hslToHex(h: number, s: number, l: number) {
   l /= 100;

@@ -1,13 +1,16 @@
 import GestureHandler from '../gesturesAndShortcuts/gestureHandler';
 import ShortcutHandler from '../gesturesAndShortcuts/shortcutHandler';
-import { Brush } from './brush';
+import { Brush } from './tools/brush';
 import { type GlobalToolSettings } from './settings';
-import { type EventString, type HandleEventArgs } from './tool';
+import { CanvasEvent, type EventString } from './tool';
 import EventManager from '../../../eventSystem/eventManager';
-import { Fill } from './fill';
-import { Hand } from './hand';
-import { Square } from './square';
-import { Circle } from './circle';
+import { Fill } from './tools/fill';
+import { Hand } from './tools/hand';
+import { Square } from './tools/square';
+import { Circle } from './tools/circle';
+import { AppState, appState } from '../../mainRoutine';
+import { Option } from '~/application/general/option';
+import { CanvasState } from '../canvas';
 
 export type ToolMap = {
   brush: Brush;
@@ -41,11 +44,15 @@ export function getDefaultToolState(settings: Readonly<GlobalToolSettings>): Inp
   };
 }
 
-export type HandlerArgs = Omit<HandleEventArgs, 'eventString'> & {
+export type HandlerArgs = {
   map: ToolMap;
   currentTool: ToolType;
   gestures: GestureHandler;
   shortcuts: ShortcutHandler;
+  event: CanvasEvent;
+  appState: AppState
+  settings: GlobalToolSettings;
+  presetNumber: Option<number>;
 };
 
 export function handleEvent({

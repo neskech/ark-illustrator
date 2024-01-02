@@ -1,5 +1,5 @@
-import { requires } from '../../contracts';
-import { Tool, type HandleEventArgs } from './tool';
+import { requires } from '../../../../general/contracts';
+import { Tool, type HandleEventArgs } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -8,13 +8,13 @@ import { Tool, type HandleEventArgs } from './tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export class Circle extends Tool {
+export class Square extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs): boolean {
-    requires(this.areValidCircleSettings());
+    requires(this.areValidSquareSettings());
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
@@ -46,7 +46,7 @@ export class Circle extends Tool {
     return false;
   }
 
-  areValidCircleSettings(): boolean {
+  areValidSquareSettings(): boolean {
     return true;
   }
 }

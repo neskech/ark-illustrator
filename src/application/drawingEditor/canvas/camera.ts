@@ -1,4 +1,4 @@
-import { requires } from '../contracts';
+import { requires } from '../../general/contracts';
 import {
   Float32Vector2,
   Float32Vector3,

@@ -1,12 +1,12 @@
 import { Float32Vector2 } from 'matrixgl';
 import Buffer from '~/application/drawingEditor/webgl/buffer';
-import type Camera from '../canvas/camera';
-import { Ok, unit, type Result, type Unit } from '../../general/result';
-import { type GL } from '../webgl/glUtils';
-import Shader from '../webgl/shader';
-import type Texture from '../webgl/texture';
-import { VertexArrayObject } from '../webgl/vertexArray';
-import { clearScreen, constructQuadSixWidthHeightTexture } from './util';
+import type Camera from '../../canvas/camera';
+import { Ok, unit, type Result, type Unit } from '../../../general/result';
+import { type GL } from '../../webgl/glUtils';
+import Shader from '../../webgl/shader';
+import type Texture from '../../webgl/texture';
+import { VertexArrayObject } from '../../webgl/vertexArray';
+import { clearScreen, constructQuadSixWidthHeightTexture } from '../util';
 
 const CANVAS_ORIGIN = new Float32Vector2(0, 0);
 

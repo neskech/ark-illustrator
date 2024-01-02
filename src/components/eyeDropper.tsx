@@ -1,6 +1,6 @@
 import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { useEffect, useState } from 'react';
-import { type BrushSettings } from '~/application/drawingEditor/canvas/tools/brush';
+import { type BrushSettings } from '~/application/drawingEditor/canvas/toolSystem/tools/brush';
 import EventManager from '~/application/eventSystem/eventManager';
 import { rgbaToHsl } from '~/application/drawingEditor/misc/color';
 import type FrameBuffer from '~/application/drawingEditor/webgl/frameBuffer';

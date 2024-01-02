@@ -1,6 +1,6 @@
 import type Stabilizer from './stabilizer';
-import { type BrushPoint, newPoint, type BrushSettings } from '../../tools/brush';
-import { assert } from '~/application/drawingEditor/contracts';
+import { type BrushPoint, newPoint, type BrushSettings } from '../../toolSystem/tools/brush';
+import { assert } from '~/application/general/contracts';
 import { add, copy, scale, sub } from '~/application/drawingEditor/webgl/vector';
 import { normalize } from '../../../webgl/vector';
 

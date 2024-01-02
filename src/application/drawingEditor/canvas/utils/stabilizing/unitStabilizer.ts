@@ -1,6 +1,6 @@
 import type Stabilizer from './stabilizer';
-import { type BrushPoint, type BrushSettings } from '../../tools/brush';
-import { assert } from '~/application/drawingEditor/contracts';
+import { type BrushPoint, type BrushSettings } from '../../toolSystem/tools/brush';
+import { assert } from '~/application/general/contracts';
 
 export default class UnitStabilizer implements Stabilizer {
   private currentPoints: BrushPoint[];

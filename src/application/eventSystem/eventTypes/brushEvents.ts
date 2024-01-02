@@ -1,7 +1,7 @@
 import {
   type BrushSettings,
   type BrushPoint,
-} from '~/application/drawingEditor/canvas/tools/brush';
+} from '~/application/drawingEditor/canvas/toolSystem/tools/brush';
 import type Func from '../util';
 
 export interface BrushEventArgs {

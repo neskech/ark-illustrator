@@ -4,7 +4,7 @@ import {
   type BrushSettings,
   getOpacityGivenPressure,
   getSizeGivenPressure,
-} from '../canvas/tools/brush';
+} from '../canvas/toolSystem/tools/brush';
 import { add, angle, copy, displacement, normalize, scale, rotateAbout } from '../webgl/vector';
 import { type GL } from '../webgl/glUtils';
 

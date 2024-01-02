@@ -1,5 +1,5 @@
 import { type GL } from '~/application/drawingEditor/webgl/glUtils';
-import { type BrushSettings, defaultBrushSettings } from './brush';
+import { type BrushSettings, defaultBrushSettings } from './tools/brush';
 
 export interface FillSettings {
   tolerance: number;

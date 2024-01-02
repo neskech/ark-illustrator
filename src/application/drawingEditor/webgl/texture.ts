@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import Jimp from 'jimp';
-import { assert, requires } from '../contracts';
+import { assert, requires } from '../../general/contracts';
 import { unreachable } from '../../general/funUtils';
 import { None, Option, Some } from '../../general/option';
 import type FrameBuffer from './frameBuffer';

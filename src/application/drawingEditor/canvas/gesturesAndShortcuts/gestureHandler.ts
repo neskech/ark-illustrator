@@ -1,8 +1,8 @@
 import { type AppState } from '~/application/drawingEditor/mainRoutine';
-import { type CanvasEvent, type EventString } from '../tools/tool';
+import { type CanvasEvent, type EventString } from '../toolSystem/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { find } from '~/application/general/arrayUtils';
-import { requires } from '~/application/drawingEditor/contracts';
+import { requires } from '~/application/general/contracts';
 import { type PointerPos, type Gesture } from './gestures/gesture';
 import PanGesture from './gestures/panGesture';
 import RotationGesture from './gestures/rotationGesture';

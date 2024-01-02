@@ -1,13 +1,13 @@
 import Buffer from '~/application/drawingEditor/webgl/buffer';
-import { type BrushSettings, type BrushPoint } from '../canvas/tools/brush';
-import EventManager from '../../eventSystem/eventManager';
-import { Ok, unit, type Result, type Unit } from '../../general/result';
-import FrameBuffer from '../webgl/frameBuffer';
-import { type GL } from '../webgl/glUtils';
-import Shader from '../webgl/shader';
-import { VertexArrayObject } from '../webgl/vertexArray';
+import { type BrushSettings, type BrushPoint } from '../../canvas/toolSystem/tools/brush';
+import EventManager from '../../../eventSystem/eventManager';
+import { Ok, unit, type Result, type Unit } from '../../../general/result';
+import FrameBuffer from '../../webgl/frameBuffer';
+import { type GL } from '../../webgl/glUtils';
+import Shader from '../../webgl/shader';
+import { VertexArrayObject } from '../../webgl/vertexArray';
 import { MAX_POINTS_PER_FRAME } from './strokePipeline';
-import { clearScreen, emplaceQuads } from './util';
+import { clearScreen, emplaceQuads } from '../util';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 8;

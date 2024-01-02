@@ -1,5 +1,5 @@
-import { requires } from '../../contracts';
-import { Tool, type HandleEventArgs } from './tool';
+import { requires } from '../../../../general/contracts';
+import { Tool, type HandleEventArgs } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -8,13 +8,15 @@ import { Tool, type HandleEventArgs } from './tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export class Square extends Tool {
+const HAND_SENSITIVITY = 1.0;
+
+export class Hand extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs): boolean {
-    requires(this.areValidSquareSettings());
+    requires(this.areValidHandSettings());
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
@@ -46,8 +48,8 @@ export class Square extends Tool {
     return false;
   }
 
-  areValidSquareSettings(): boolean {
-    return true;
+  areValidHandSettings(): boolean {
+    return 0 <= HAND_SENSITIVITY && HAND_SENSITIVITY <= 1;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

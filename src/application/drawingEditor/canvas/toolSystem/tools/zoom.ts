@@ -1,5 +1,5 @@
-import { requires } from '../../contracts';
-import { Tool, type HandleEventArgs } from './tool';
+import { requires } from '../../../../general/contracts';
+import { Tool, type HandleEventArgs } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -8,15 +8,15 @@ import { Tool, type HandleEventArgs } from './tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const HAND_SENSITIVITY = 1.0;
+const ZOOM_SENSITIVITY = 1.0;
 
-export class Hand extends Tool {
+export class Zoom extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs): boolean {
-    requires(this.areValidHandSettings());
+    requires(this.areValidRotationSettings());
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
@@ -47,9 +47,8 @@ export class Hand extends Tool {
     const { appState: canvasState, settings, presetNumber } = args;
     return false;
   }
-
-  areValidHandSettings(): boolean {
-    return 0 <= HAND_SENSITIVITY && HAND_SENSITIVITY <= 1;
+  areValidRotationSettings(): boolean {
+    return 0 <= ZOOM_SENSITIVITY && ZOOM_SENSITIVITY <= 1;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

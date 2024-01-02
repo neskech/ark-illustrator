@@ -7,12 +7,12 @@ import {
 } from '~/application/drawingEditor/misc/bezierFunction';
 import { type GL } from '~/application/drawingEditor/webgl/glUtils';
 import Texture from '~/application/drawingEditor/webgl/texture';
-import { requires } from '../../contracts';
-import { Some } from '../../../general/option';
-import BoxFilterStabilizer from '../utils/stabilizing/boxFilterStabilizer';
-import type Stabilizer from '../utils/stabilizing/stabilizer';
-import { type GlobalToolSettings } from './settings';
-import { Tool, type HandleEventArgs } from './tool';
+import { requires } from '../../../../general/contracts';
+import { Some } from '../../../../general/option';
+import BoxFilterStabilizer from '../../utils/stabilizing/boxFilterStabilizer';
+import type Stabilizer from '../../utils/stabilizing/stabilizer';
+import { type GlobalToolSettings } from '../settings';
+import { Tool, type HandleEventArgs } from '../tool';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

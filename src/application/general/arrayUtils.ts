@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { requires } from '../drawingEditor/contracts';
+import { requires } from './contracts';
 import { None, Option, Some } from './option';
 
 type Predicate<A> = (a: A, index?: number) => boolean;
