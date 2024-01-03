@@ -1,7 +1,7 @@
 import { Float32Vector2 } from 'matrixgl';
 import Buffer from '~/application/drawingEditor/webgl/buffer';
 import EventManager from '../../../eventSystem/eventManager';
-import { type BrushPoint, type BrushSettings } from '../../canvas/toolSystem/tools/brush';
+import { type BrushPoint } from '../../canvas/toolSystem/tools/brush';
 import FrameBuffer from '../../webgl/frameBuffer';
 import { type GL } from '../../webgl/glUtils';
 import type Shader from '../../webgl/shader';
@@ -9,6 +9,7 @@ import type Texture from '../../webgl/texture';
 import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
 import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from '../util';
+import { BrushSettings } from '../../canvas/toolSystem/settings/brushSettings';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 

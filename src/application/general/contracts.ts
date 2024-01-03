@@ -24,3 +24,7 @@ export function ensures(condition: boolean | Pred, errMsg=''): void {
             throw new Error(`Ensures condition failed --\n:${errMsg}`)
     }
 }
+
+export function assertNotNull<T>(value: T | null | undefined, errMsg=''): asserts value is T {
+    assert(value != null, errMsg)
+}

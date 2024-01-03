@@ -1,173 +1,77 @@
-// import { type GL } from '../web/glUtils';
-// import { VertexArrayObject } from '../web/vertexArray';
-// import Buffer from '~/utils/web/buffer';
-// import Shader from '../web/shader';
-// import { type AppState } from '../mainRoutine';
-// import { constructQuadIndices, constructQuadSixTex } from './util';
-// import UnitStabilizer from '../canvas/utils/stabilizing/unitStabilizer';
-// import { type BrushPoint } from '../canvas/tools/brush';
-// import SmoothedStabilizer from '../canvas/utils/stabilizing/smoothStabilizer';
-// import EventManager from '../event/eventManager';
+import { type Float32Vector2 } from 'matrixgl';
+import type Texture from '../../webgl/texture';
+import type AssetManager from '../assetManager';
+import Buffer from '~/application/drawingEditor/webgl/buffer';
+import type Shader from '../../webgl/shader';
+import { type GL } from '../../webgl/glUtils';
+import { assertNotNull, requires } from '~/application/general/contracts';
+import { VertexArrayObject } from '../../webgl/vertexArray';
 
-// const MAX_POINTS_PER_FRAME = 50000;
-// const NUM_VERTICES_QUAD = 4;
-// const NUM_INDICES_QUAD = 6;
-// const VERTEX_SIZE = 4;
-// const SIZE_FLOAT = 4;
+function emplaceQuad(
+  buffer: Float32Array,
+  position: Float32Vector2,
+  width: number,
+  height: number
+) {}
 
-// function fillEbo(gl: GL, ebo: Buffer) {
-//   const buf = new Uint32Array(MAX_POINTS_PER_FRAME * NUM_INDICES_QUAD);
+export default class DebugRenderer {
+  private wireQuadTexture: Texture;
+  private filledQuadTexture: Texture;
+  private wireCircleTexture: Texture;
+  private filledCircleTexture: Texture;
+  private shader: Shader;
+  private vertexBuffer: Buffer;
+  private vertexArray: VertexArrayObject;
+  private static instance: DebugRenderer | null;
 
-//   const numQuads = MAX_POINTS_PER_FRAME;
-//   for (let i = 0; i < numQuads; i++) {
-//     const indexOffset = i * NUM_INDICES_QUAD;
-//     const indices = constructQuadIndices(indexOffset);
+  private constructor(gl: GL, assetManager: AssetManager) {
+    this.wireQuadTexture = assetManager.getTexture('wireQuad');
+    this.filledQuadTexture = assetManager.getTexture('filledQuad');
+    this.wireCircleTexture = assetManager.getTexture('wireCircle');
+    this.filledCircleTexture = assetManager.getTexture('filledCircle');
+    this.shader = assetManager.getShader('debug');
+    this.vertexBuffer = new Buffer(gl, { btype: 'VertexBuffer', usage: 'Static Draw' });
+    this.vertexArray = new VertexArrayObject(gl);
+    this.vertexArray;
+  }
 
-//     for (let j = 0; j < indices.length; j++) buf[indexOffset + j] = indices[j];
-//   }
+  private static getInstance(): DebugRenderer {
+    assertNotNull(this.instance, 'debug renderer must be initialized before called get instance');
+    return this.instance;
+  }
 
-//   ebo.allocateWithData(gl, buf);
-// }
+  static initialize(gl: GL, assetManager: AssetManager) {
+    this.instance = new DebugRenderer(gl, assetManager);
+  }
 
-// function initShader(gl: GL, shader: Shader) {
-//   const fragmentSource = `precision highp float;
-//                           varying highp vec2 vTextureCoord;
-                          
-//                           float circleShape(vec2 position, float radius) {
-//                               float dist = distance(position, vec2(0.5));
-//                               return step(radius, dist);
-//                           }
-                          
-                          
-//                           void main() {
-//                               vec2 normalized = vTextureCoord;
-//                               float value = circleShape(normalized, 0.5);
+  static drawWiredQuad(position: Float32Vector2, width: number, height: number) {}
 
-//                               if (value > 0.0)
-//                                   discard;
-                              
-//                               vec3 color = vec3(1, 0, 0.3);
-//                               gl_FragColor = vec4(color, 1);
-//                           }\n`;
+  static drawFilledQuad(position: Float32Vector2, width: number, height: number) {}
 
-//   const vertexSource = `attribute vec2 a_position;
-//                         attribute vec2 aTextureCoord;
+  static drawWiredCircle(position: Float32Vector2, radius: number) {}
 
-//                         uniform mat4 model;
-//                         uniform mat4 view;
-//                         uniform mat4 projection;
+  static drawFilledCircle(position: Float32Vector2, radius: number) {}
 
-//                         varying highp vec2 vTextureCoord;
+  static render() {}
 
-//                         void main() {
-//                           gl_Position = projection * view * model * vec4(a_position, 0, 1);
-//                           vTextureCoord = aTextureCoord;             
-//                         }\n`;
+  static flush() {}
 
-//   shader.constructFromSource(gl, vertexSource, fragmentSource).match(
-//     (_) => console.log('standard draw shader compilation success!'),
-//     (e) => {
-//       throw new Error(`Could not compile debug shader...\n\n${e}`);
-//     }
-//   );
-// }
+  private initializeBuffers(gl: GL) {
+    this.vertexArray.bind(gl);
+    this.vertexBuffer.bind(gl);
 
-// export class DebugPipeline {
-//   name: string;
-//   vertexArray: VertexArrayObject;
-//   vertexBuffer: Buffer;
-//   indexBuffer: Buffer;
-//   shader: Shader;
-//   linearPoints: BrushPoint[];
-//   smoothedPoints: BrushPoint[];
-//   linearStab = new UnitStabilizer();
-//   smoothedStab = new SmoothedStabilizer();
-//   currentBuf: 'linear' | 'smoothed' = 'smoothed';
+    this.vertexArray
+      .builder()
+      .addAttribute(2, 'float', 'position')
+      .addAttribute(3, 'float', 'color')
+      .addAttribute(2, 'float', 'texCord')
+      .addAttribute(1, 'float', 'opacity')
+      .build(gl);
 
-//   public constructor(gl: GL, _: Readonly<AppState>) {
-//     this.name = 'Standard Draw Pipeline';
-//     this.vertexArray = new VertexArrayObject(gl);
-//     this.vertexBuffer = new Buffer(gl, {
-//       btype: 'VertexBuffer',
-//       usage: 'Static Draw',
-//     });
-//     this.indexBuffer = new Buffer(gl, {
-//       btype: 'IndexBuffer',
-//       usage: 'Static Draw',
-//     });
-//     this.shader = new Shader(gl);
-//     this.linearPoints = [];
-//     this.smoothedPoints = [];
-//   }
+    const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE * SIZE_FLOAT;
+    this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
-//   init(gl: GL, appState: Readonly<AppState>) {
-//     this.vertexArray
-//       .builder()
-//       .addAttribute(2, 'float', 'position')
-//       .addAttribute(2, 'float', 'texCord')
-//       .build(gl);
-
-//     fillEbo(gl, this.indexBuffer);
-
-//     const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * SIZE_FLOAT;
-//     this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
-
-//     initShader(gl, this.shader);
-
-//     EventManager.subscribe('brushStrokeContinuedRaw', ({pointData, currentSettings}) => {
-//       this.smoothedPoints = this.smoothedStab.getProcessedCurveWithPoints(pointData, 1, 1, 1);
-//       this.linearPoints = this.linearStab.getProcessedCurveWithPoints(pointData);
-
-//       gl.clearColor(1, 1, 1, 1);
-//       gl.clear(gl.COLOR_BUFFER_BIT);
-//       const pointsToRender =
-//         this.currentBuf == 'smoothed' ? this.smoothedPoints : this.linearPoints;
-//       this.render(gl, pointsToRender, appState);
-//     });
-
-//     EventManager.subscribe('brushStrokEnd', (_) => {
-//       gl.clearColor(1, 1, 1, 1);
-//       gl.clear(gl.COLOR_BUFFER_BIT);
-//       this.smoothedPoints = [];
-//       this.linearPoints = [];
-//     });
-
-//     this.addEvents(gl, appState);
-//   }
-
-//   private render(gl: GL, pointsToRender: BrushPoint[], state: Readonly<AppState>) {
-//     if (pointsToRender.length <= 1) return;
-
-//     const buf = new Float32Array(pointsToRender.length * 6 * VERTEX_SIZE);
-
-//     let i = 0;
-//     for (const p of pointsToRender) {
-//       const quadVerts = constructQuadSixTex(p.position, 0.01);
-//       for (const v of quadVerts) {
-//         buf[i++] = v.x;
-//         buf[i++] = v.y;
-//       }
-//     }
-
-//     this.vertexBuffer.addData(gl, buf);
-
-//     this.shader.uploadMatrix4x4(gl, 'model', state.canvasState.camera.getTransformMatrix());
-//     this.shader.uploadMatrix4x4(gl, 'view', state.canvasState.camera.getViewMatrix());
-//     this.shader.uploadMatrix4x4(gl, 'projection', state.canvasState.camera.getProjectionMatrix());
-
-//     gl.drawArrays(gl.TRIANGLES, 0, 6 * pointsToRender.length);
-//   }
-
-//   private addEvents(gl: GL, appState: Readonly<AppState>) {
-//     document.addEventListener('keypress', (e) => {
-//       if (e.key == 'j') {
-//         this.currentBuf = this.currentBuf == 'linear' ? 'smoothed' : 'linear';
-//         gl.clearColor(1, 1, 1, 1);
-//         gl.clear(gl.COLOR_BUFFER_BIT);
-//         const pointsToRender =
-//           this.currentBuf == 'smoothed' ? this.smoothedPoints : this.linearPoints;
-//         this.render(gl, pointsToRender, appState);
-//       }
-//     });
-//   }
-// }
+    this.vertexArray.unBind(gl);
+    this.vertexBuffer.unBind(gl);
+  }
+}
