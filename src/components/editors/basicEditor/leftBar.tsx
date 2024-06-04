@@ -6,7 +6,7 @@ import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import { Box, Button } from '@mui/material';
 import { useState } from 'react';
-import { type ToolType as ToolType_ } from '~/application/drawingEditor/canvas/toolSystem/handler';
+import { type ToolType as ToolType_ } from '~/drawingEditor/canvas/toolSystem/handler';
 import { type SettingsObject } from '../types';
 
 export interface LeftBarProps {
@@ -18,17 +18,18 @@ const SELECTED_OPACITY = 0.3;
 
 function LeftBar({ settingsObject }: LeftBarProps) {
   const [toolType, setToolType] = useState<ToolType>(settingsObject.selectedTool.current);
+  const brushSettings = settingsObject.settings.brushSettings.getCurrentPreset();
 
   function setType(type: ToolType) {
     if (type == 'Eraser') {
-      settingsObject.settings.brushSettings[0].isEraser = true;
+      brushSettings.isEraser = true;
       setToolType('Eraser');
       return;
     }
 
     settingsObject.selectedTool.current = type;
     setToolType(settingsObject.selectedTool.current);
-    settingsObject.settings.brushSettings[0].isEraser = false;
+    brushSettings.isEraser = false;
   }
 
   return (
@@ -50,7 +51,7 @@ function LeftBar({ settingsObject }: LeftBarProps) {
         sx={{
           color: '#1c3e8a',
           filter: `brightness(${
-            settingsObject.settings.brushSettings[0].isEraser ? SELECTED_OPACITY : 1
+            settingsObject.settings.brushSettings.getCurrentPreset().isEraser ? SELECTED_OPACITY : 1
           })`,
         }}
         className="m-auto h-10 w-10 border-4 border-solid border-slate-200"

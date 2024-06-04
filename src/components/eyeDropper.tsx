@@ -1,14 +1,13 @@
 import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { useEffect, useState } from 'react';
-import { type BrushSettings } from '~/application/drawingEditor/canvas/toolSystem/tools/brush';
-import EventManager from '~/application/eventSystem/eventManager';
-import { rgbaToHsl } from '~/application/drawingEditor/misc/color';
-import type FrameBuffer from '~/application/drawingEditor/webgl/frameBuffer';
-import { type GL } from '~/application/drawingEditor/webgl/glUtils';
-import { Int32Vector3 } from '~/application/drawingEditor/webgl/vector';
-import { mouseToNormalized } from '../application/drawingEditor/canvas/camera';
-import { hslToHex } from '../application/drawingEditor/misc/color';
-import { EyeDropperArgs } from '~/application/eventSystem/eventTypes/canvasEvents';
+import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
+import EventManager from '~/util/eventSystem/eventManager';
+import { rgbaToHsl, hslToHex } from '~/util/general/color';
+import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
+import { type GL } from '~/drawingEditor/webgl/glUtils';
+import { Int32Vector3 } from '~/drawingEditor/webgl/vector';
+import { mouseToNormalized } from '../drawingEditor/canvas/camera';
+import { type EyeDropperArgs } from '~/util/eventSystem/eventTypes/canvasEvents';
 
 export interface EyeDropperProps {
   brushSettings: BrushSettings;

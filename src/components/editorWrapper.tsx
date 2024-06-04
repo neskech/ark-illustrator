@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
 import type EditorProps from './editors/types';
 import { type SettingsObject } from './editors/types';
-import EditorApplication from '../application/drawingEditor/application';
+import EditorApplication from '../drawingEditor/application';
 
 interface EditorWrapperProps {
   EditorComponent: React.ComponentType<EditorProps>;

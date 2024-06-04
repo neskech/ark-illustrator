@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
-import EventManager from '~/application/eventSystem/eventManager';
+import EventManager from '~/util/eventSystem/eventManager';
 import type EditorProps from '../types';
 import LeftBar from './leftBar';
 import { SettingsDialog } from './settings';
