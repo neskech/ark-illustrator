@@ -6,52 +6,76 @@ import { VertexAttributes, VertexAttributesObject } from '../webgl/vertexAttribu
 type PositionType = 'bottomLeft' | 'bottomRight' | 'topLeft' | 'topRight' | 'center';
 export class Positioner {
   private positionType: PositionType;
-  private anchorPosition: Float32Vector2
+  private anchorPosition: Float32Vector2;
 
   private constructor(positionType: PositionType, anchor: Float32Vector2) {
     this.positionType = positionType;
-    this.anchorPosition = anchor
+    this.anchorPosition = anchor;
   }
 
   public PositionPoint(width: number, height: number): Float32Vector2 {
-    const halfWidth = width / 2
-    const halfHeight = height / 2
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
 
     switch (this.positionType) {
       case 'bottomLeft':
-        return new Float32Vector2(this.anchorPosition.x + halfWidth, this.anchorPosition.y + halfHeight)
+        return new Float32Vector2(
+          this.anchorPosition.x + halfWidth,
+          this.anchorPosition.y + halfHeight
+        );
       case 'bottomRight':
-        return new Float32Vector2(this.anchorPosition.x - halfWidth, this.anchorPosition.y + halfHeight)
+        return new Float32Vector2(
+          this.anchorPosition.x - halfWidth,
+          this.anchorPosition.y + halfHeight
+        );
       case 'topLeft':
-        return new Float32Vector2(this.anchorPosition.x + halfWidth, this.anchorPosition.y - halfHeight)
+        return new Float32Vector2(
+          this.anchorPosition.x + halfWidth,
+          this.anchorPosition.y - halfHeight
+        );
       case 'topRight':
-        return new Float32Vector2(this.anchorPosition.x - halfWidth, this.anchorPosition.y - halfHeight)
+        return new Float32Vector2(
+          this.anchorPosition.x - halfWidth,
+          this.anchorPosition.y - halfHeight
+        );
       case 'center':
-        return new Float32Vector2(this.anchorPosition.x, this.anchorPosition.y)
+        return new Float32Vector2(this.anchorPosition.x, this.anchorPosition.y);
     }
   }
 
   static BottomLeft(position: Float32Vector2): Positioner {
-    return new Positioner('bottomLeft', position)
+    return new Positioner('bottomLeft', position);
   }
 
   static BottomRight(position: Float32Vector2): Positioner {
-    return new Positioner('bottomRight', position)
+    return new Positioner('bottomRight', position);
   }
 
   static TopLeft(position: Float32Vector2): Positioner {
-    return new Positioner('topLeft', position)
+    return new Positioner('topLeft', position);
   }
 
   static TopRight(position: Float32Vector2): Positioner {
-    return new Positioner('topRight', position)
+    return new Positioner('topRight', position);
   }
 
   static Center(position: Float32Vector2): Positioner {
-    return new Positioner('center', position)
+    return new Positioner('center', position);
   }
 }
 
+type AttributeDescriptor<T> = {
+  bottomLeft: T,
+  bottomRight: T,
+  topLeft: T,
+  topRight: T
+}
+
+type Args<T> = {
+  positioner: T,
+  width: number,
+  
+}
 /*
   Two ways of doing this. Either make everything a four vertex quad or allow arbitrary shapes
   e.g. hollowed out rectangles
@@ -60,9 +84,20 @@ export class Positioner {
 
   We also need an object type that represents a vertex attribute
 */
-export class QuadilateralFactory<T extends VertexAttributes, VertexAttribs extends VertexAttributesObject<T>> {
-  private defaultAttributes: VertexAttribs | null
+export class QuadilateralFactory<
+  T extends VertexAttributes,
+  VertexAttribs extends VertexAttributesObject<T>
+> {
+  private defaultAttributes: Omit<VertexAttribs, 'position'> | null;
 
+  constructor(defaultAttributes: Omit<VertexAttribs, 'position'> | null = null) {
+    this.defaultAttributes = defaultAttributes;
+  }
+
+  makeSquare({positioner: Positioner, width: number, height: number, attributes?: AttributeDescriptor<Omit<VertexAttribs, 'position'>>}): number[] {
+    // make it around the origin
+    const vertices = []
+  }
 }
 
 export function makeCircle(
