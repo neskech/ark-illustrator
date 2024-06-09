@@ -1,29 +1,9 @@
+import { type Tuple } from '~/util/general/utilTypes';
 import { type GL } from './glUtils';
 
-export type VertexAttributes = { [key: string]: AttributeType<'float' | 'int', number> };
-
-type Tuple<T, N extends number> = N extends N
-  ? number extends N
-    ? T[]
-    : _TupleOf<T, N, []>
-  : never;
-type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N
-  ? R
-  : _TupleOf<T, N, [T, ...R]>;
-
-type TypeStringToType<T> = T extends 'int' ? number : number;
-
-export type VertexAttributesObject<T extends VertexAttributes> = {
-  [key in keyof T]: T[key] extends AttributeType<infer T, infer N>
-    ? N extends 1
-      ? TypeStringToType<T>
-      : Tuple<TypeStringToType<T>, N>
-    : never;
-};
-
 const TYPE_SIZE = 4;
-
-export class AttributeType<AttribType extends 'float' | 'int', Count extends number> {
+type AttribTypes = 'float' | 'int'
+export class AttributeType<AttribType extends AttribTypes, Count extends number> {
   private attributeType_: AttribType;
   private count_: Count;
 
@@ -32,7 +12,7 @@ export class AttributeType<AttribType extends 'float' | 'int', Count extends num
     this.count_ = count;
   }
 
-  public get attributeType(): 'float' | 'int' {
+  public get attributeType(): AttribTypes {
     return this.attributeType_;
   }
 
@@ -68,3 +48,14 @@ export class AttributeType<AttribType extends 'float' | 'int', Count extends num
     return new AttributeType('int', numElements);
   }
 }
+export type VertexAttributes = { [key: string]: AttributeType<AttribTypes, number> };
+
+type TypeStringToType<T extends AttribTypes> = T extends 'int' ? number : number;
+
+export type VertexAttributesObject<T extends VertexAttributes> = {
+  [key in keyof T]: T[key] extends AttributeType<infer T, infer N>
+    ? N extends 1
+      ? TypeStringToType<T>
+      : Tuple<TypeStringToType<T>, N>
+    : never;
+};
