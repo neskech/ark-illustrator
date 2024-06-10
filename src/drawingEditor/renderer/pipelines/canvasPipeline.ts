@@ -1,6 +1,6 @@
 import Buffer from '~/drawingEditor/webgl/buffer';
 import EventManager from '../../../util/eventSystem/eventManager';
-import { type BrushPoint, type BrushSettings } from '../../canvas/toolSystem/tools/brush';
+import { type BrushPoint } from '../../canvas/toolSystem/tools/brush';
 import FrameBuffer from '../../webgl/frameBuffer';
 import { type GL } from '../../webgl/glUtils';
 import type Shader from '../../webgl/shader';
@@ -8,22 +8,23 @@ import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
 import { clearScreen, emplaceQuads } from '../util';
 import { MAX_POINTS_PER_FRAME } from './strokePipeline';
-import { AttributeType } from '~/drawingEditor/webgl/vertexAttributes';
+import { VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
+import { type BrushSettings } from '../../canvas/toolSystem/settings/brushSettings';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 8;
 const SIZE_FLOAT = 4;
 
-const vertexAttributes = {
-  position: AttributeType.floatList(2),
-  color: AttributeType.floatList(3),
-  texCord: AttributeType.floatList(2),
-  opacity: AttributeType.float()
-}
+const vertexAttributes = new VertexAttributes({
+  position: VertexAttributeType.floatList(2),
+  color: VertexAttributeType.floatList(3),
+  texCord: VertexAttributeType.floatList(2),
+  opacity: VertexAttributeType.float(),
+});
 
 export class CanvasPipeline {
   name: string;
-  vertexArray: VertexArrayObject;
+  vertexArray: VertexArrayObject<typeof vertexAttributes>;
   vertexBuffer: Buffer;
   shader: Shader;
   frameBuffer: FrameBuffer;

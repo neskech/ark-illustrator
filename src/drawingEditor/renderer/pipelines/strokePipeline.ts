@@ -9,7 +9,7 @@ import type Texture from '../../webgl/texture';
 import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
 import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from '../util';
-import { BrushSettings } from '../../canvas/toolSystem/settings/brushSettings';
+import { type BrushSettings } from '../../canvas/toolSystem/settings/brushSettings';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 

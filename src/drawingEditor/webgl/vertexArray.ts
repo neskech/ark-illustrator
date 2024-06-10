@@ -1,15 +1,15 @@
 import { Option } from '../../util/general/option';
 import { GLObject, type GL } from './glUtils';
-import { type VertexAttributes } from './vertexAttributes';
+import { type AttributesObject, type VertexAttributes } from './vertexAttributes';
 
 
 type VAOid = GLObject<WebGLVertexArrayObject>;
 
-export class VertexArrayObject {
+export class VertexArrayObject<VertexAttributes_ extends VertexAttributes<AttributesObject>> {
   private id: VAOid;
-  private attributes: VertexAttributes;
+  private attributes: VertexAttributes_;
 
-  constructor(gl: GL, vertexAttributes: VertexAttributes) {
+  constructor(gl: GL, vertexAttributes: VertexAttributes_) {
     const vId = Option.fromNull(gl.createVertexArray());
     const glId = new GLObject(vId.expect("couldn't create new vertex array object"));
     this.id = glId;
@@ -21,10 +21,10 @@ export class VertexArrayObject {
   private initialize(gl: GL) {
     let byteOffset = 0;
 
-    for (const [i, attribute] of Object.values(this.attributes).enumerate()) {
+    for (const [i, {attribute}] of this.attributes.orderedAttributes().enumerate()) {
       gl.vertexAttribPointer(
         i,
-        attribute.count,
+        attribute.count(),
         attribute.webGLType(gl),
         false,
         attribute.typeSize(),
@@ -32,7 +32,7 @@ export class VertexArrayObject {
       );
       gl.enableVertexAttribArray(i);
       
-      byteOffset += attribute.typeSize() * attribute.count
+      byteOffset += attribute.typeSize() * attribute.count()
     }
 
   }
@@ -40,13 +40,13 @@ export class VertexArrayObject {
   log(logger: (s: string) => void = console.log): void {
     let string = '';
 
-    for (const [attributeName, attribute] of Object.entries(this.attributes)) {
+    for (const {name, attribute} of this.attributes.orderedAttributes()) {
       string += `
       {
        typeSize: ${attribute.typeSize()},
-       numElements: ${attribute.count},
-       typeName: ${attribute.typeName},
-       attributeName: ${attributeName}
+       numElements: ${attribute.count()},
+       typeName: ${attribute.typeName()},
+       attributeName: ${name}
 
       }`;
     }

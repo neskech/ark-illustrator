@@ -6,6 +6,7 @@ import type Shader from '../../webgl/shader';
 import { type GL } from '../../webgl/glUtils';
 import { assertNotNull, requires } from '~/util/general/contracts';
 import { VertexArrayObject } from '../../webgl/vertexArray';
+import { VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
 
 function emplaceQuad(
   buffer: Float32Array,
@@ -14,6 +15,13 @@ function emplaceQuad(
   height: number
 ) {}
 
+const vertexAttributes = new VertexAttributes({
+  position: VertexAttributeType.floatList(2),
+  color: VertexAttributeType.floatList(3),
+  texCord: VertexAttributeType.floatList(2),
+  opacity: VertexAttributeType.float()
+})
+
 export default class DebugRenderer {
   private wireQuadTexture: Texture;
   private filledQuadTexture: Texture;
@@ -21,7 +29,7 @@ export default class DebugRenderer {
   private filledCircleTexture: Texture;
   private shader: Shader;
   private vertexBuffer: Buffer;
-  private vertexArray: VertexArrayObject;
+  private vertexArray: VertexArrayObject<typeof vertexAttributes>;
   private static instance: DebugRenderer | null;
 
   private constructor(gl: GL, assetManager: AssetManager) {
