@@ -1,4 +1,4 @@
-import { assert } from 'console';
+import { assert } from '~/util/general/contracts';
 import { type Option, Some, None } from './option';
 
 type Ok_<T> = { __type: 'Ok'; value: T };

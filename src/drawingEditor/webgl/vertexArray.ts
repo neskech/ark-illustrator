@@ -14,11 +14,9 @@ export class VertexArrayObject<VertexAttributes_ extends VertexAttributes<Attrib
     const glId = new GLObject(vId.expect("couldn't create new vertex array object"));
     this.id = glId;
     this.attributes = vertexAttributes;
-
-    this.initialize(gl)
   }
 
-  private initialize(gl: GL) {
+  public applyAttributes(gl: GL) {
     let byteOffset = 0;
 
     for (const [i, {attribute}] of this.attributes.orderedAttributes().enumerate()) {

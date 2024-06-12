@@ -10,6 +10,7 @@ import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
 import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from '../util';
 import { type BrushSettings } from '../../canvas/toolSystem/settings/brushSettings';
+import { VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 
@@ -27,11 +28,22 @@ const VERTEX_SIZE_POS_COLOR_TEX_OPACITY = 8;
 const MAX_SIZE_STROKE =
   MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY * SIZE_FLOAT;
 
+const strokeVertexAttributes = new VertexAttributes({
+  position: VertexAttributeType.floatList(2),
+  color: VertexAttributeType.floatList(3),
+  texCord: VertexAttributeType.floatList(2),
+  opacity: VertexAttributeType.float(),
+});
+
+const blitVertexAttributes = new VertexAttributes({
+  position: VertexAttributeType.floatList(2)
+})
+
 export class StrokePipeline {
   name: string;
 
-  strokeVertexArray: VertexArrayObject;
-  fullScreenBlitVertexArray: VertexArrayObject;
+  strokeVertexArray: VertexArrayObject<typeof strokeVertexAttributes>;
+  fullScreenBlitVertexArray: VertexArrayObject<typeof blitVertexAttributes>;
 
   strokeVertexBuffer: Buffer;
   fullScreenBlitVertexBuffer: Buffer;
@@ -44,8 +56,8 @@ export class StrokePipeline {
   public constructor(gl: GL, canvas: HTMLCanvasElement, assetManager: AssetManager) {
     this.name = 'Stroke Preview Pipeline';
 
-    this.strokeVertexArray = new VertexArrayObject(gl);
-    this.fullScreenBlitVertexArray = new VertexArrayObject(gl);
+    this.strokeVertexArray = new VertexArrayObject(gl, strokeVertexAttributes);
+    this.fullScreenBlitVertexArray = new VertexArrayObject(gl, blitVertexAttributes);
 
     this.strokeVertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
@@ -77,14 +89,7 @@ export class StrokePipeline {
     this.strokeVertexArray.bind(gl);
     this.strokeVertexBuffer.bind(gl);
 
-    this.strokeVertexArray
-      .builder()
-      .addAttribute(2, 'float', 'position')
-      .addAttribute(3, 'float', 'color')
-      .addAttribute(2, 'float', 'texCord')
-      .addAttribute(1, 'float', 'opacity')
-      .build(gl);
-
+    this.strokeVertexArray.applyAttributes(gl)
     this.strokeVertexBuffer.allocateWithData(gl, new Float32Array(MAX_SIZE_STROKE));
 
     this.strokeVertexArray.unBind(gl);
@@ -93,7 +98,7 @@ export class StrokePipeline {
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
 
-    this.fullScreenBlitVertexArray.builder().addAttribute(2, 'float', 'position').build(gl);
+    this.fullScreenBlitVertexArray.applyAttributes(gl)
 
     const quadVerts = constructQuadSixWidthHeight(SCREEN_ORIGIN, SCREEN_WIDTH, SCREEN_HEIGHT);
     const quadBuffer = new Float32Array(SIZE_FULL_SCREEN_QUAD);

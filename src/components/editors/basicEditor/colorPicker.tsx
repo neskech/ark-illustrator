@@ -2,8 +2,8 @@
 import { clamp } from 'curve-interpolator';
 import { type Float32Vector3 } from 'matrixgl';
 import React, { useEffect, useRef, useState } from 'react';
-import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/tools/brush';
-import { hslToHex, hslToRGBNormalized } from '~/drawingEditor/drawingEditor/misc/color';
+import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
+import { hslToHex, hslToRGBNormalized } from '~/util/general/color';
 
 const DEGREE_OFFSET = 90;
 

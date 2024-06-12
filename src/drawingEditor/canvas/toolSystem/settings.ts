@@ -1,5 +1,5 @@
 import { type GL } from '~/drawingEditor/webgl/glUtils';
-import { defaultBrushSettings, type BrushSettings } from './settings/brushSettings';
+import { BrushSettings } from './settings/brushSettings';
 import { defaultFillSettings, type FillSettings } from './settings/fillSettings';
 import SettingsPreset from './settingsPreset';
 
@@ -10,7 +10,7 @@ export interface GlobalToolSettings {
 
 export function getDefaultSettings(gl: GL): GlobalToolSettings {
   return {
-    brushSettings: new SettingsPreset(3, defaultBrushSettings(gl)),
+    brushSettings: new SettingsPreset(3, BrushSettings.default(gl)),
     fillSettings: defaultFillSettings(),
   };
 }

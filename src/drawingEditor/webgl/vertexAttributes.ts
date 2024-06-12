@@ -1,7 +1,7 @@
 import { type Tuple } from '~/util/general/utilTypes';
 import { type GL } from './glUtils';
 import { assertNotNull } from '~/util/general/contracts';
-import { assert } from 'console';
+import { assert } from '~/util/general/contracts';
 
 const TYPE_SIZE = 4;
 type AttribTypes = 'float' | 'int';
@@ -65,7 +65,7 @@ export type VertexAttributesObject<T extends AttributesObject> = {
     : never;
 };
 
-type AttributeEntry = { name: string; attribute: VertexAttributeType<AttribTypes, number> }
+type AttributeEntry = { name: string; attribute: VertexAttributeType<AttribTypes, number> };
 
 export class VertexAttributes<T extends AttributesObject> {
   private attributesObject_: T;
@@ -82,14 +82,14 @@ export class VertexAttributes<T extends AttributesObject> {
       0
     );
 
-    this.assertValid()
+    this.assertValid();
   }
 
- private assertValid() {
-  const propertyNames = Object.keys(this.attributesObject_)
-  const hasUpperCaseLetter = propertyNames.some(s => s !== s.toLowerCase())
-  if (hasUpperCaseLetter) assert(false, 'All vertex property names must be lowercase')
- }
+  private assertValid() {
+    const propertyNames = Object.keys(this.attributesObject_);
+    const hasUpperCaseLetter = propertyNames.some((s) => s.charAt(0) !== s.charAt(0).toLowerCase());
+    if (hasUpperCaseLetter) assert(false, 'All vertex property names must start with lowercase');
+  }
 
   private initializeMap() {
     const nameAndIndex = Object.entries(this.attributesObject_).map(([k, v]) => ({
@@ -97,7 +97,7 @@ export class VertexAttributes<T extends AttributesObject> {
       index: v.relativePosition(),
     }));
 
-    const minIndex = nameAndIndex.reduce((acc, o) => Math.min(acc, o.index), -Infinity);
+    const minIndex = nameAndIndex.reduce((acc, o) => Math.min(acc, o.index), Infinity);
 
     nameAndIndex.forEach((o) => this.nameToIndex_.set(o.name, o.index - minIndex));
   }
@@ -114,7 +114,9 @@ export class VertexAttributes<T extends AttributesObject> {
     const numProperties = this.nameToIndex_.size;
     const list = new Array(numProperties) as AttributeEntry[];
 
-    this.nameToIndex_.forEach((index, name) => (list[index] = {name, attribute: this.attributesObject_[name]}));
+    this.nameToIndex_.forEach(
+      (index, name) => (list[index] = { name, attribute: this.attributesObject_[name] })
+    );
     return list;
   }
 

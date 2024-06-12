@@ -51,7 +51,7 @@ export class CanvasPipeline {
   }
 
   init(gl: GL) {
-    this.vertexArray.bind(gl);
+    this.vertexArray.bind(gl)
     this.vertexBuffer.bind(gl);
 
     this.setupEvents(gl);
