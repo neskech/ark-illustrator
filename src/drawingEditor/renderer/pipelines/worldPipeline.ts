@@ -7,22 +7,28 @@ import type Texture from '../../webgl/texture';
 import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
 import { clearScreen, constructQuadSixWidthHeightTexture } from '../util';
+import { VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
 
 const CANVAS_ORIGIN = new Float32Vector2(0, 0);
 
 const SIZE_VERTEX = 4;
 const NUM_VERTEX_QUAD = 6;
 
+const vertexAttributes = new VertexAttributes({
+  position: VertexAttributeType.floatList(2),
+  texCord: VertexAttributeType.floatList(2)
+})
+
 export class WorldPipeline {
   name: string;
-  vertexArray: VertexArrayObject;
+  vertexArray: VertexArrayObject<typeof vertexAttributes>;
   vertexBuffer: Buffer;
   shader: Shader;
   rot = 0;
 
   public constructor(gl: GL, assetManager: AssetManager) {
     this.name = 'World Pipeline';
-    this.vertexArray = new VertexArrayObject(gl);
+    this.vertexArray = new VertexArrayObject(gl, vertexAttributes);
     this.vertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
@@ -34,12 +40,7 @@ export class WorldPipeline {
     this.vertexArray.bind(gl);
     this.vertexBuffer.bind(gl);
 
-    this.vertexArray
-      .builder()
-      .addAttribute(2, 'float', 'position')
-      .addAttribute(2, 'float', 'texCord')
-      .build(gl);
-
+    this.vertexArray.applyAttributes(gl)
     const aspectRatio = camera.getAspRatio();
     const quadVerts = constructQuadSixWidthHeightTexture(CANVAS_ORIGIN, aspectRatio / 2, 0.5);
     const quadBuffer = new Float32Array(quadVerts.length * SIZE_VERTEX);

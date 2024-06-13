@@ -56,6 +56,7 @@ export class CanvasPipeline {
 
     this.setupEvents(gl);
 
+    this.vertexArray.applyAttributes(gl);
     const verticesSizeBytes = MAX_POINTS_PER_FRAME * NUM_VERTICES_QUAD * VERTEX_SIZE * SIZE_FLOAT;
     this.vertexBuffer.allocateWithData(gl, new Float32Array(verticesSizeBytes));
 
@@ -63,7 +64,7 @@ export class CanvasPipeline {
     this.vertexBuffer.unBind(gl);
   }
 
-  render(gl: GL, points: BrushPoint[], brushSettings: Readonly<BrushSettings>) {
+  render(gl: GL, points: BrushPoint[], brushSettings: BrushSettings) {
     if (points.length == 0) return;
 
     this.vertexArray.bind(gl);

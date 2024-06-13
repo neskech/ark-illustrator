@@ -2,7 +2,6 @@ import { Option } from '../../util/general/option';
 import { GLObject, type GL } from './glUtils';
 import { type AttributesObject, type VertexAttributes } from './vertexAttributes';
 
-
 type VAOid = GLObject<WebGLVertexArrayObject>;
 
 export class VertexArrayObject<VertexAttributes_ extends VertexAttributes<AttributesObject>> {
@@ -17,28 +16,42 @@ export class VertexArrayObject<VertexAttributes_ extends VertexAttributes<Attrib
   }
 
   public applyAttributes(gl: GL) {
-    let byteOffset = 0;
+    const attributes = this.attributes.orderedAttributes();
+    
+    const vertexSizeBytes = attributes.reduce(
+      (acc, curr) => acc + curr.attribute.count() * curr.attribute.typeSize(),
+      0
+    );
 
-    for (const [i, {attribute}] of this.attributes.orderedAttributes().enumerate()) {
+    let byteOffset = 0;
+    for (const [i, { attribute }] of attributes.enumerate()) {
+      console.log(
+        i,
+        attribute,
+        attribute.count(),
+        attribute.webGLType(gl) == gl.FLOAT,
+        attribute.typeSize(),
+        byteOffset,
+        this.attributes.orderedAttributes()
+      );
       gl.vertexAttribPointer(
         i,
         attribute.count(),
         attribute.webGLType(gl),
         false,
-        attribute.typeSize(),
+        vertexSizeBytes,
         byteOffset
       );
       gl.enableVertexAttribArray(i);
-      
-      byteOffset += attribute.typeSize() * attribute.count()
-    }
 
+      byteOffset += attribute.typeSize() * attribute.count();
+    }
   }
 
   log(logger: (s: string) => void = console.log): void {
     let string = '';
 
-    for (const {name, attribute} of this.attributes.orderedAttributes()) {
+    for (const { name, attribute } of this.attributes.orderedAttributes()) {
       string += `
       {
        typeSize: ${attribute.typeSize()},

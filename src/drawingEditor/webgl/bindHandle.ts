@@ -16,3 +16,5 @@ export class BindHandle implements Disposable {
     this.unBindFunc()
   }
 }
+
+using s = new BindHandle(() => {}, () => {})

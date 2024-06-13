@@ -166,7 +166,7 @@ export class StrokePipeline {
     gl: GL,
     points: BrushPoint[],
     canvasTexture: Texture,
-    brushSettings: Readonly<BrushSettings>
+    brushSettings: BrushSettings
   ) {
     if (points.length == 0) return;
 

@@ -28,7 +28,7 @@ export function BasicEditor({ settings }: EditorProps) {
         <RightBar settingsObject={settings} />
       </Box>
 
-      <EyeDropper brushSettings={settings.settings.brushSettings[0]} />
+      <EyeDropper brushSettings={settings.settings.brushSettings.getCurrentPreset()} />
 
       {showSettings ? (
         <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
