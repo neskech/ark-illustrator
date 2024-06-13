@@ -30,7 +30,7 @@ interface IncrementalLog {
 }
 
 interface TimedLog {
-  timeDelay: number;
+  timeDelaySeconds: number;
   interval: NodeJS.Timeout | null;
   type: 'time';
 }
@@ -64,8 +64,8 @@ export const incrementalLog = (callDelay: number): IncrementalLog => ({
   type: 'incremental',
 });
 
-export const timedLog = (timeDelay: number): TimedLog => ({
-  timeDelay,
+export const timedLog = (timeDelaySeconds: number): TimedLog => ({
+  timeDelaySeconds,
   interval: null,
   type: 'time',
 });
@@ -242,7 +242,7 @@ export default class Benchmarker {
     if (logFreq && logFreq.type == 'time') {
       logFreq.interval = setInterval(
         () => Benchmarker.printSubject(name),
-        logFreq.timeDelay * 1000
+        logFreq.timeDelaySeconds * 1000
       );
     }
 
@@ -275,7 +275,7 @@ export default class Benchmarker {
     if (logFreq && logFreq.type == 'time') {
       logFreq.interval = setInterval(
         () => Benchmarker.printSubject(name),
-        logFreq.timeDelay * 1000
+        logFreq.timeDelaySeconds * 1000
       );
     }
 

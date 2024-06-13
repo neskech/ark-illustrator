@@ -1,5 +1,6 @@
-import { type BrushSettings, type BrushPoint } from '~/drawingEditor/canvas/toolSystem/tools/brush';
+import { type BrushPoint } from '~/drawingEditor/canvas/toolSystem/tools/brush';
 import type Func from '../util';
+import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
 
 export interface BrushEventArgs {
   pointData: BrushPoint[];

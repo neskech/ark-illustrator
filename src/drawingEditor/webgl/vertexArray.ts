@@ -4,11 +4,11 @@ import { type AttributesObject, type VertexAttributes } from './vertexAttributes
 
 type VAOid = GLObject<WebGLVertexArrayObject>;
 
-export class VertexArrayObject<VertexAttributes_ extends VertexAttributes<AttributesObject>> {
+export class VertexArrayObject<T extends AttributesObject> {
   private id: VAOid;
-  private attributes: VertexAttributes_;
+  private attributes: VertexAttributes<T>;
 
-  constructor(gl: GL, vertexAttributes: VertexAttributes_) {
+  constructor(gl: GL, vertexAttributes: VertexAttributes<T>) {
     const vId = Option.fromNull(gl.createVertexArray());
     const glId = new GLObject(vId.expect("couldn't create new vertex array object"));
     this.id = glId;
@@ -25,15 +25,6 @@ export class VertexArrayObject<VertexAttributes_ extends VertexAttributes<Attrib
 
     let byteOffset = 0;
     for (const [i, { attribute }] of attributes.enumerate()) {
-      console.log(
-        i,
-        attribute,
-        attribute.count(),
-        attribute.webGLType(gl) == gl.FLOAT,
-        attribute.typeSize(),
-        byteOffset,
-        this.attributes.orderedAttributes()
-      );
       gl.vertexAttribPointer(
         i,
         attribute.count(),

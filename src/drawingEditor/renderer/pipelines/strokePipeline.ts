@@ -1,4 +1,4 @@
-import { Float32Vector2 } from 'matrixgl';
+import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import Buffer from '~/drawingEditor/webgl/buffer';
 import EventManager from '../../../util/eventSystem/eventManager';
 import { type BrushPoint } from '../../canvas/toolSystem/tools/brush';
@@ -8,9 +8,14 @@ import type Shader from '../../webgl/shader';
 import type Texture from '../../webgl/texture';
 import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
-import { clearScreen, constructQuadSixWidthHeight, emplaceQuads } from '../util';
+import { clearScreen, constructQuadSixWidthHeight } from '../util';
 import { type BrushSettings } from '../../canvas/toolSystem/settings/brushSettings';
-import { VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
+import { type GetAttributesType, VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
+import { angleBetween } from '~/drawingEditor/webgl/vector';
+import { QuadilateralFactory } from '../geometry/quadFactory';
+import { QuadTransform } from '../geometry/transform';
+import { QuadPositioner } from '../geometry/positioner';
+import { QuadRotator } from '../geometry/rotator';
 
 export const MAX_POINTS_PER_FRAME = 10000;
 
@@ -34,19 +39,23 @@ const strokeVertexAttributes = new VertexAttributes({
   texCord: VertexAttributeType.floatList(2),
   opacity: VertexAttributeType.float(),
 });
+type StrokeAttribsType = GetAttributesType<typeof strokeVertexAttributes>
 
 const blitVertexAttributes = new VertexAttributes({
-  position: VertexAttributeType.floatList(2)
-})
+  position: VertexAttributeType.floatList(2),
+});
+type BlitAttribsType = GetAttributesType<typeof blitVertexAttributes>
 
 export class StrokePipeline {
   name: string;
 
-  strokeVertexArray: VertexArrayObject<typeof strokeVertexAttributes>;
-  fullScreenBlitVertexArray: VertexArrayObject<typeof blitVertexAttributes>;
+  strokeVertexArray: VertexArrayObject<StrokeAttribsType>;
+  fullScreenBlitVertexArray: VertexArrayObject<BlitAttribsType>;
 
   strokeVertexBuffer: Buffer;
   fullScreenBlitVertexBuffer: Buffer;
+
+  quadFactory: QuadilateralFactory<StrokeAttribsType>;
 
   strokeShader: Shader;
   fullScreenBlitShader: Shader;
@@ -66,6 +75,21 @@ export class StrokePipeline {
     this.fullScreenBlitVertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
+    });
+
+    this.quadFactory = new QuadilateralFactory(strokeVertexAttributes, {
+      bottomLeft: {
+        texCord: [0, 0],
+      },
+      bottomRight: {
+        texCord: [1, 0],
+      },
+      topLeft: {
+        texCord: [0, 1],
+      },
+      topRight: {
+        texCord: [1, 1],
+      },
     });
 
     this.frameBuffer = new FrameBuffer(gl, {
@@ -89,7 +113,7 @@ export class StrokePipeline {
     this.strokeVertexArray.bind(gl);
     this.strokeVertexBuffer.bind(gl);
 
-    this.strokeVertexArray.applyAttributes(gl)
+    this.strokeVertexArray.applyAttributes(gl);
     this.strokeVertexBuffer.allocateWithData(gl, new Float32Array(MAX_SIZE_STROKE));
 
     this.strokeVertexArray.unBind(gl);
@@ -98,7 +122,7 @@ export class StrokePipeline {
     this.fullScreenBlitVertexArray.bind(gl);
     this.fullScreenBlitVertexBuffer.bind(gl);
 
-    this.fullScreenBlitVertexArray.applyAttributes(gl)
+    this.fullScreenBlitVertexArray.applyAttributes(gl);
 
     const quadVerts = constructQuadSixWidthHeight(SCREEN_ORIGIN, SCREEN_WIDTH, SCREEN_HEIGHT);
     const quadBuffer = new Float32Array(SIZE_FULL_SCREEN_QUAD);
@@ -151,7 +175,33 @@ export class StrokePipeline {
     const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY;
     const buf = new Float32Array(bufSize);
 
-    emplaceQuads(buf, points, brushSettings);
+    let i = 0;
+    for (const [j, p] of points.enumerate()) {
+      const opacity_ = brushSettings.getOpacityGivenPressure(p.pressure);
+      const opacity = brushSettings.isEraser ? 1 - opacity_ : opacity_;
+      const color = brushSettings.isEraser ? new Float32Vector3(1, 1, 1) : brushSettings.color;
+      
+      let angle = 0;
+
+      if (points.length >= 2) {
+      const after = j < points.length - 1 ? points[j + 1] : points[j - 1];
+      angle = angleBetween(p.position, after.position);
+      }
+
+      const data = this.quadFactory.makeSquare({
+        size: brushSettings.getSizeGivenPressure(p.pressure),
+        transform: QuadTransform.builder()
+          .position(QuadPositioner.center(p.position))
+          .rotate(QuadRotator.center(angle + Math.PI / 2))
+          .build(),
+        attributes: QuadilateralFactory.attributesForAllFourSides({
+          opacity,
+          color: [color.x, color.y, color.z],
+        }),
+      });
+      for (const num of data) buf[i++] = num;
+    }
+
     this.strokeVertexBuffer.addData(gl, buf);
 
     gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
@@ -162,12 +212,7 @@ export class StrokePipeline {
     brushSettings.texture.unwrap().unBind(gl);
   }
 
-  render(
-    gl: GL,
-    points: BrushPoint[],
-    canvasTexture: Texture,
-    brushSettings: BrushSettings
-  ) {
+  render(gl: GL, points: BrushPoint[], canvasTexture: Texture, brushSettings: BrushSettings) {
     if (points.length == 0) return;
 
     this.frameBuffer.bind(gl);

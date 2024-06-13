@@ -8,7 +8,7 @@ uniform float flow;
                                             
 void main() {
     vec4 color = texture2D(tex, vTextureCoord);
-    color.rgb = vColor; //vec3((color.r + color.g + color.b) / 3.0);
+    color.rgb = color.rgb * 0.6 + vColor * 0.4;; //vec3((color.r + color.g + color.b) / 3.0);
     color.a *= flow * vOpacity;
     gl_FragColor = color;
 } 

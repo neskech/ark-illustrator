@@ -6,8 +6,16 @@ import type Shader from '../../webgl/shader';
 import type Texture from '../../webgl/texture';
 import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
-import { clearScreen, constructQuadSixWidthHeightTexture } from '../util';
-import { VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
+import { clearScreen } from '../util';
+import {
+  type GetAttributesType,
+  VertexAttributes,
+  VertexAttributeType,
+} from '~/drawingEditor/webgl/vertexAttributes';
+import { QuadilateralFactory } from '../geometry/quadFactory';
+import { QuadTransform } from '../geometry/transform';
+import { QuadPositioner } from '../geometry/positioner';
+import { QuadRotator } from '../geometry/rotator';
 
 const CANVAS_ORIGIN = new Float32Vector2(0, 0);
 
@@ -16,15 +24,16 @@ const NUM_VERTEX_QUAD = 6;
 
 const vertexAttributes = new VertexAttributes({
   position: VertexAttributeType.floatList(2),
-  texCord: VertexAttributeType.floatList(2)
-})
+  texCord: VertexAttributeType.floatList(2),
+});
+type AttribsType = GetAttributesType<typeof vertexAttributes>;
 
 export class WorldPipeline {
   name: string;
-  vertexArray: VertexArrayObject<typeof vertexAttributes>;
+  vertexArray: VertexArrayObject<AttribsType>;
   vertexBuffer: Buffer;
+  quadFactory: QuadilateralFactory<AttribsType>;
   shader: Shader;
-  rot = 0;
 
   public constructor(gl: GL, assetManager: AssetManager) {
     this.name = 'World Pipeline';
@@ -33,6 +42,7 @@ export class WorldPipeline {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
+    this.quadFactory = new QuadilateralFactory(vertexAttributes);
     this.shader = assetManager.getShader('world');
   }
 
@@ -40,16 +50,34 @@ export class WorldPipeline {
     this.vertexArray.bind(gl);
     this.vertexBuffer.bind(gl);
 
-    this.vertexArray.applyAttributes(gl)
+    this.vertexArray.applyAttributes(gl);
     const aspectRatio = camera.getAspRatio();
-    const quadVerts = constructQuadSixWidthHeightTexture(CANVAS_ORIGIN, aspectRatio / 2, 0.5);
-    const quadBuffer = new Float32Array(quadVerts.length * SIZE_VERTEX);
+    const quadBuffer = new Float32Array(NUM_VERTEX_QUAD * SIZE_VERTEX);
 
-    let i = 0;
-    for (const vert of quadVerts) {
-      quadBuffer[i++] = vert.x;
-      quadBuffer[i++] = vert.y;
-    }
+    this.quadFactory.emplaceRectangle({
+      transform: QuadTransform.builder()
+        .position(QuadPositioner.center(CANVAS_ORIGIN))
+        .rotate(QuadRotator.identity())
+        .build(),
+      width: aspectRatio,
+      height: 1,
+      attributes: {
+        bottomLeft: {
+          texCord: [0, 0],
+        },
+        bottomRight: {
+          texCord: [1, 0],
+        },
+        topLeft: {
+          texCord: [0, 1],
+        },
+        topRight: {
+          texCord: [1, 1],
+        },
+      },
+      buffer: quadBuffer,
+      offset: 0,
+    });
 
     this.vertexBuffer.allocateWithData(gl, quadBuffer);
 

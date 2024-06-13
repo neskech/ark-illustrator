@@ -31,7 +31,7 @@ export function BasicEditor({ settings }: EditorProps) {
       <EyeDropper brushSettings={settings.settings.brushSettings.getCurrentPreset()} />
 
       {showSettings ? (
-        <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
+        <SettingsDialog open={showSettings} brushSettings={settings.settings.brushSettings.getCurrentPreset()} onClose={() => setShowSettings(false)} />
       ) : (
         <div> </div>
       )}

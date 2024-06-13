@@ -6,10 +6,16 @@ import { type GL } from '../../webgl/glUtils';
 import type Shader from '../../webgl/shader';
 import { VertexArrayObject } from '../../webgl/vertexArray';
 import type AssetManager from '../assetManager';
-import { clearScreen, emplaceQuads } from '../util';
+import { clearScreen} from '../util';
 import { MAX_POINTS_PER_FRAME } from './strokePipeline';
-import { VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
+import { type GetAttributesType, VertexAttributes, VertexAttributeType } from '~/drawingEditor/webgl/vertexAttributes';
 import { type BrushSettings } from '../../canvas/toolSystem/settings/brushSettings';
+import { QuadilateralFactory } from '../geometry/quadFactory';
+import { QuadTransform } from '../geometry/transform';
+import { QuadPositioner } from '../geometry/positioner';
+import { QuadRotator } from '../geometry/rotator';
+import { Float32Vector3 } from 'matrixgl';
+import { angleBetween } from '~/drawingEditor/webgl/vector';
 
 const NUM_VERTICES_QUAD = 6;
 const VERTEX_SIZE = 8;
@@ -21,11 +27,13 @@ const vertexAttributes = new VertexAttributes({
   texCord: VertexAttributeType.floatList(2),
   opacity: VertexAttributeType.float(),
 });
+type AttribsType = GetAttributesType<typeof vertexAttributes>
 
 export class CanvasPipeline {
   name: string;
-  vertexArray: VertexArrayObject<typeof vertexAttributes>;
+  vertexArray: VertexArrayObject<AttribsType>;
   vertexBuffer: Buffer;
+  quadFactory: QuadilateralFactory<AttribsType>;
   shader: Shader;
   frameBuffer: FrameBuffer;
 
@@ -35,6 +43,20 @@ export class CanvasPipeline {
     this.vertexBuffer = new Buffer(gl, {
       btype: 'VertexBuffer',
       usage: 'Static Draw',
+    });
+    this.quadFactory = new QuadilateralFactory(vertexAttributes, {
+      bottomLeft: {
+        texCord: [0, 0],
+      },
+      bottomRight: {
+        texCord: [1, 0],
+      },
+      topLeft: {
+        texCord: [0, 1],
+      },
+      topRight: {
+        texCord: [1, 1],
+      },
     });
     this.frameBuffer = new FrameBuffer(gl, {
       width: canvas.width,
@@ -51,7 +73,7 @@ export class CanvasPipeline {
   }
 
   init(gl: GL) {
-    this.vertexArray.bind(gl)
+    this.vertexArray.bind(gl);
     this.vertexBuffer.bind(gl);
 
     this.setupEvents(gl);
@@ -78,7 +100,34 @@ export class CanvasPipeline {
     else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
     const buf = new Float32Array(points.length * NUM_VERTICES_QUAD * VERTEX_SIZE);
-    emplaceQuads(buf, points, brushSettings);
+
+    let i = 0;
+    for (const [j, p] of points.enumerate()) {
+      const opacity_ = brushSettings.getOpacityGivenPressure(p.pressure);
+      const opacity = brushSettings.isEraser ? 1 - opacity_ : opacity_;
+      const color = brushSettings.isEraser ? new Float32Vector3(1, 1, 1) : brushSettings.color;
+
+      let angle = 0;
+
+      if (points.length >= 2) {
+        const after = j < points.length - 1 ? points[j + 1] : points[j - 1];
+        angle = angleBetween(p.position, after.position);
+      }
+      i = this.quadFactory.emplaceSquare({
+        buffer: buf,
+        offset: i,
+        size: brushSettings.getSizeGivenPressure(p.pressure),
+        transform: QuadTransform.builder()
+          .position(QuadPositioner.center(p.position))
+          .rotate(QuadRotator.center(angle + Math.PI / 2))
+          .build(),
+        attributes: QuadilateralFactory.attributesForAllFourSides({
+          opacity,
+          color: [color.x, color.y, color.z],
+        }),
+      });
+    }
+
     this.vertexBuffer.addData(gl, buf);
 
     this.shader.uploadFloat(gl, 'flow', brushSettings.flow);

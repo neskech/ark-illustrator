@@ -5,7 +5,7 @@ import Texture from '~/drawingEditor/webgl/texture';
 import { type Option, Some } from '~/util/general/option';
 
 const DEFAULT_TEXTURE =
-  'https://cdn.discordapp.com/attachments/627737740078743576/1163574991271493722/solid-circle-png-thumb16.png?ex=654012a8&is=652d9da8&hm=8ac2701699f2763a665a4c35b8603834684ad74ee7876243294352b7abe28e6c&';
+  'https://cdn.discordapp.com/attachments/960353053842735144/1250664441037717606/file_1.png?ex=666bc386&is=666a7206&hm=831406ef016113543b954ef2b1f43885b586287622b86c60abed8e54ed51b3be&';
 
 interface BrushSettings_ {
   size: number;

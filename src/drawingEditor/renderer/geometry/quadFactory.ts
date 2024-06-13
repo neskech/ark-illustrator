@@ -10,6 +10,14 @@ import { QuadTransform } from './transform';
 import { add, angle, displacement, normalize, scale } from '~/drawingEditor/webgl/vector';
 import { QuadRotator } from './rotator';
 
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
 type AttribSet<Attributes> = {
   bottomLeft: Omit<Attributes, 'position'>;
   bottomRight: Omit<Attributes, 'position'>;
@@ -22,6 +30,13 @@ type PartialAttribSet<Attributes> = {
   bottomRight?: Partial<Omit<Attributes, 'position'>>;
   topRight?: Partial<Omit<Attributes, 'position'>>;
   topLeft?: Partial<Omit<Attributes, 'position'>>;
+};
+
+type Positions = {
+  bottomLeft: Float32Vector2;
+  bottomRight: Float32Vector2;
+  topRight: Float32Vector2;
+  topLeft: Float32Vector2;
 };
 
 type RectangleArgs<T extends AttributesObject> = {
@@ -37,13 +52,6 @@ type SquareArgs<T extends AttributesObject> = {
   attributes?: PartialAttributes<T>;
 };
 
-type Positions = {
-  bottomLeft: Float32Vector2;
-  bottomRight: Float32Vector2;
-  topRight: Float32Vector2;
-  topLeft: Float32Vector2;
-};
-
 type QuadilateralArgs<T extends AttributesObject> = {
   positions: Positions;
   attributes?: PartialAttributes<T>;
@@ -56,18 +64,56 @@ type LineArgs<T extends AttributesObject> = {
   attributes?: PartialAttributes<T>;
 };
 
+type EmplaceRectangleArgs<T extends AttributesObject> = {
+  buffer: Float32Array;
+  offset: number;
+  transform: QuadTransform;
+  width: number;
+  height: number;
+  attributes?: PartialAttributes<T>;
+};
+
+type EmplaceSquareArgs<T extends AttributesObject> = {
+  buffer: Float32Array;
+  offset: number;
+  transform: QuadTransform;
+  size: number;
+  attributes?: PartialAttributes<T>;
+};
+
+type EmplaceQuadilateralArgs<T extends AttributesObject> = {
+  buffer: Float32Array;
+  offset: number;
+  positions: Positions;
+  attributes?: PartialAttributes<T>;
+};
+
+type EmplaceLineArgs<T extends AttributesObject> = {
+  buffer: Float32Array;
+  offset: number;
+  start: Float32Vector2;
+  end: Float32Vector2;
+  thickness: number;
+  attributes?: PartialAttributes<T>;
+};
+
 type Attributes<T extends AttributesObject> = AttribSet<VertexAttributesObject<T>>;
 type PartialAttributes<T extends AttributesObject> = PartialAttribSet<VertexAttributesObject<T>>;
 
-export class QuadilateralFactory<
-  T extends AttributesObject,
-  VertexAttributes_ extends VertexAttributes<T>
-> {
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! MAIN CODE
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export class QuadilateralFactory<T extends AttributesObject> {
   private defaultAttributes: PartialAttributes<T> | null;
-  private vertexAttributes: VertexAttributes_;
+  private vertexAttributes: VertexAttributes<T>;
 
   constructor(
-    vertexAttributes: VertexAttributes_,
+    vertexAttributes: VertexAttributes<T>,
     defaultAttributes: PartialAttributes<T> | null = null
   ) {
     this.vertexAttributes = vertexAttributes;
@@ -104,16 +150,16 @@ export class QuadilateralFactory<
     const halfWidth = args.width / 2;
     const halfHeight = args.height / 2;
 
-    /* 6 non indexed vertices. Top left, top right, bottom left || bottom right, bottem left, top left */
+    /* 6 non indexed vertices. Top right, top left, bottom left || bottom left, bottom right, top right */
 
     /* Triangle 1 */
 
-    let pos = args.transform.transformPoint(-halfWidth, +halfHeight, args.width, args.height);
-    let fullAttribs = makeFullAttributes(attributes.topLeft, pos);
+    let pos = args.transform.transformPoint(+halfWidth, +halfHeight, args.width, args.height);
+    let fullAttribs = makeFullAttributes(attributes.topRight, pos);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
-    pos = args.transform.transformPoint(+halfWidth, +halfHeight, args.width, args.height);
-    fullAttribs = makeFullAttributes(attributes.topRight, pos);
+    pos = args.transform.transformPoint(-halfWidth, +halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.topLeft, pos);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
     pos = args.transform.transformPoint(-halfWidth, -halfHeight, args.width, args.height);
@@ -122,16 +168,16 @@ export class QuadilateralFactory<
 
     /* Triangle 2 */
 
-    pos = args.transform.transformPoint(+halfWidth, -halfHeight, args.width, args.height);
-    fullAttribs = makeFullAttributes(attributes.bottomRight, pos);
-    vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
-
     pos = args.transform.transformPoint(-halfWidth, -halfHeight, args.width, args.height);
     fullAttribs = makeFullAttributes(attributes.bottomLeft, pos);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
-    pos = args.transform.transformPoint(-halfWidth, +halfHeight, args.width, args.height);
-    fullAttribs = makeFullAttributes(attributes.topLeft, pos);
+    pos = args.transform.transformPoint(+halfWidth, -halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.bottomRight, pos);
+    vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
+
+    pos = args.transform.transformPoint(+halfWidth, +halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.topRight, pos);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
     return vertices;
@@ -156,14 +202,14 @@ export class QuadilateralFactory<
 
     const vertices = [];
 
-    /* 6 non indexed vertices. Top left, top right, bottom left || bottom right, bottem left, top left */
+    /* 6 non indexed vertices. Top right, top left, bottom left || bottom left, bottom right, top right */
 
     /* Triangle 1 */
 
-    let fullAttribs = makeFullAttributes(attributes.topLeft, args.positions.topLeft);
+    let fullAttribs = makeFullAttributes(attributes.topRight, args.positions.topLeft);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
-    fullAttribs = makeFullAttributes(attributes.topRight, args.positions.topRight);
+    fullAttribs = makeFullAttributes(attributes.topLeft, args.positions.topRight);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
     fullAttribs = makeFullAttributes(attributes.bottomLeft, args.positions.bottomLeft);
@@ -171,22 +217,22 @@ export class QuadilateralFactory<
 
     /* Triangle 2 */
 
-    fullAttribs = makeFullAttributes(attributes.bottomRight, args.positions.bottomRight);
+    fullAttribs = makeFullAttributes(attributes.bottomLeft, args.positions.bottomRight);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
-    fullAttribs = makeFullAttributes(attributes.bottomLeft, args.positions.bottomLeft);
+    fullAttribs = makeFullAttributes(attributes.bottomRight, args.positions.bottomLeft);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
-    fullAttribs = makeFullAttributes(attributes.topLeft, args.positions.topLeft);
+    fullAttribs = makeFullAttributes(attributes.topRight, args.positions.topLeft);
     vertices.push(...this.vertexAttributes.attributesObjectToList(fullAttribs));
 
     return vertices;
   }
 
   makeLine(args: LineArgs<T>): number[] {
-    const disp = displacement(args.start, args.end)
+    const disp = displacement(args.start, args.end);
     const height = disp.magnitude / 2;
-    const center = add(args.start, scale(normalize(disp), height))
+    const center = add(args.start, scale(normalize(disp), height));
     const theta = angle(disp);
     const width = args.thickness;
 
@@ -195,6 +241,141 @@ export class QuadilateralFactory<
       .rotate(QuadRotator.center(theta))
       .build();
     return this.makeRectangle({ transform, width, height, attributes: args.attributes });
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  //! EMPLACE VARIANTS
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+
+  emplaceRectangle(args: EmplaceRectangleArgs<T>): number {
+    let attributes;
+    if (args.attributes != null && this.defaultAttributes != null)
+      attributes = joinPartialAttributeSets(
+        this.vertexAttributes,
+        args.attributes,
+        this.defaultAttributes
+      );
+    else attributes = args.attributes ?? this.defaultAttributes;
+
+    assertNotNull(attributes);
+    assertIsFullAttributeSet(this.vertexAttributes, attributes);
+
+    const halfWidth = args.width / 2;
+    const halfHeight = args.height / 2;
+
+    /* 6 non indexed vertices. Top right, top left, bottom left || bottom left, bottom right, top right */
+
+    /* Triangle 1 */
+    let offset = args.offset;
+
+    let pos = args.transform.transformPoint(+halfWidth, +halfHeight, args.width, args.height);
+    let fullAttribs = makeFullAttributes(attributes.topRight, pos);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    pos = args.transform.transformPoint(-halfWidth, +halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.topLeft, pos);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    pos = args.transform.transformPoint(-halfWidth, -halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.bottomLeft, pos);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    /* Triangle 2 */
+
+    pos = args.transform.transformPoint(-halfWidth, -halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.bottomLeft, pos);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    pos = args.transform.transformPoint(+halfWidth, -halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.bottomRight, pos);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    pos = args.transform.transformPoint(+halfWidth, +halfHeight, args.width, args.height);
+    fullAttribs = makeFullAttributes(attributes.topRight, pos);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    return offset;
+  }
+
+  emplaceSquare(args: EmplaceSquareArgs<T>): number {
+    return this.emplaceRectangle({ width: args.size, height: args.size, ...args });
+  }
+
+  emplaceQuadilateral(args: EmplaceQuadilateralArgs<T>): number {
+    let attributes;
+    if (args.attributes != null && this.defaultAttributes != null)
+      attributes = joinPartialAttributeSets(
+        this.vertexAttributes,
+        args.attributes,
+        this.defaultAttributes
+      );
+    else attributes = args.attributes ?? this.defaultAttributes;
+
+    assertNotNull(attributes);
+    assertIsFullAttributeSet(this.vertexAttributes, attributes);
+
+    /* 6 non indexed vertices. Top right, top left, bottom left || bottom left, bottom right, top right */
+
+    /* Triangle 1 */
+    let offset = args.offset;
+
+    let fullAttribs = makeFullAttributes(attributes.topLeft, args.positions.topRight);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    fullAttribs = makeFullAttributes(attributes.topRight, args.positions.topLeft);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    fullAttribs = makeFullAttributes(attributes.bottomLeft, args.positions.bottomLeft);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    /* Triangle 2 */
+
+    fullAttribs = makeFullAttributes(attributes.bottomRight, args.positions.bottomLeft);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    fullAttribs = makeFullAttributes(attributes.bottomLeft, args.positions.bottomRight);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    fullAttribs = makeFullAttributes(attributes.topLeft, args.positions.topRight);
+    offset = this.vertexAttributes.emplaceAttributesObject(fullAttribs, args.buffer, offset);
+
+    return offset;
+  }
+
+  emplaceLine(args: EmplaceLineArgs<T>): number {
+    const disp = displacement(args.start, args.end);
+    const height = disp.magnitude / 2;
+    const center = add(args.start, scale(normalize(disp), height));
+    const theta = angle(disp);
+    const width = args.thickness;
+
+    const transform = QuadTransform.builder()
+      .position(QuadPositioner.center(center))
+      .rotate(QuadRotator.center(theta))
+      .build();
+    return this.emplaceRectangle({
+      buffer: args.buffer,
+      offset: args.offset,
+      transform,
+      width,
+      height,
+      attributes: args.attributes,
+    });
+  }
+
+  static attributesForAllFourSides<T extends AttributesObject>(
+    attributes: Partial<Omit<VertexAttributesObject<T>, 'position'>>
+  ): PartialAttributes<T> {
+    return {
+      bottomLeft: attributes,
+      bottomRight: attributes,
+      topLeft: attributes,
+      topRight: attributes,
+    };
   }
 }
 
