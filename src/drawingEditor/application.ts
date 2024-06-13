@@ -41,11 +41,12 @@ export default class EditorApplication {
     if (context.isNone()) return Err('Could not intialize webgl2. Your browser may not support it');
     const gl = context.unwrap();
 
+    
     canvas.width = canvas.clientWidth * 2;
     canvas.height = canvas.clientHeight * 2;
+    gl.viewport(0, 0, canvas.width, canvas.height)
 
     const assetManager = new AssetManager();
-
     const resShader = await assetManager.initShaders(gl);
     if (resShader.isErr()) return Err(resShader.unwrapErr());
     const resTexture = await assetManager.initTextures(gl);
