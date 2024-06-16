@@ -2,7 +2,7 @@ import { type Float32Vector2 } from 'matrixgl';
 import { type Option } from '~/util/general/option';
 import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
 import { type GL } from '~/drawingEditor/webgl/glUtils';
-import type Func from '../util';
+import type { Func } from '~/util/general/utilTypes';
 
 interface ClearCanvas {
   clearCanvas: Func<void>;

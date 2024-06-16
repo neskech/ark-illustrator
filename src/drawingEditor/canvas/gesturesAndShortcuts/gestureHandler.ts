@@ -1,4 +1,3 @@
-import { type AppState } from '~/drawingEditor/drawingEditor/application';
 import { type CanvasEvent, type EventString } from '../toolSystem/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { find } from '~/util/general/arrayUtils';
@@ -10,6 +9,7 @@ import ZoomGesture from './gestures/zoomGesture';
 import ClearScreenGesture from './gestures/clearScreenGesture';
 import OpenSettingsGesture from './gestures/openSettingsGesture';
 import EyeDropperGesture from './gestures/EyeDropperGesture';
+import { type AppState } from '../../application';
 
 export default class GestureHandler {
   private pointerPositions: PointerPos[];

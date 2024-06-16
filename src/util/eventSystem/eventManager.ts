@@ -3,7 +3,7 @@
 import { assert } from '../general/contracts';
 import { filterInPlace, find } from '../general/arrayUtils';
 import type EventMap from './event';
-import type Func from './util';
+import type { ExtractParams } from '../general/utilTypes';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +13,6 @@ import type Func from './util';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-type ExtractParams<T> = T extends Func<infer Params> ? Params : never;
 type FnWithPriority<T> = {
   fn: T;
   hasPriority: boolean;
@@ -23,18 +22,14 @@ type Settify<T extends object> = {
   [key in keyof T]: FnWithPriority<T[key]>[];
 };
 
-type Optional<T extends object> = {
-  [key in keyof T]?: T[key];
-};
-
 type GetWithVoid<T> = {
   [K in keyof T]: ExtractParams<T[K]> extends void ? K : never;
 }[keyof T];
 
-type Key = keyof EventMap;
+export type EventKey = keyof EventMap;
 type KeysWithVoid = GetWithVoid<EventMap>;
-type KeysWithoutVoid = Exclude<Key, KeysWithVoid>;
-type EventHolder = Optional<Settify<EventMap>>;
+type KeysWithoutVoid = Exclude<EventKey, KeysWithVoid>;
+type EventHolder = Partial<Settify<EventMap>>;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -83,10 +78,10 @@ export default class EventManager {
     }
   }
 
-  public static subscribe<S extends Key>(event: S, fn: EventMap[S], hasPriority = false) {
+  public static subscribe<S extends EventKey>(event: S, fn: EventMap[S], hasPriority = false) {
     const eventMapping = this.getInstance().eventMapping;
 
-    if (!eventMapping[event]) eventMapping[event] = [];
+    if (eventMapping[event] != null) (eventMapping[event] as never[]) = [];
 
     const subscribers = eventMapping[event]!;
 
@@ -102,7 +97,7 @@ export default class EventManager {
     subscribers.push({ fn, hasPriority });
   }
 
-  public static unSubscribe<S extends Key>(event: S, fn: EventMap[S]) {
+  public static unSubscribe<S extends EventKey>(event: S, fn: EventMap[S]) {
     const eventMapping = this.getInstance().eventMapping;
 
     if (!eventMapping[event]) return;

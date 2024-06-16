@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { type Prettify } from '../general/utilTypes';
 import type AppEventTypes from './eventTypes/appEvents';
 import type BrushTypes from './eventTypes/brushEvents';
 import type CanvasTypes from './eventTypes/canvasEvents';
@@ -26,10 +27,6 @@ type MakeEventMap<Ts extends object[]> =
     : Ts extends [infer Head, ...infer Rest extends object[]] ?
         Head & MakeEventMap<Rest>
     : never
-
-type Prettify<T> = {
-    [K in keyof T]: T[K];
-    } & {};
 
 type AllEvents = MultiArrayConcat<[BrushTypes, CanvasTypes, AppEventTypes]>;
 type EventMap = Prettify<MakeEventMap<AllEvents>>;

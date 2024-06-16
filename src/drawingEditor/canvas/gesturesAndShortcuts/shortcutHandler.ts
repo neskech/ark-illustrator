@@ -1,4 +1,4 @@
-import { type AppState } from '~/drawingEditor/drawingEditor/application';
+import {type AppState } from '~/drawingEditor/application' 
 import { type CanvasEvent, type EventString } from '../toolSystem/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { mouseToNormalized, mouseToNormalizedWithEvent } from '../camera';
