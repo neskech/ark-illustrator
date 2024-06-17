@@ -10,9 +10,12 @@ export type Tuple<T, N extends number> = N extends N
 
 export type Prettify<T> = {
   [K in keyof T]: T[K];
-// eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/ban-types
 } & {};
 
-export type Func<Params> = (p: Params) => void
+export type Func<Params> = (p: Params) => void;
 
 export type ExtractParams<T> = T extends Func<infer Params> ? Params : never;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Constructor<T> = new (...args: any[]) => T;

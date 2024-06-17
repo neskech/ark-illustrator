@@ -1,39 +1,44 @@
-import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/module/moduleTypes/brushModule';
-import { type BrushSettings } from '../../toolSystem/settings/brushSettings';
+import { unreachable } from '~/util/general/funUtils';
+import NothingStabilizer, { type NothingStabilizerSettings } from './nothingStabilizer';
 import { type BrushPoint } from '../../toolSystem/tools/brush';
-import { requires } from '~/util/general/contracts';
+import SpringStabilizer, { type SpringStabilizerSettings } from './springStabilizer';
 
-export default interface Stabilizer {
-  addPoint: (p: BrushPoint, settings: Readonly<BrushSettings>) => void;
-  getProcessedCurve: (settings: Readonly<BrushSettings>) => BrushPoint[];
-  getRawCurve: (settings: Readonly<BrushSettings>) => BrushPoint[];
-  reset: () => void;
-}
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
-export const BRUSH_SIZE_SPACING_FACTOR = (settings: Readonly<BrushSettings>) =>
-  getSpacingFromBrushSettings(settings) / (settings.size * settings.maxSize);
-export const MAX_SIZE_RAW_BRUSH_POINT_ARRAY = (settings: Readonly<BrushSettings>) =>
-  Math.floor(MAX_POINTS_PER_FRAME * BRUSH_SIZE_SPACING_FACTOR(settings));
+export type StabilizerSettings = NothingStabilizerSettings | SpringStabilizerSettings;
 
-export const getSpacingFromBrushSettings = (settings: Readonly<BrushSettings>): number => {
-  return settings.spacing == 'auto' ? settings.size * 0.5 : settings.spacing;
-};
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! MAIN CLASS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+export abstract class Stabilizer {
+  abstract addPoint(point: BrushPoint): void;
+  abstract getProcessedCurve(): BrushPoint[];
+  abstract getRawCurve(): BrushPoint[];
+  abstract update(deltaTime: number): void;
+  abstract reset(): void;
 
-export function getNumDeletedElementsFromDeleteFactor(
-  deleteFactor: number,
-  maxSize: number
-): number {
-  return Math.floor(maxSize * deleteFactor);
-}
+  static getStabilizerOfType(settings: StabilizerSettings): Stabilizer {
+    switch (settings.type) {
+      case 'spring':
+        return new SpringStabilizer(settings);
+      case 'nothing':
+        return new NothingStabilizer(settings);
+      default:
+        return unreachable();
+    }
+  }
 
-export function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize: number) {
-  requires(array.length == maxSize);
-
-  const numToShaveOff = getNumDeletedElementsFromDeleteFactor(deleteFactor, maxSize);
-
-  const remaining = maxSize - numToShaveOff;
-
-  for (let i = 0; i < remaining; i++) {
-    array[i] = array[i + numToShaveOff];
+  protected castSettings<T extends StabilizerSettings>(settings: StabilizerSettings): T {
+    return settings as T;
   }
 }

@@ -89,10 +89,10 @@ export default class BrushModule extends CanvasRenderModule {
       },
     });
     this.shader = this.assetManager.getShader('stroke');
-    this.initBuffers();
+    this.initBuffer();
   }
 
-  private initBuffers() {
+  private initBuffer() {
     this.setupEvents();
 
     this.vertexArray.bind(this.gl);
@@ -180,7 +180,7 @@ export default class BrushModule extends CanvasRenderModule {
       this.canvasOverlayFramebuffer
     );
     this.renderStroke(points, brushSettings, this.canvasOverlayFramebuffer);
-    this.isOverlayFramebufferIsEmpty(false);
+    this.isOverlayFramebufferEmpty(false);
   }
 
   private renderStrokeToCanvas(points: BrushPoint[], brushSettings: BrushSettings) {
@@ -190,7 +190,7 @@ export default class BrushModule extends CanvasRenderModule {
 
   private clearOverlayFramebuffer() {
     clearFramebuffer(this.gl, this.canvasOverlayFramebuffer, 1, 1, 1, 1);
-    this.isOverlayFramebufferIsEmpty(true);
+    this.isOverlayFramebufferEmpty(true);
   }
 
   private setupEvents() {

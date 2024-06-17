@@ -17,7 +17,7 @@ export default abstract class CanvasRenderModule {
   protected canvasFramebuffer: FrameBuffer;
   protected canvasOverlayFramebuffer: FrameBuffer;
   protected assetManager: AssetManager;
-  protected overlayRenderer: OverlayRenderer
+  protected overlayRenderer: OverlayRenderer;
   private moduleManager: CanvasRenderModuleManager;
 
   constructor(args: CanvasRenderModuleArgs) {
@@ -25,12 +25,12 @@ export default abstract class CanvasRenderModule {
     this.gl = args.gl;
     this.canvasFramebuffer = args.moduleManager.getCanvasFramebuffer();
     this.canvasOverlayFramebuffer = args.moduleManager.getCanvasOverlayFramebuffer();
-    this.overlayRenderer = args.moduleManager.getOverlayRenderer()
+    this.overlayRenderer = args.moduleManager.getOverlayRenderer();
     this.assetManager = args.assetManager;
     this.moduleManager = args.moduleManager;
   }
 
-  isOverlayFramebufferIsEmpty(yesOrNo: boolean) {
+  isOverlayFramebufferEmpty(yesOrNo: boolean) {
     this.moduleManager.isOverlayFramebufferBlank(yesOrNo);
   }
 

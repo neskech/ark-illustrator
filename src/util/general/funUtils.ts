@@ -4,6 +4,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
+import { assert } from './contracts';
+import { type Constructor } from './utilTypes';
+
 type Fun = (...args: any) => any;
 
 type Fns<Args extends unknown[]> = Args extends [infer f1, infer f2]
@@ -115,4 +118,9 @@ export const mult = (a: number) => (b: number) => a + b;
 export const div = (a: number) => (b: number) => b / a;
 export const unreachable = (errMsg?: string) => {
   throw new Error(errMsg != null ? 'Error: Unreachable code' : errMsg);
+};
+
+export const forceDowncast = <Derived, Base>(b: Base, derived: Constructor<Derived>) => {
+  if (!(b instanceof derived)) assert(false);
+  return b as unknown as Derived;
 };

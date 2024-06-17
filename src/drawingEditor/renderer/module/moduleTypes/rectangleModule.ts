@@ -49,7 +49,7 @@ export default class RectangleModule extends CanvasRenderModule {
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<AttribsType>;
   private shader: Shader;
-  private color: Float32Vector3
+  private color: Float32Vector3;
 
   constructor(args: SquareModuleArgs) {
     super(args);
@@ -60,7 +60,7 @@ export default class RectangleModule extends CanvasRenderModule {
     });
     this.quadFactory = new QuadilateralFactory(vertexAttributes);
     this.shader = args.assetManager.getShader('rectangle');
-    this.color = new Float32Vector3(0, 0, 0)
+    this.color = new Float32Vector3(0, 0, 0);
     this.initBuffer();
     this.setupEvents();
   }
@@ -117,23 +117,23 @@ export default class RectangleModule extends CanvasRenderModule {
         this.canvasOverlayFramebuffer
       );
       this.renderRectangle(this.canvasOverlayFramebuffer, anchorPosition, otherPosition);
-      this.isOverlayFramebufferIsEmpty(false);
+      this.isOverlayFramebufferEmpty(false);
     });
 
     EventManager.subscribe('rectangleFinished', ({ anchorPosition, otherPosition }) => {
       this.renderRectangle(this.canvasFramebuffer, anchorPosition, otherPosition);
       clearFramebuffer(this.gl, this.canvasOverlayFramebuffer, 1, 1, 1, 1);
-      this.isOverlayFramebufferIsEmpty(true);
+      this.isOverlayFramebufferEmpty(true);
     });
 
     EventManager.subscribe('rectangleCanceled', () => {
       clearFramebuffer(this.gl, this.canvasOverlayFramebuffer, 1, 1, 1, 1);
-      this.isOverlayFramebufferIsEmpty(true);
+      this.isOverlayFramebufferEmpty(true);
     });
 
     EventManager.subscribe('colorChanged', (color) => {
-      console.log('YEAHHHHH')
-      this.color = color
-    })
+      console.log('YEAHHHHH');
+      this.color = color;
+    });
   }
 }

@@ -5,16 +5,10 @@ import { assert, requires } from '~/util/general/contracts';
 import { add, copy, scale, sub } from '~/drawingEditor/webgl/vector';
 import { Float32Vector2 } from 'matrixgl';
 import { CurveInterpolator } from 'curve-interpolator';
-import {
-  MAX_SIZE_RAW_BRUSH_POINT_ARRAY,
-  getNumDeletedElementsFromDeleteFactor,
-  getSpacingFromBrushSettings,
-  shiftDeleteElements,
-} from './stabilizer';
 import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
 import EventManager from '~/util/eventSystem/eventManager';
 import Benchmarker, { incrementalLog } from '../../../../util/general/benchmarking';
-import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/pipelines/strokePipeline';
+import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/module/moduleTypes/brushModule';
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
@@ -90,7 +84,7 @@ export default class BoxFilterStabilizer implements Stabilizer {
   private cache: Cache;
   private maxSize: number;
 
-  constructor(settings: Readonly<BrushSettings>) {
+  constructor(settings: BrushSettings) {
     this.maxSize = Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(settings) * 0.5);
 
     //TODO: Add mutation observer on the s
@@ -106,7 +100,7 @@ export default class BoxFilterStabilizer implements Stabilizer {
     };
   }
 
-  addPoint(p: BrushPoint, settings: Readonly<BrushSettings>) {
+  addPoint(p: BrushPoint, settings: BrushSettings) {
     this.currentPoints[this.numPoints] = p;
     this.numPoints += 1;
     if (this.numPoints == this.maxSize) this.handleOverflow(settings);
@@ -141,7 +135,7 @@ export default class BoxFilterStabilizer implements Stabilizer {
     this.cache.previousRawCurveLength = 0;
   }
 
-  private handleOverflow(settings: Readonly<BrushSettings>) {
+  private handleOverflow(settings: BrushSettings) {
     if (!allowLimitedStrokeLength) {
       this.numPoints = 0;
       return;
@@ -175,7 +169,7 @@ export default class BoxFilterStabilizer implements Stabilizer {
 function process(
   rawCurve: BrushPoint[],
   rawCurveLength: number,
-  settings: Readonly<BrushSettings>,
+  settings: BrushSettings,
   cache: Cache
 ): BrushPoint[] {
   if (rawCurveLength <= 2) return rawCurve.slice(0, rawCurveLength);
@@ -380,34 +374,6 @@ function carmullRom2D(
   return results;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function addPointsCartmollInterpolation(
-  rawCurve: BrushPoint[],
-  tension: number,
-  alpha: number,
-  spacing: number
-): BrushPoint[] {
-  if (rawCurve.length <= 1) return rawCurve;
-
-  const points = rawCurve.map((p) => [p.position.x, p.position.y]);
-  const interpolator = new CurveInterpolator(points, {
-    tension,
-    alpha,
-  });
-
-  const curveDist = interpolator.getLengthAt(1);
-  const numSteps = Math.ceil(curveDist / spacing);
-
-  const output: BrushPoint[] = [];
-  for (let i = 0; i < numSteps; i++) {
-    const parameter = Math.min(1, (spacing * i) / curveDist);
-    const point = interpolator.getPointAt(parameter);
-    output.push(newPoint(new Float32Vector2(point[0], point[1]), 1));
-  }
-
-  return output;
-}
-
 function addPointsCartmollInterpolation3D(
   rawCurve: BrushPoint[],
   tension: number,
@@ -514,4 +480,32 @@ function getSmoothingValueFromStabilization(stabilization: number): number {
   requires(0 <= stabilization && stabilization <= 1);
   const range = MAX_SMOOTHING - MIN_SMOOTHING;
   return MIN_SMOOTHING + range * stabilization;
+}
+
+const BRUSH_SIZE_SPACING_FACTOR = (settings: BrushSettings) =>
+  getSpacingFromBrushSettings(settings) / (settings.size * settings.maxSize);
+const MAX_SIZE_RAW_BRUSH_POINT_ARRAY = (settings: BrushSettings) =>
+  Math.floor(MAX_POINTS_PER_FRAME * BRUSH_SIZE_SPACING_FACTOR(settings));
+
+const getSpacingFromBrushSettings = (settings: BrushSettings): number => {
+  return settings.spacing == 'auto' ? settings.size * 0.5 : settings.spacing;
+};
+
+function getNumDeletedElementsFromDeleteFactor(
+  deleteFactor: number,
+  maxSize: number
+): number {
+  return Math.floor(maxSize * deleteFactor);
+}
+
+function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize: number) {
+  requires(array.length == maxSize);
+
+  const numToShaveOff = getNumDeletedElementsFromDeleteFactor(deleteFactor, maxSize);
+
+  const remaining = maxSize - numToShaveOff;
+
+  for (let i = 0; i < remaining; i++) {
+    array[i] = array[i + numToShaveOff];
+  }
 }
