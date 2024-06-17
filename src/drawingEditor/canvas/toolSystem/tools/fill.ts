@@ -15,7 +15,7 @@ export class Fill extends Tool {
     super();
   }
 
-  handleEvent(args: HandleEventArgs): boolean {
+  handleEvent(args: HandleEventArgs) {
     requires(this.areValidFillSettings(args.settings.fillSettings));
 
     const evType = args.eventString;
@@ -33,22 +33,26 @@ export class Fill extends Tool {
     }
   }
 
-  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+  update(deltaTime: number): void {
+    throw new Error('Method not implemented.');
+  }
+
+  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
     const { appState, settings } = args;
     return false;
   }
 
-  mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
     const { appState, settings } = args;
     return false;
   }
 
-  mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
     const { appState, settings } = args;
     return false;
   }
 
-  areValidFillSettings(f: FillSettings): boolean {
+  private areValidFillSettings(f: FillSettings): boolean {
     return 0 <= f.tolerance && f.tolerance <= 1;
   }
 }

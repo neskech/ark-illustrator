@@ -1,9 +1,6 @@
-import { ToolType } from '~/drawingEditor/canvas/toolSystem/handler';
-import type { Func } from '~/util/general/utilTypes';
 
-interface AppStateMutated {
-    appStateMutated: Func<void>
-}
+import { type ToolType } from '~/drawingEditor/canvas/toolSystem/inputManager';
+import type { Func } from '~/util/general/utilTypes';
 
 interface OpenSettings {
     openSettings: Func<void>
@@ -13,5 +10,5 @@ interface ToolChanged {
     toolType: ToolType
 }
 
-type AppEventTypes = [AppStateMutated, OpenSettings, ToolChanged]
+type AppEventTypes = [OpenSettings, ToolChanged]
 export default AppEventTypes

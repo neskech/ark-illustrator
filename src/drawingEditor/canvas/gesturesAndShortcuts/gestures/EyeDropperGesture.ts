@@ -1,8 +1,6 @@
-import { assert } from '~/util/general/contracts';
 import EventManager from '~/util/eventSystem/eventManager';
-import { noOp } from '~/util/general/funUtils';
 import { None, Some, type Option } from '~/util/general/option';
-import { type AppState } from '~/drawingEditor/drawingEditor/application';
+import { type AppState } from '../../../application';
 import { type Gesture, type PointerPos } from './gesture';
 
 const EYEDROPPER_DELAY_MILLIS = 500;
@@ -14,11 +12,11 @@ export default class EyeDropperGesture implements Gesture {
     this.downPointerId = None();
   }
 
-  fingerMoved(_: PointerPos[], __: AppState): boolean {
-    return false;
+  fingerMoved(_: PointerPos[], __: AppState) {
+    return;
   }
 
-  fingerTapped(positions: PointerPos[], appState: AppState): boolean {
+  fingerTapped(positions: PointerPos[], appState: AppState) {
     if (!this.isInitialized()) {
       this.deInitialize();
       this.tryInitialize(positions);
@@ -26,7 +24,7 @@ export default class EyeDropperGesture implements Gesture {
 
     if (!this.isValidInput(positions)) {
       this.deInitialize();
-      return false;
+      return;
     }
 
     this.downPointerId = Some(positions[0].id);
@@ -43,20 +41,15 @@ export default class EyeDropperGesture implements Gesture {
     return true;
   }
 
-  fingerReleased(removedFingers: number[], _: AppState): boolean {
+  fingerReleased(removedFingers: number[], _: AppState) {
     const contained = removedFingers.some(
       (p) => this.downPointerId.isSome() && this.downPointerId.unwrap() == p
     );
 
-    if (contained) {
-      this.downPointerId = None();
-      return true;
-    }
-
-    return false;
+    if (contained) this.downPointerId = None();
   }
 
-  private tryInitialize(positions: PointerPos[]) {
+  private tryInitialize(_: PointerPos[]) {
     this.downPointerId = None();
   }
 

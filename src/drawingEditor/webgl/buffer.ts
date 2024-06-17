@@ -84,7 +84,7 @@ export default class GLBuffer {
   addData(gl: GL, data: ArrayBufferView, dstOffsetBytes = 0, srcOffsetBytes = 0) {
     const target = bufTypeToEnum(gl, this.bufType);
 
-    const endIndex = srcOffsetBytes + data.byteLength;
+    const endIndex = srcOffsetBytes + data.byteLength - 1;
     if (endIndex >= this.sizeBytes && this.autoResizing) this.resize(gl, endIndex);
     else if (endIndex >= this.sizeBytes && !this.autoResizing && this.sizeBytes != 0)
       throw new Error(`Out of bounds write on gl buffer.\n 

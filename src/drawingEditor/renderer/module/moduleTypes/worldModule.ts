@@ -1,5 +1,5 @@
 import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
-import WorldRenderModule, { type WorldRenderModuleArgs } from './worldRenderModule';
+import WorldRenderModule, { type WorldRenderModuleArgs } from '../worldRenderModule';
 import { Float32Vector2 } from 'matrixgl';
 import {
   type GetAttributesType,
@@ -7,14 +7,14 @@ import {
   VertexAttributeType,
 } from '~/drawingEditor/webgl/vertexAttributes';
 import type Shader from '~/drawingEditor/webgl/shader';
-import { QuadilateralFactory } from '../geometry/quadFactory';
+import { QuadilateralFactory } from '../../geometry/quadFactory';
 import { VertexArrayObject } from '~/drawingEditor/webgl/vertexArray';
 import type Camera from '~/drawingEditor/canvas/camera';
 import Buffer from '~/drawingEditor/webgl/buffer';
-import { QuadTransform } from '../geometry/transform';
-import { QuadPositioner } from '../geometry/positioner';
-import { QuadRotator } from '../geometry/rotator';
-import { clearScreen } from '../util';
+import { QuadTransform } from '../../geometry/transform';
+import { QuadPositioner } from '../../geometry/positioner';
+import { QuadRotator } from '../../geometry/rotator';
+import { clearScreen } from '../../util';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -9,11 +9,11 @@ export default class WorldModuleManager {
     if (modules != null) this.modules = modules.sort((a, b) => a.getZIndex() - b.getZIndex());
     else this.modules = [];
 
-    assert(this.modulesAreSorted());
+    assert(this.areModulesSorted());
   }
 
   addModule(module: WorldRenderModule) {
-    requires(this.modulesAreSorted());
+    requires(this.areModulesSorted());
 
     for (let i = 0; i < this.modules.length; i++) {
       const curr = this.modules[i];
@@ -27,12 +27,12 @@ export default class WorldModuleManager {
   }
 
   render(canvasFramebuffer: FrameBuffer) {
-    requires(this.modulesAreSorted());
+    requires(this.areModulesSorted());
 
     for (const mod of this.modules) mod.render(canvasFramebuffer);
   }
 
-  private modulesAreSorted(): boolean {
+  private areModulesSorted(): boolean {
     for (let i = 0; i < this.modules.length - 1; i++) {
       const before = this.modules[i];
       const after = this.modules[i + 1];

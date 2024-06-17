@@ -33,48 +33,46 @@ export default class GestureHandler {
 
     switch (eventType) {
       case 'pointerdown':
-        return this.handlePointerDown(event, appState);
+        this.handlePointerDown(event, appState);
+        return;
       case 'pointerup':
-        return this.handlePointerUp(event, appState);
+        this.handlePointerUp(event, appState);
+        return;
       case 'pointercancel':
-        return this.handlePointerUp(event, appState);
+        this.handlePointerUp(event, appState);
+        return;
       case 'pointerout':
-        return this.handlePointerUp(event, appState);
+        this.handlePointerUp(event, appState);
+        return;
       case 'pointerleave':
-        return this.handlePointerUp(event, appState);
+        this.handlePointerUp(event, appState);
+        return;
       case 'pointermove':
-        return this.handlePointerMove(event, appState);
+        this.handlePointerMove(event, appState);
+        return;
     }
   }
 
-  handlePointerDown(event: PointerEvent, appState: AppState): boolean {
+  handlePointerDown(event: PointerEvent, appState: AppState) {
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
     this.pointerPositions.push({
       pos: new Float32Vector2(event.clientX, event.clientY),
       id: event.pointerId,
     });
 
-    let dirty = false;
-    for (const gesture of this.gestures) {
-      dirty = gesture.fingerTapped(this.pointerPositions, appState) || dirty;
-    }
-    return dirty;
+    for (const gesture of this.gestures) gesture.fingerTapped(this.pointerPositions, appState);
   }
 
-  handlePointerMove(event: PointerEvent, appState: AppState): boolean {
+  handlePointerMove(event: PointerEvent, appState: AppState) {
     find(this.pointerPositions, (p) => p.id == event.pointerId).map((p) => {
       p.pos.x = event.clientX;
       p.pos.y = event.clientY;
     });
 
-    let dirty = false;
-    for (const gesture of this.gestures) {
-      dirty = gesture.fingerMoved(this.pointerPositions, appState) || dirty;
-    }
-    return dirty;
+    for (const gesture of this.gestures) gesture.fingerMoved(this.pointerPositions, appState);
   }
 
-  handlePointerUp(event: PointerEvent, appState: AppState): boolean {
+  handlePointerUp(event: PointerEvent, appState: AppState) {
     const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
@@ -84,10 +82,6 @@ export default class GestureHandler {
       }
     }
 
-    let dirty = false;
-    for (const gesture of this.gestures) {
-      dirty = gesture.fingerReleased(removedIds, appState) || dirty;
-    }
-    return dirty;
+    for (const gesture of this.gestures) gesture.fingerReleased(removedIds, appState);
   }
 }

@@ -5,8 +5,7 @@ import Texture from '~/drawingEditor/webgl/texture';
 import { type Option, Some } from '~/util/general/option';
 
 const DEFAULT_TEXTURE =
-  'https://cdn.discordapp.com/attachments/960353053842735144/1250664441037717606/file_1.png?ex=666bc386&is=666a7206&hm=831406ef016113543b954ef2b1f43885b586287622b86c60abed8e54ed51b3be&';
-
+'https://cdn.discordapp.com/attachments/960353053842735144/1250664441037717606/file_1.png?ex=667060c6&is=666f0f46&hm=3a2da93c057ccfe37acab8b7430ef820acab6bad27c0e82f56ec68c82da58966&'
 interface BrushSettings_ {
   size: number;
   opacity: number;
@@ -92,7 +91,7 @@ export class BrushSettings {
       maxOpacity: 0.9,
       flow: 0.02,
       stabilization: 0.25,
-      spacing: 0.0005,
+      spacing: 0.0001,
       pressureSizeSettings: BezierFunction.getLinearBezier(),
       pressureOpacitySettings: BezierFunction.getLinearBezier(),
       color: new Float32Vector3(0, 0, 0),

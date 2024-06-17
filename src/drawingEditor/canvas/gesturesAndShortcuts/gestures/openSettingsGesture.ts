@@ -1,5 +1,5 @@
 import { type PointerPos, type Gesture } from './gesture';
-import { type AppState } from '~/drawingEditor/drawingEditor/application';
+import { type AppState } from '../../../application';
 import { assert } from '~/util/general/contracts';
 import EventManager from '~/util/eventSystem/eventManager';
 
@@ -14,11 +14,11 @@ export default class OpenSettingsGesture implements Gesture {
     this.lastTapTime = -1;
   }
 
-  fingerMoved(_: PointerPos[], __: AppState): boolean {
-    return false;
+  fingerMoved(_: PointerPos[], __: AppState) {
+    return
   }
 
-  fingerTapped(positions: PointerPos[], _: AppState): boolean {
+  fingerTapped(positions: PointerPos[], _: AppState) {
     if (!this.isInitialized()) {
       this.deInitialize();
       this.tryInitialize(positions);
@@ -26,11 +26,11 @@ export default class OpenSettingsGesture implements Gesture {
 
     if (positions.length > 4) {
       this.deInitialize();
-      return false;
+      return
     }
 
     if (!this.isValidInput(positions)) {
-      return false;
+      return
     }
 
     const now = new Date().getTime();
@@ -43,11 +43,10 @@ export default class OpenSettingsGesture implements Gesture {
       this.lastTapTime = now;
     }
 
-    return true;
   }
 
-  fingerReleased(): boolean {
-    return false;
+  fingerReleased() {
+    return
   }
 
   private tryInitialize(positions: PointerPos[]) {

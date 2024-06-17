@@ -14,6 +14,7 @@ import {
 import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
 import EventManager from '~/util/eventSystem/eventManager';
 import Benchmarker, { incrementalLog } from '../../../../util/general/benchmarking';
+import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/pipelines/strokePipeline';
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
@@ -91,6 +92,7 @@ export default class BoxFilterStabilizer implements Stabilizer {
 
   constructor(settings: Readonly<BrushSettings>) {
     this.maxSize = Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(settings) * 0.5);
+
     //TODO: Add mutation observer on the s
 
     this.currentPoints = new Array(this.maxSize).map((_) => newPoint(new Float32Vector2(0, 0), 0));
@@ -144,7 +146,7 @@ export default class BoxFilterStabilizer implements Stabilizer {
       this.numPoints = 0;
       return;
     }
-
+ 
     updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints);
 
     const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);

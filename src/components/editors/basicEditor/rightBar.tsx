@@ -1,21 +1,27 @@
 import { Box } from '@mui/material';
-import { type SettingsObject } from '../types';
 import ColorPicker from './colorPicker';
 import BrushSettingsPanel from './brushSettingsPanel';
+import { type InputManager } from '~/drawingEditor/canvas/toolSystem/inputManager';
 
 export interface RightBarProps {
-  settingsObject: SettingsObject;
+  inputManager: InputManager;
 }
 
-function RightBar({ settingsObject }: RightBarProps) {
+function RightBar({ inputManager }: RightBarProps) {
   return (
     <Box className="z-20 ml-auto mr-0 flex h-[100%] w-[100%] flex-col items-center gap-5 rounded-lg border-slate-800 bg-slate-800">
       <Box className="h-[30%] pb-3 pt-11">
-        <ColorPicker size={130} brushSettings={settingsObject.settings.brushSettings.getCurrentPreset()} />
+        <ColorPicker
+          size={130}
+          brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()}
+        />
       </Box>
 
-      <Box className="h-fit pt-4 w-full pr-4 pl-4">
-        <BrushSettingsPanel height={300} brushSettings={settingsObject.settings.brushSettings.getCurrentPreset()} />
+      <Box className="h-fit w-full pl-4 pr-4 pt-4">
+        <BrushSettingsPanel
+          height={300}
+          brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()}
+        />
       </Box>
     </Box>
   );

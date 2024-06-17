@@ -3,7 +3,7 @@ import EventManager from '~/util/eventSystem/eventManager';
 import { requires } from '../../../../util/general/contracts';
 import BoxFilterStabilizer from '../../utils/stabilizing/boxFilterStabilizer';
 import type Stabilizer from '../../utils/stabilizing/stabilizer';
-import { type GlobalToolSettings } from '../settings';
+import { type AllToolSettings } from '../settings';
 import { type BrushSettings } from '../settings/brushSettings';
 import { Tool, type HandleEventArgs } from '../tool';
 
@@ -29,7 +29,7 @@ export interface BrushPoint {
   position: Float32Vector2;
   pressure: number;
 }
- 
+
 export const newPoint = (pos: Float32Vector2, pressure: number): BrushPoint => ({
   position: pos,
   pressure,
@@ -39,38 +39,44 @@ export class Brush extends Tool {
   private isPointerDown: boolean;
   private stabilizer: Stabilizer;
 
-  constructor(settings: Readonly<GlobalToolSettings>) {
+  constructor(settings: Readonly<AllToolSettings>) {
     super();
     this.isPointerDown = false;
     this.stabilizer = new BoxFilterStabilizer(settings.brushSettings.getCurrentPreset());
   }
 
-  handleEvent(args: HandleEventArgs): boolean {
+  handleEvent(args: HandleEventArgs) {
     requires(this.areValidBrushSettings(args.settings.brushSettings.getCurrentPreset()));
 
-    if (!(args.event instanceof PointerEvent)) return false;
+    if (!(args.event instanceof PointerEvent)) return;
 
     const evType = args.eventString;
     const event = args.event;
 
-    if (event.pointerType == 'touch') return false;
-    if (event.pointerType == 'mouse' && event.button == MIDDLE_MOUSE) return false;
+    if (event.pointerType == 'touch') return;
+    if (event.pointerType == 'mouse' && event.button == MIDDLE_MOUSE) return;
 
     switch (evType) {
-      case 'pointerleave':
-        return this.pointerLeaveHandler(args);
       case 'pointermove':
-        return this.pointerMovedHandler(args, event);
+        this.pointerMovedHandler(args, event);
+        return;
       case 'pointerup':
-        return this.pointerUpHandler(args, event);
+        this.pointerUpHandler(args, event);
+        return;
       case 'pointerdown':
-        return this.pointerDownHandler(args, event);
-      default:
-        return false;
+        this.pointerDownHandler(args, event);
+        return;
+      case 'pointerleave':
+        this.pointerLeaveHandler(args);
+        return;
     }
   }
 
-  pointerMovedHandler(args: HandleEventArgs, event: PointerEvent): boolean {
+  update(_: number): void {
+    return;
+  }
+
+  private pointerMovedHandler(args: HandleEventArgs, event: PointerEvent) {
     const { appState, settings } = args;
     const brushSettings = settings.brushSettings.getCurrentPreset();
 
@@ -87,11 +93,9 @@ export class Brush extends Tool {
         currentSettings: brushSettings,
       });
     }
-
-    return this.isPointerDown;
   }
 
-  pointerUpHandler(args: HandleEventArgs, __: PointerEvent): boolean {
+  private pointerUpHandler(args: HandleEventArgs, __: PointerEvent) {
     const { settings } = args;
     const brushSettings = settings.brushSettings.getCurrentPreset();
 
@@ -106,10 +110,9 @@ export class Brush extends Tool {
     this.stabilizer.reset();
 
     this.isPointerDown = false;
-    return true;
   }
 
-  pointerDownHandler(args: HandleEventArgs, event: PointerEvent): boolean {
+  pointerDownHandler(args: HandleEventArgs, event: PointerEvent) {
     const { appState, settings } = args;
     const brushSettings = settings.brushSettings.getCurrentPreset();
 
@@ -128,12 +131,10 @@ export class Brush extends Tool {
       });
     }
 
-    const dirty = !this.isPointerDown;
     this.isPointerDown = true;
-    return dirty;
   }
 
-  pointerLeaveHandler(args: HandleEventArgs): boolean {
+  private pointerLeaveHandler(args: HandleEventArgs) {
     const { settings } = args;
     const brushSettings = settings.brushSettings.getCurrentPreset();
 
@@ -148,10 +149,9 @@ export class Brush extends Tool {
     this.stabilizer.reset();
 
     this.isPointerDown = false;
-    return true;
   }
 
-  areValidBrushSettings(b: BrushSettings): boolean {
+  private areValidBrushSettings(b: BrushSettings): boolean {
     return 0 <= b.opacity && b.opacity <= 100 && 0 <= b.stabilization && b.stabilization <= 1;
   }
 }

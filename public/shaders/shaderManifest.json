@@ -1,7 +1,7 @@
 {
   "shaders": [
     "blit",
-    "canvas",
+    "square",
     "stroke",
     "world"
   ]

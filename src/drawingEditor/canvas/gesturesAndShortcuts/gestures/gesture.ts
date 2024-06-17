@@ -1,6 +1,6 @@
 import { Float32Vector2 } from 'matrixgl';
-import { type AppState } from '~/drawingEditor/drawingEditor/application';
 import { mouseToNormalized } from '../../camera';
+import { type AppState } from '../../../application';
 
 export interface PointerPos {
   pos: Float32Vector2;
@@ -8,9 +8,9 @@ export interface PointerPos {
 }
 
 export interface Gesture {
-  fingerMoved: (positions: PointerPos[], appState: AppState) => boolean;
-  fingerTapped: (positions: PointerPos[], appState: AppState) => boolean;
-  fingerReleased: (removedIds: number[], appState: AppState) => boolean;
+  fingerMoved: (positions: PointerPos[], appState: AppState) => void;
+  fingerTapped: (positions: PointerPos[], appState: AppState) => void;
+  fingerReleased: (removedIds: number[], appState: AppState) => void;
 }
 
 export function isValidPosition(pos: Float32Vector2): boolean {

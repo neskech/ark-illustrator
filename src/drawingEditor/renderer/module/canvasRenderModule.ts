@@ -2,6 +2,7 @@ import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
 import type AssetManager from '../assetManager';
 import { type GL } from '~/drawingEditor/webgl/glUtils';
 import type CanvasRenderModuleManager from './canvasModuleManager';
+import type OverlayRenderer from './overlayRenderer';
 
 export type CanvasRenderModuleArgs = {
   gl: GL;
@@ -16,6 +17,7 @@ export default abstract class CanvasRenderModule {
   protected canvasFramebuffer: FrameBuffer;
   protected canvasOverlayFramebuffer: FrameBuffer;
   protected assetManager: AssetManager;
+  protected overlayRenderer: OverlayRenderer
   private moduleManager: CanvasRenderModuleManager;
 
   constructor(args: CanvasRenderModuleArgs) {
@@ -23,6 +25,7 @@ export default abstract class CanvasRenderModule {
     this.gl = args.gl;
     this.canvasFramebuffer = args.moduleManager.getCanvasFramebuffer();
     this.canvasOverlayFramebuffer = args.moduleManager.getCanvasOverlayFramebuffer();
+    this.overlayRenderer = args.moduleManager.getOverlayRenderer()
     this.assetManager = args.assetManager;
     this.moduleManager = args.moduleManager;
   }

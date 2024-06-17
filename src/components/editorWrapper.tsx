@@ -3,10 +3,12 @@ import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDiss
 import { Box, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
-import type EditorProps from './editors/types';
-import { type SettingsObject } from './editors/types';
 import EditorApplication from '../drawingEditor/application';
+import { type InputManager } from '~/drawingEditor/canvas/toolSystem/inputManager';
 
+export interface EditorProps {
+  inputManager: InputManager;
+}
 interface EditorWrapperProps {
   EditorComponent: React.ComponentType<EditorProps>;
 }
@@ -34,7 +36,7 @@ function ErrorFallback({ error }: { error: string }): React.JSX.Element {
 
 function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
   const [state, setState] = useState<State>({ type: 'loading' });
-  const [settings, setSettings] = useState<SettingsObject | null>(null);
+  const [settings, setSettings] = useState<InputManager | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
         .then((result) => {
           result.match(
             (app) => {
-              setSettings({ settings: app.settings, selectedTool: app.inputState.currentTool });
+              setSettings(app.inputManager);
               setState({ type: 'finished' });
             },
             (e) => setState({ type: 'error', errorMsg: e })
@@ -68,7 +70,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
         <></>
       )}
 
-      {settings && <EditorComponent settings={settings} />}
+      {settings && <EditorComponent inputManager={settings} />}
       <canvas
         ref={canvasRef}
         width={1000}

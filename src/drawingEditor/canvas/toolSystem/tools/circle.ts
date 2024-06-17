@@ -13,7 +13,7 @@ export class Circle extends Tool {
     super();
   }
 
-  handleEvent(args: HandleEventArgs): boolean {
+  handleEvent(args: HandleEventArgs) {
     requires(this.areValidCircleSettings());
 
     const evType = args.eventString;
@@ -21,32 +21,34 @@ export class Circle extends Tool {
 
     switch (evType) {
       case 'mousemove':
-        return this.mouseMovedHandler(args, event);
+        this.mouseMovedHandler(args, event);
+        return;
       case 'mouseup':
-        return this.mouseUpHandler(args, event);
+        this.mouseUpHandler(args, event);
+        return;
       case 'mousedown':
-        return this.mouseDownHandler(args, event);
-      default:
-        return false;
+        this.mouseDownHandler(args, event);
+        return;
     }
   }
 
-  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
-    return false;
+  update(deltaTime: number): void {
+    throw new Error('Method not implemented.');
   }
 
-  mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
-    return false;
+  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent) {
+    const { appState: canvasState, settings } = args;
   }
 
-  mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings, presetNumber } = args;
-    return false;
+  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent) {
+    const { appState: canvasState, settings } = args;
   }
 
-  areValidCircleSettings(): boolean {
+  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent) {
+    const { appState: canvasState, settings } = args;
+  }
+
+  private areValidCircleSettings(): boolean {
     return true;
   }
 }

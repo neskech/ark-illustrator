@@ -15,7 +15,7 @@ export class Rotator extends Tool {
     super();
   }
 
-  handleEvent(args: HandleEventArgs): boolean {
+  handleEvent(args: HandleEventArgs) {
     requires(this.areValidRotationSettings());
 
     const evType = args.eventString;
@@ -23,32 +23,34 @@ export class Rotator extends Tool {
 
     switch (evType) {
       case 'mousemove':
-        return this.mouseMovedHandler(args, event);
+        this.mouseMovedHandler(args, event);
+        return;
       case 'mouseup':
-        return this.mouseUpHandler(args, event);
+        this.mouseUpHandler(args, event);
+        return;
       case 'mousedown':
-        return this.mouseDownHandler(args, event);
-      default:
-        return false;
+        this.mouseDownHandler(args, event);
+        return;
     }
   }
 
-  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState: canvasState, settings } = args;
-    return false;
+  update(deltaTime: number): void {
+    throw new Error('Method not implemented.');
   }
 
-  mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent) {
     const { appState: canvasState, settings } = args;
-    return false;
   }
 
-  mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent) {
     const { appState: canvasState, settings } = args;
-    return false;
   }
 
-  areValidRotationSettings(): boolean {
+  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent) {
+    const { appState: canvasState, settings } = args;
+  }
+
+  private areValidRotationSettings(): boolean {
     return 0 <= ROTATION_SENSITIVITY && ROTATION_SENSITIVITY <= 1;
   }
 }

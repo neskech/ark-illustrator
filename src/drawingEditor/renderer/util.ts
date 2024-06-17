@@ -1,10 +1,9 @@
 import { Float32Vector2, Float32Vector3 } from 'matrixgl';
-import {
-  type BrushPoint
-} from '../canvas/toolSystem/tools/brush';
+import { type BrushPoint } from '../canvas/toolSystem/tools/brush';
 import { type BrushSettings } from '../canvas/toolSystem/settings/brushSettings';
 import { add, angle, copy, displacement, normalize, scale, rotateAbout } from '../webgl/vector';
 import { type GL } from '../webgl/glUtils';
+import FrameBuffer from '../webgl/frameBuffer';
 
 type FourSizeArray = [Float32Vector2, Float32Vector2, Float32Vector2, Float32Vector2];
 export function constructQuad(
@@ -394,4 +393,11 @@ export function emplaceQuadsStretched(
 export function clearScreen(gl: GL, r = 1, g = 1, b = 1, a = 1) {
   gl.clearColor(r, g, b, a);
   gl.clear(gl.COLOR_BUFFER_BIT);
+}
+
+export function clearFramebuffer(gl: GL, framebuffer: FrameBuffer, r = 1, g = 1, b = 1, a = 1) {
+  framebuffer.bind(gl);
+  gl.clearColor(r, g, b, a);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  framebuffer.unBind(gl);
 }

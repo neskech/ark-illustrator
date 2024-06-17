@@ -167,7 +167,7 @@ export default class Camera {
     logger(this.toString());
   }
 
-  mouseToWorld(event: PointerEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+  mouseToWorld(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
     const p = mouseToNDC(event, canvas);
 
     /**
@@ -252,7 +252,7 @@ export function mouseToNormalized(
   return new Float32Vector2(x, 1.0 - y);
 }
 
-export function mouseToNDC(event: PointerEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+export function mouseToNDC(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
   const p = mouseToNormalizedWithEvent(event, canvas);
   p.x = (p.x - 0.5) * 2.0;
   p.y = (p.y - 0.5) * 2.0;

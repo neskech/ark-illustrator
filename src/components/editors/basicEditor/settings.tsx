@@ -108,9 +108,9 @@ export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
         <Slider
           aria-label="Brush Size"
           value={size}
-          min={0}
-          max={0.01}
-          step={0.001}
+          min={0.01}
+          max={2.5}
+          step={0.01}
           onChange={(e, val) => setSize(e, val as number)}
         />
       </Stack>
@@ -205,8 +205,8 @@ export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
           aria-label="Spacing"
           value={spacing}
           min={0.0005}
-          max={0.009}
-          step={0.00001}
+          max={1}
+          step={0.0001}
           onChange={(e, val) => setSpacing(e, val as number)}
         />
       </Stack>

@@ -1,13 +1,13 @@
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import EventManager from '~/util/eventSystem/eventManager';
-import type EditorProps from '../types';
 import LeftBar from './leftBar';
 import { SettingsDialog } from './settings';
 import RightBar from './rightBar';
 import EyeDropper from '~/components/eyeDropper';
+import { type EditorProps } from '~/components/editorWrapper';
 
-export function BasicEditor({ settings }: EditorProps) {
+export function BasicEditor({ inputManager }: EditorProps) {
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
@@ -20,18 +20,22 @@ export function BasicEditor({ settings }: EditorProps) {
     <Box className="pointer-events-none z-30 h-[100%] w-[100%]">
       <Box className="pointer-events-auto z-20 float-left flex h-full w-[80px] flex-col justify-center">
         <Box className="z-20 float-left h-[100%] w-[80px] rounded-lg border-slate-800 bg-slate-800 p-6">
-          <LeftBar settingsObject={settings} />
+          <LeftBar inputManager={inputManager} />
         </Box>
       </Box>
 
       <Box className="pointer-events-auto z-20 ml-auto mr-0 flex h-full w-[150px] flex-col justify-center">
-        <RightBar settingsObject={settings} />
+        <RightBar inputManager={inputManager} />
       </Box>
 
-      <EyeDropper brushSettings={settings.settings.brushSettings.getCurrentPreset()} />
+      <EyeDropper brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()} />
 
       {showSettings ? (
-        <SettingsDialog open={showSettings} brushSettings={settings.settings.brushSettings.getCurrentPreset()} onClose={() => setShowSettings(false)} />
+        <SettingsDialog
+          open={showSettings}
+          brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()}
+          onClose={() => setShowSettings(false)}
+        />
       ) : (
         <div> </div>
       )}

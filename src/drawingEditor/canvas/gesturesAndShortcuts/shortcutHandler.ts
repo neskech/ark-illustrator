@@ -1,4 +1,4 @@
-import {type AppState } from '~/drawingEditor/application' 
+import { type AppState } from '~/drawingEditor/application';
 import { type CanvasEvent, type EventString } from '../toolSystem/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { mouseToNormalized, mouseToNormalizedWithEvent } from '../camera';
@@ -34,29 +34,32 @@ export default class ShortcutHandler {
   handleEvent(event: CanvasEvent, appState: AppState, eventType: EventString) {
     switch (eventType) {
       case 'wheel':
-        return this.handleScroll(event as WheelEvent, appState);
+        this.handleScroll(event as WheelEvent, appState);
+        return;
       case 'pointerdown':
-        return this.handleMouseDown(event as PointerEvent);
+        this.handleMouseDown(event as PointerEvent);
+        return;
       case 'pointerup':
-        return this.handleMouseUp(event as PointerEvent);
+        this.handleMouseUp(event as PointerEvent);
+        return;
       case 'pointermove':
-        return this.handleMouseMove(event as PointerEvent, appState);
+        this.handleMouseMove(event as PointerEvent, appState);
+        return;
       case 'keydown':
-        return this.handleKeyDown(event as KeyboardEvent, appState);
+        this.handleKeyDown(event as KeyboardEvent, appState);
+        return;
       case 'keyup':
-        return this.handleKeyUp(event as KeyboardEvent);
-      default:
-        return false;
+        this.handleKeyUp(event as KeyboardEvent);
+        return;
     }
   }
 
-  handleScroll(wheelEvent: WheelEvent, appState: AppState): boolean {
+  handleScroll(wheelEvent: WheelEvent, appState: AppState) {
     const scrollAmount = wheelEvent.deltaY * ZOOM_SCALING;
     appState.canvasState.camera.translateZoom(scrollAmount);
-    return true;
   }
 
-  handleMouseMove(mouseEvent: PointerEvent, appState: AppState): boolean {
+  handleMouseMove(mouseEvent: PointerEvent, appState: AppState) {
     const isCurrPositionValid = isValidMousePos(this.mousePosition);
 
     if (isCurrPositionValid && this.isMiddleMouseHeldDown > 0) {
@@ -75,11 +78,9 @@ export default class ShortcutHandler {
 
     this.mousePosition.x = mouseEvent.clientX;
     this.mousePosition.y = mouseEvent.clientY;
-
-    return isCurrPositionValid && (this.isAltKeyDown || this.isMiddleMouseHeldDown > 0);
   }
 
-  handleMouseDown(mouseEvent: PointerEvent): boolean {
+  handleMouseDown(mouseEvent: PointerEvent) {
     switch (mouseEvent.button) {
       case LEFT_MOUSE:
         this.isLeftMouseHeldDown += 1;
@@ -88,11 +89,9 @@ export default class ShortcutHandler {
       case RIGHT_MOUSE:
         this.isRightMouseHeldDown += 1;
     }
-
-    return false;
   }
 
-  handleMouseUp(mouseEvent: PointerEvent): boolean {
+  handleMouseUp(mouseEvent: PointerEvent) {
     switch (mouseEvent.button) {
       case LEFT_MOUSE:
         this.isLeftMouseHeldDown -= 1;
@@ -101,21 +100,19 @@ export default class ShortcutHandler {
       case RIGHT_MOUSE:
         this.isRightMouseHeldDown -= 1;
     }
-
-    return false;
   }
 
-  handleKeyDown(keyEvent: KeyboardEvent, appState: AppState): boolean {
+  handleKeyDown(keyEvent: KeyboardEvent, appState: AppState) {
     this.isAltKeyDown = keyEvent.key == 'Alt';
 
     if (keyEvent.key == 'c') {
       EventManager.invokeVoid('clearCanvas');
-      return true;
+      return;
     }
 
     if (keyEvent.key == 's') {
       EventManager.invokeVoid('openSettings');
-      return true;
+      return;
     }
 
     if (keyEvent.key == 'i') {
@@ -126,13 +123,10 @@ export default class ShortcutHandler {
         originPosition: None(),
       });
     }
-
-    return false;
   }
 
-  handleKeyUp(_: KeyboardEvent): boolean {
+  handleKeyUp(_: KeyboardEvent) {
     this.isAltKeyDown = false;
-    return false;
   }
 }
 

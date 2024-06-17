@@ -4,6 +4,7 @@ import { assert } from '../general/contracts';
 import { filterInPlace, find } from '../general/arrayUtils';
 import type EventMap from './event';
 import type { ExtractParams } from '../general/utilTypes';
+import { type Prettify } from '../general/utilTypes';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +30,7 @@ type GetWithVoid<T> = {
 export type EventKey = keyof EventMap;
 type KeysWithVoid = GetWithVoid<EventMap>;
 type KeysWithoutVoid = Exclude<EventKey, KeysWithVoid>;
-type EventHolder = Partial<Settify<EventMap>>;
+type EventHolder = Prettify<Partial<Settify<EventMap>>>;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +82,7 @@ export default class EventManager {
   public static subscribe<S extends EventKey>(event: S, fn: EventMap[S], hasPriority = false) {
     const eventMapping = this.getInstance().eventMapping;
 
-    if (eventMapping[event] != null) (eventMapping[event] as never[]) = [];
+    if (eventMapping[event] == null) (eventMapping[event] as unknown as unknown[]) = [];
 
     const subscribers = eventMapping[event]!;
 

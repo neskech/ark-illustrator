@@ -1,27 +1,28 @@
-import EventManager from '../util/eventSystem/eventManager';
 import { Err, Ok, type Result } from '../util/general/result';
 import { getDefaultCanvasState, type CanvasState } from './canvas/canvas';
-import { getDefaultToolState, handleEvent, type InputState } from './canvas/toolSystem/handler';
-import { getDefaultSettings, type GlobalToolSettings } from './canvas/toolSystem/settings';
+import { InputManager } from './canvas/toolSystem/inputManager';
+import { getDefaultSettings, type AllToolSettings } from './canvas/toolSystem/settings';
 import AssetManager from './renderer/assetManager';
-import { MasterPipeline } from './renderer/pipelines/MasterPipeline';
+import Renderer from './renderer/renderer';
 import { fetchWebGLContext } from './webgl/glUtils';
 
 export interface AppState {
   canvasState: CanvasState;
-  settings: GlobalToolSettings;
-  inputState: InputState;
-  renderer: MasterPipeline;
+  settings: AllToolSettings;
+  inputManager: InputManager;
+  renderer: Renderer;
   assetManager: AssetManager;
 }
 
 export default class EditorApplication {
   private appState!: AppState;
   private isInitialized: boolean;
+  private lastUpdateTime: number;
   private static instance: EditorApplication;
 
   constructor() {
     this.isInitialized = false;
+    this.lastUpdateTime = performance.now();
   }
 
   private static getInstance(): EditorApplication {
@@ -41,10 +42,8 @@ export default class EditorApplication {
     if (context.isNone()) return Err('Could not intialize webgl2. Your browser may not support it');
     const gl = context.unwrap();
 
-    
     canvas.width = canvas.clientWidth * 2;
     canvas.height = canvas.clientHeight * 2;
-    gl.viewport(0, 0, canvas.width, canvas.height)
 
     const assetManager = new AssetManager();
     const resShader = await assetManager.initShaders(gl);
@@ -53,24 +52,25 @@ export default class EditorApplication {
     if (resTexture.isErr()) return Err(resTexture.unwrapErr());
 
     const settings = getDefaultSettings(gl);
+    const canvasState = getDefaultCanvasState(canvas);
     instance.appState = {
       settings,
-      canvasState: getDefaultCanvasState(canvas),
-      inputState: getDefaultToolState(settings),
-      renderer: new MasterPipeline(gl, canvas, assetManager),
+      canvasState,
+      inputManager: new InputManager(settings),
+      renderer: new Renderer(gl, canvas, canvasState.camera, assetManager),
       assetManager,
     };
 
     instance.initEventListeners(canvas);
-    instance.appState.renderer.init(instance.appState.canvasState.camera);
-    EventManager.invokeVoid('appStateMutated');
+    instance.updateLoop();
 
     return Ok(instance.appState);
   }
 
   static destroy() {
-    const instance = this.getInstance();
-    instance.appState.renderer.destroy();
+    //TODO
+    //const instance = this.getInstance();
+    //instance.appState.renderer.destroy();
   }
 
   private initEventListeners(canvas: HTMLCanvasElement) {
@@ -89,15 +89,7 @@ export default class EditorApplication {
 
     canvasEvents.forEach((e) => {
       canvas.addEventListener(e, (ev) => {
-        handleEvent({
-          map: this.appState.inputState.tools,
-          event: ev,
-          gestures: this.appState.inputState.gestures,
-          shortcuts: this.appState.inputState.shortcuts,
-          currentTool: this.appState.inputState.currentTool.current,
-          appState: this.appState,
-          settings: this.appState.settings,
-        });
+        this.appState.inputManager.handleEvent(ev, this.appState);
       });
     });
 
@@ -105,16 +97,18 @@ export default class EditorApplication {
 
     globalEvents.forEach((e) => {
       document.addEventListener(e, (ev) => {
-        handleEvent({
-          map: this.appState.inputState.tools,
-          event: ev,
-          gestures: this.appState.inputState.gestures,
-          shortcuts: this.appState.inputState.shortcuts,
-          currentTool: this.appState.inputState.currentTool.current,
-          appState: this.appState,
-          settings: this.appState.settings,
-        });
+        this.appState.inputManager.handleEvent(ev, this.appState);
       });
     });
+  }
+
+  private updateLoop() {
+    const now = performance.now();
+    const delta = (now - this.lastUpdateTime) / 1000.0;
+    this.lastUpdateTime = now;
+
+    this.appState.inputManager.handleUpdate(delta);
+    this.appState.renderer.render();
+    window.requestAnimationFrame(this.updateLoop.bind(this));
   }
 }
