@@ -49,6 +49,7 @@ export default class RectangleModule extends CanvasRenderModule {
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<AttribsType>;
   private shader: Shader;
+  private color: Float32Vector3
 
   constructor(args: SquareModuleArgs) {
     super(args);
@@ -58,7 +59,8 @@ export default class RectangleModule extends CanvasRenderModule {
       usage: 'Static Draw',
     });
     this.quadFactory = new QuadilateralFactory(vertexAttributes);
-    this.shader = args.assetManager.getShader('square');
+    this.shader = args.assetManager.getShader('rectangle');
+    this.color = new Float32Vector3(0, 0, 0)
     this.initBuffer();
     this.setupEvents();
   }
@@ -83,7 +85,7 @@ export default class RectangleModule extends CanvasRenderModule {
 
     this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
 
-    this.shader.uploadFloatVec3(this.gl, 'color', new Float32Vector3(1, 0, 0));
+    this.shader.uploadFloatVec3(this.gl, 'color', this.color);
 
     const buf = new Float32Array(NUM_ELEMENTS_QUAD);
     this.quadFactory.emplaceRectangle({
@@ -109,7 +111,6 @@ export default class RectangleModule extends CanvasRenderModule {
 
   private setupEvents() {
     EventManager.subscribe('rectangleContinued', ({ anchorPosition, otherPosition }) => {
-      console.log('YEAHN NIGGEr');
       clearFramebuffer(this.gl, this.canvasOverlayFramebuffer, 1, 1, 1, 1);
       this.overlayRenderer.renderCanvasToOverlay(
         this.canvasFramebuffer,
@@ -129,5 +130,10 @@ export default class RectangleModule extends CanvasRenderModule {
       clearFramebuffer(this.gl, this.canvasOverlayFramebuffer, 1, 1, 1, 1);
       this.isOverlayFramebufferIsEmpty(true);
     });
+
+    EventManager.subscribe('colorChanged', (color) => {
+      console.log('YEAHHHHH')
+      this.color = color
+    })
   }
 }

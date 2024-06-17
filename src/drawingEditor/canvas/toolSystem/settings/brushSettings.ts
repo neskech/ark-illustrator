@@ -3,9 +3,10 @@ import BezierFunction from '~/util/general/bezierFunction';
 import { type GL } from '~/drawingEditor/webgl/glUtils';
 import Texture from '~/drawingEditor/webgl/texture';
 import { type Option, Some } from '~/util/general/option';
+import EventManager from '~/util/eventSystem/eventManager';
 
 const DEFAULT_TEXTURE =
-'https://cdn.discordapp.com/attachments/960353053842735144/1250664441037717606/file_1.png?ex=667060c6&is=666f0f46&hm=3a2da93c057ccfe37acab8b7430ef820acab6bad27c0e82f56ec68c82da58966&'
+  'https://cdn.discordapp.com/attachments/960353053842735144/1250664441037717606/file_1.png?ex=667060c6&is=666f0f46&hm=3a2da93c057ccfe37acab8b7430ef820acab6bad27c0e82f56ec68c82da58966&';
 interface BrushSettings_ {
   size: number;
   opacity: number;
@@ -54,6 +55,7 @@ export class BrushSettings {
     this.color = settings.color;
     this.isEraser = settings.isEraser;
     this.texture = settings.texture;
+    this.setupEvents()
   }
 
   getSizeGivenPressure(pressure: number): number {
@@ -70,6 +72,12 @@ export class BrushSettings {
     const range = max - min;
     //const p = settings.pressureOpacitySettings.sampleY(pressure)
     return range * pressure + min;
+  }
+
+  private setupEvents() {
+    EventManager.subscribe('colorChanged', (color) => {
+      this.color = color;
+    });
   }
 
   static default(gl: GL): BrushSettings {

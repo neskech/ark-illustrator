@@ -1,4 +1,4 @@
-import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/pipelines/strokePipeline';
+import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/module/moduleTypes/brushModule';
 import { type BrushSettings } from '../../toolSystem/settings/brushSettings';
 import { type BrushPoint } from '../../toolSystem/tools/brush';
 import { requires } from '~/util/general/contracts';

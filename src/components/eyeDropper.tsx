@@ -1,6 +1,5 @@
 import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { useEffect, useState } from 'react';
-import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
 import EventManager from '~/util/eventSystem/eventManager';
 import { rgbaToHsl, hslToHex } from '~/util/general/color';
 import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
@@ -9,9 +8,6 @@ import { Int32Vector3 } from '~/drawingEditor/webgl/vector';
 import { mouseToNormalized } from '../drawingEditor/canvas/camera';
 import { type EyeDropperArgs } from '~/util/eventSystem/eventTypes/canvasEvents';
 
-export interface EyeDropperProps {
-  brushSettings: BrushSettings;
-}
 
 interface RenderObjects {
   canvasFramebuffer: FrameBuffer;
@@ -23,7 +19,7 @@ let toggle: ((obj: EyeDropperArgs) => void) | null;
 let pointerMove: ((e: MouseEvent) => void) | null;
 let pointerUp: (() => void) | null;
 
-function EyeDropper({ brushSettings }: EyeDropperProps) {
+function EyeDropper() {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<Float32Vector2>(new Float32Vector2(0, 0));
   const [color, setColor] = useState<Int32Vector3>(new Int32Vector3(0, 0, 0));
@@ -50,7 +46,7 @@ function EyeDropper({ brushSettings }: EyeDropperProps) {
     pointerUp = () => {
       if (!isVisible) return;
       setIsVisible(false);
-      brushSettings.color = new Float32Vector3(color.x / 255, color.y / 255, color.z / 255);
+      EventManager.invoke('colorChanged', new Float32Vector3(color.x, color.y, color.z))
     };
     document.addEventListener('pointerup', pointerUp);
     document.addEventListener('pointercancel', pointerUp);

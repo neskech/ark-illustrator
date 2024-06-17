@@ -2,14 +2,13 @@
 import { clamp } from 'curve-interpolator';
 import { type Float32Vector3 } from 'matrixgl';
 import React, { useEffect, useRef, useState } from 'react';
-import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
+import EventManager from '~/util/eventSystem/eventManager';
 import { hslToHex, hslToRGBNormalized } from '~/util/general/color';
 
 const DEGREE_OFFSET = 90;
 
 export interface ColorPickerProps {
   size: number;
-  brushSettings: BrushSettings;
 }
 
 interface Position {
@@ -81,8 +80,14 @@ function ColorPicker(props: ColorPickerProps) {
   }, [isOuterHeld, isInnerHeld]);
 
   useEffect(() => {
-    props.brushSettings.color = getRGBFromParams(degree, innerPos, innerSquareSize);
-  }, [degree, innerPos]);
+    EventManager.invoke('colorChanged', getRGBFromParams(degree, innerPos, innerSquareSize));
+  }, [degree, innerPos, innerSquareSize]);
+  
+  /* Set inital color */
+  useEffect(() => {
+    EventManager.invoke('colorChanged', getRGBFromParams(degree, innerPos, innerSquareSize));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div
