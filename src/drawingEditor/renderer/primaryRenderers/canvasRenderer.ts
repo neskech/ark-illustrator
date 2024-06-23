@@ -1,14 +1,14 @@
-import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { Float32Vector2 } from 'matrixgl';
 import {
   type GetAttributesType,
   VertexAttributes,
   VertexAttributeType,
-} from '~/drawingEditor/webgl/vertexAttributes';
-import type Shader from '~/drawingEditor/webgl/shader';
-import { VertexArrayObject } from '~/drawingEditor/webgl/vertexArray';
+} from '~/util/webglWrapper/vertexAttributes';
+import type Shader from '~/util/webglWrapper/shader';
+import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
 import type Camera from '~/drawingEditor/canvas/camera';
-import Buffer from '~/drawingEditor/webgl/buffer';
+import Buffer from '~/util/webglWrapper/buffer';
 import type AssetManager from '../util/assetManager';
 import { QuadilateralFactory } from '../geometry/quadFactory';
 import { QuadTransform } from '../geometry/transform';

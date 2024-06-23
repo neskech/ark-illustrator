@@ -1,5 +1,5 @@
 import { Float32Vector2 } from 'matrixgl';
-import { add, rotateAbout } from '~/drawingEditor/webgl/vector';
+import { add, rotateAbout } from '~/util/webglWrapper/vector';
 
 type Identity = {
   type: 'identity';

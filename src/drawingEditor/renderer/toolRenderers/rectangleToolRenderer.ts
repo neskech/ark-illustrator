@@ -2,14 +2,14 @@ import {
   type GetAttributesType,
   VertexAttributes,
   VertexAttributeType,
-} from '~/drawingEditor/webgl/vertexAttributes';
-import Buffer from '~/drawingEditor/webgl/buffer';
-import { VertexArrayObject } from '~/drawingEditor/webgl/vertexArray';
-import type Shader from '~/drawingEditor/webgl/shader';
+} from '~/util/webglWrapper/vertexAttributes';
+import Buffer from '~/util/webglWrapper/buffer';
+import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
+import type Shader from '~/util/webglWrapper/shader';
 import EventManager from '~/util/eventSystem/eventManager';
-import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { type Float32Vector2, Float32Vector3 } from 'matrixgl';
-import { midpoint } from '~/drawingEditor/webgl/vector';
+import { midpoint } from '~/util/webglWrapper/vector';
 import type AssetManager from '../util/assetManager';
 import type OverlayRenderer from '../utilityRenderers.ts/overlayRenderer';
 import { QuadTransform } from '../geometry/transform';

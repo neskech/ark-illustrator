@@ -1,7 +1,7 @@
-import { requires } from '../../util/general/contracts';
-import { unreachable } from '../../util/general/funUtils';
-import { Option } from '../../util/general/option';
-import { gl } from '../application';
+import { requires } from '../general/contracts';
+import { unreachable } from '../general/funUtils';
+import { Option } from '../general/option';
+import { gl } from '../../drawingEditor/application';
 import { GLObject } from './glUtils';
 import Texture from './texture';
 import { type TextureOptions } from './texture';
@@ -17,7 +17,6 @@ import { type TextureOptions } from './texture';
 type FrameBufferTarget = 'Regular' | 'Draw' | 'Read';
 type Filter = 'Linear' | 'Nearest';
 type Format = 'RGBA' | 'RGB' | 'ALPHA';
-
 
 export interface ReadPixelOptions {
   lowerLeftX: number;

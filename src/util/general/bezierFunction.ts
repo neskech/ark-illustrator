@@ -1,6 +1,6 @@
 import { Float32Vector2 } from 'matrixgl';
 import { assert, requires } from './contracts';
-import { add, copy, scale } from '../../drawingEditor/webgl/vector';
+import { add, copy, scale } from '../webglWrapper/vector';
 
 export default class BezierFunction {
   private controlPoints: Float32Vector2[];

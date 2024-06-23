@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import Jimp from 'jimp';
-import { assert, requires } from '../../util/general/contracts';
-import { unreachable } from '../../util/general/funUtils';
-import { None, Option, Some } from '../../util/general/option';
+import { assert, requires } from '../general/contracts';
+import { unreachable } from '../general/funUtils';
+import { None, Option, Some } from '../general/option';
 import type FrameBuffer from './frameBuffer';
 import { type ReadPixelOptions } from './frameBuffer';
 import { GLObject, checkError } from './glUtils';
-import { Err, Ok, Result, type Unit, unit } from '../../util/general/result';
-import { gl } from '../application';
+import { Err, Ok, Result, type Unit, unit } from '../general/result';
+import { gl } from '../../drawingEditor/application';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +20,6 @@ import { gl } from '../application';
 type TextureFilter = 'Linear' | 'Nearest';
 type TextureWrap = 'Clamp To Edge' | 'Repeat' | 'Mirrored Repeat';
 type Format = 'RGBA' | 'RGB' | 'ALPHA';
-
 
 export interface CopySubTextureOptions {
   lowerDestinationX: number;

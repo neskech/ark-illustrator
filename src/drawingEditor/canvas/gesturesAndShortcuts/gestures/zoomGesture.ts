@@ -1,6 +1,6 @@
 import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
 import { type AppState } from '../../../application';
-import { distance } from '~/drawingEditor/webgl/vector';
+import { distance } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
 

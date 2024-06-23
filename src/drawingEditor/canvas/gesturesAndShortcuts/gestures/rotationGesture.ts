@@ -1,8 +1,8 @@
 import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
 import { type AppState } from '../../../application';
-import { angle } from '~/drawingEditor/webgl/vector';
+import { angle } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
-import { displacement } from '../../../webgl/vector';
+import { displacement } from '../../../../util/webglWrapper/vector';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
 
 const ROTATION_FACTOR = 1;
@@ -20,15 +20,15 @@ export default class RotationGesture implements Gesture {
     this.originalCameraRotation = NaN;
   }
 
-  fingerMoved(positions: PointerPos[], appState: AppState){
+  fingerMoved(positions: PointerPos[], appState: AppState) {
     if (!this.isInitialized()) {
       this.tryInitialize(positions, appState);
-      return
+      return;
     }
 
     if (!this.isValidInput(positions)) {
       this.deInitialize();
-      return
+      return;
     }
 
     const newAngle = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
@@ -36,7 +36,6 @@ export default class RotationGesture implements Gesture {
     appState.canvasState.camera.setRotation(
       this.originalCameraRotation + rotation * ROTATION_FACTOR
     );
-
   }
 
   fingerReleased(removedIds: number[]) {
@@ -45,7 +44,7 @@ export default class RotationGesture implements Gesture {
   }
 
   fingerTapped(_: PointerPos[], __: AppState) {
-    return
+    return;
   }
 
   private tryInitialize(positions: PointerPos[], appState: AppState) {

@@ -3,11 +3,11 @@ import {
   type AttributesObject,
   type VertexAttributes,
   type VertexAttributesObject,
-} from '../../webgl/vertexAttributes';
+} from '../../../util/webglWrapper/vertexAttributes';
 import { QuadPositioner } from './positioner';
 import { type Float32Vector2 } from 'matrixgl';
 import { QuadTransform } from './transform';
-import { add, angle, displacement, normalize, scale } from '~/drawingEditor/webgl/vector';
+import { add, angle, displacement, normalize, scale } from '~/util/webglWrapper/vector';
 import { QuadRotator } from './rotator';
 
 ////////////////////////////////////////////////////////////////////////////////////////

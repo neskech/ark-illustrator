@@ -1,10 +1,10 @@
-import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import type AssetManager from '../util/assetManager';
 import BrushToolRenderer from './brushRenderer';
 import RectangleToolRenderer from './rectangleToolRenderer';
 import type UtilityRenderers from '../utilityRenderers.ts/utilityRenderers';
 
-//TODO: Refractor all to flat args 
+//TODO: Refractor all to flat args
 export type ToolRenderersArgs = {
   assetManager: AssetManager;
   canvasFramebuffer: FrameBuffer;
@@ -26,6 +26,6 @@ export default class ToolRenderers {
   }
 
   getRectangleToolRenderer() {
-    return this.rectangleToolRenderer
+    return this.rectangleToolRenderer;
   }
 }

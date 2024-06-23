@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import { unreachable } from '../../util/general/funUtils';
-import { Option } from '../../util/general/option';
-import { gl } from '../application';
+import { unreachable } from '../general/funUtils';
+import { Option } from '../general/option';
+import { gl } from '../../drawingEditor/application';
 import { GLObject } from './glUtils';
 
 ////////////////////////////////////////////////////////////////////////////////////////

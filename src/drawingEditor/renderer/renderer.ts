@@ -1,8 +1,7 @@
-import { type GL } from '../webgl/glUtils';
 import type AssetManager from './util/assetManager';
 import type Camera from '../canvas/camera';
 import { clearFramebuffer, clearScreen } from './util/util';
-import FrameBuffer from '../webgl/frameBuffer';
+import FrameBuffer from '../../util/webglWrapper/frameBuffer';
 import { gl } from '../application';
 import ToolRenderers from './toolRenderers/toolRendererList';
 import PrimaryRenderers from './primaryRenderers/primaryRenderers';

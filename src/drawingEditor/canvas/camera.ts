@@ -7,7 +7,7 @@ import {
   Matrix4,
   type Matrix4x4,
 } from 'matrixgl';
-import { Int32Vector2, add, copy } from '../webgl/vector';
+import { Int32Vector2, add, copy } from '../../util/webglWrapper/vector';
 import { type CanvasState } from './canvas';
 
 const DEFAULT_ZOOM = 1;
@@ -252,7 +252,10 @@ export function mouseToNormalized(
   return new Float32Vector2(x, 1.0 - y);
 }
 
-export function mouseToNDC(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+export function mouseToNDC(
+  event: PointerEvent | MouseEvent,
+  canvas: HTMLCanvasElement
+): Float32Vector2 {
   const p = mouseToNormalizedWithEvent(event, canvas);
   p.x = (p.x - 0.5) * 2.0;
   p.y = (p.y - 0.5) * 2.0;

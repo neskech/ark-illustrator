@@ -1,5 +1,5 @@
 import { Float32Vector4, Float32Vector3 } from 'matrixgl';
-import { Int32Vector3 } from '../../drawingEditor/webgl/vector';
+import { Int32Vector3 } from '../webglWrapper/vector';
 import { requires } from './contracts';
 
 export function hslToHex(h: number, s: number, l: number) {

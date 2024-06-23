@@ -4,7 +4,7 @@ import { InputManager } from './canvas/toolSystem/inputManager';
 import { getDefaultSettings, type AllToolSettings } from './canvas/toolSystem/settings';
 import AssetManager from './renderer/util/assetManager';
 import Renderer from './renderer/renderer';
-import { fetchWebGLContext, type GL } from './webgl/glUtils';
+import { fetchWebGLContext, type GL } from '../util/webglWrapper/glUtils';
 
 export interface AppState {
   canvasState: CanvasState;

@@ -1,6 +1,6 @@
 import { Option } from '~/util/general/option';
-import { ensures, requires } from '../../util/general/contracts';
-import { gl } from '../application';
+import { ensures, requires } from '../general/contracts';
+import { gl } from '../../drawingEditor/application';
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const WebGLDebugUtils = require('webgl-debug');
 
@@ -46,11 +46,11 @@ export class BindHandle implements Disposable {
 
   constructor(bindFunc: BindFunc, unBindFunc: UnbindFunc) {
     this.unBindFunc = unBindFunc;
-    bindFunc()
+    bindFunc();
   }
 
   [Symbol.dispose]() {
-    this.unBindFunc()
+    this.unBindFunc();
   }
 }
 

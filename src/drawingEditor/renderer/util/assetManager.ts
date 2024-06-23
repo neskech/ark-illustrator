@@ -1,7 +1,7 @@
 import { requires } from '~/util/general/contracts';
 import { Err, Ok, Result, unit, type Unit } from '~/util/general/result';
-import Shader from '../../webgl/shader';
-import Texture from '../../webgl/texture';
+import Shader from '../../../util/webglWrapper/shader';
+import Texture from '../../../util/webglWrapper/texture';
 
 interface ShaderManifest {
   shaders: string[];

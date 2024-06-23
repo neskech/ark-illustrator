@@ -1,7 +1,7 @@
 import { type BrushSettings } from '../../toolSystem/settings/brushSettings';
 import { type BrushPoint, newPoint } from '../../toolSystem/tools/brush';
 import { assert, requires } from '~/util/general/contracts';
-import { add, copy, scale, sub } from '~/drawingEditor/webgl/vector';
+import { add, copy, scale, sub } from '~/util/webglWrapper/vector';
 import { Float32Vector2 } from 'matrixgl';
 import { CurveInterpolator } from 'curve-interpolator';
 import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
@@ -77,7 +77,7 @@ interface Cache {
   previousRawCurveLength: number;
 }
 
-export default class BoxFilterStabilizer{ 
+export default class BoxFilterStabilizer {
   private currentPoints: BrushPoint[];
   private numPoints: number;
   private cache: Cache;
@@ -139,7 +139,7 @@ export default class BoxFilterStabilizer{
       this.numPoints = 0;
       return;
     }
- 
+
     updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints);
 
     const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
@@ -490,10 +490,7 @@ const getSpacingFromBrushSettings = (settings: BrushSettings): number => {
   return settings.spacing == 'auto' ? settings.size * 0.5 : settings.spacing;
 };
 
-function getNumDeletedElementsFromDeleteFactor(
-  deleteFactor: number,
-  maxSize: number
-): number {
+function getNumDeletedElementsFromDeleteFactor(deleteFactor: number, maxSize: number): number {
   return Math.floor(maxSize * deleteFactor);
 }
 

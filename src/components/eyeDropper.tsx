@@ -2,12 +2,11 @@ import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { useEffect, useState } from 'react';
 import EventManager from '~/util/eventSystem/eventManager';
 import { rgbaToHsl, hslToHex } from '~/util/general/color';
-import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
-import { type GL } from '~/drawingEditor/webgl/glUtils';
-import { Int32Vector3 } from '~/drawingEditor/webgl/vector';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
+import { type GL } from '~/util/webglWrapper/glUtils';
+import { Int32Vector3 } from '~/util/webglWrapper/vector';
 import { mouseToNormalized } from '../drawingEditor/canvas/camera';
 import { type EyeDropperArgs } from '~/util/eventSystem/eventTypes/canvasEvents';
-
 
 interface RenderObjects {
   canvasFramebuffer: FrameBuffer;
@@ -46,7 +45,7 @@ function EyeDropper() {
     pointerUp = () => {
       if (!isVisible) return;
       setIsVisible(false);
-      EventManager.invoke('colorChanged', new Float32Vector3(color.x, color.y, color.z))
+      EventManager.invoke('colorChanged', new Float32Vector3(color.x, color.y, color.z));
     };
     document.addEventListener('pointerup', pointerUp);
     document.addEventListener('pointercancel', pointerUp);

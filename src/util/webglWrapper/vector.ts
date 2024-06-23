@@ -1,4 +1,4 @@
-import { requires } from '../../util/general/contracts';
+import { requires } from '../general/contracts';
 import {
   Float32Vector2,
   Float32Vector3,
@@ -7,7 +7,7 @@ import {
   type Matrix3x3,
   type Matrix4x4,
 } from 'matrixgl';
-import { unreachable } from '../../util/general/funUtils';
+import { unreachable } from '../general/funUtils';
 
 type ArrayBuffer = Int32Array | Float32Array;
 type ArrayBufferType = 'integer' | 'float';

@@ -1,7 +1,7 @@
 import { Float32Vector3 } from 'matrixgl';
 import BezierFunction from '~/util/general/bezierFunction';
-import { type GL } from '~/drawingEditor/webgl/glUtils';
-import Texture from '~/drawingEditor/webgl/texture';
+import { type GL } from '~/util/webglWrapper/glUtils';
+import Texture from '~/util/webglWrapper/texture';
 import { type Option, Some } from '~/util/general/option';
 import EventManager from '~/util/eventSystem/eventManager';
 
@@ -55,7 +55,7 @@ export class BrushSettings {
     this.color = settings.color;
     this.isEraser = settings.isEraser;
     this.texture = settings.texture;
-    this.setupEvents()
+    this.setupEvents();
   }
 
   getSizeGivenPressure(pressure: number): number {
@@ -80,15 +80,15 @@ export class BrushSettings {
     });
   }
 
-  static default(gl: GL): BrushSettings {
-    const brushTexture = new Texture(gl, {
+  static default(): BrushSettings {
+    const brushTexture = new Texture({
       wrapX: 'Repeat',
       wrapY: 'Repeat',
       magFilter: 'Linear',
       minFilter: 'Linear',
       format: 'RGBA',
     });
-    brushTexture.allocateFromImageUrl(gl, DEFAULT_TEXTURE, false);
+    brushTexture.allocateFromImageUrl(DEFAULT_TEXTURE, false);
 
     return new BrushSettings({
       size: 0.08,

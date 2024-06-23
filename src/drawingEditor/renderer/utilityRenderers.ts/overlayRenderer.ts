@@ -2,12 +2,12 @@ import {
   type GetAttributesType,
   VertexAttributes,
   VertexAttributeType,
-} from '~/drawingEditor/webgl/vertexAttributes';
-import { VertexArrayObject } from '~/drawingEditor/webgl/vertexArray';
-import type Shader from '~/drawingEditor/webgl/shader';
-import Buffer from '~/drawingEditor/webgl/buffer';
+} from '~/util/webglWrapper/vertexAttributes';
+import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
+import type Shader from '~/util/webglWrapper/shader';
+import Buffer from '~/util/webglWrapper/buffer';
 import { Float32Vector2 } from 'matrixgl';
-import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { QuadilateralFactory } from '../geometry/quadFactory';
 import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';

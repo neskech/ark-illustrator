@@ -6,12 +6,12 @@ import {
   type Matrix3x3,
   type Matrix4x4,
 } from 'matrixgl';
-import { Option } from '../../util/general/option';
-import { Err, Ok, Result, unit, type Unit } from '../../util/general/result';
+import { Option } from '../general/option';
+import { Err, Ok, Result, unit, type Unit } from '../general/result';
 import { GLObject } from './glUtils';
 import type Texture from './texture';
 import { type Int32Vector2, type Int32Vector3, type Int32Vector4 } from './vector';
-import { gl } from '../application';
+import { gl } from '../../drawingEditor/application';
 
 export default class Shader {
   private vertexShaderId: GLObject<WebGLShader>;

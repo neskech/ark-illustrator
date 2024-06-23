@@ -1,5 +1,5 @@
-import { type GL } from '../webgl/glUtils';
-import Texture, { type TextureOptions } from '../webgl/texture';
+import { type GL } from '../../util/webglWrapper/glUtils';
+import Texture, { type TextureOptions } from '../../util/webglWrapper/texture';
 
 const LAYER_TEXTURE_OPTIONS: TextureOptions = {
   wrapX: 'Clamp To Edge',

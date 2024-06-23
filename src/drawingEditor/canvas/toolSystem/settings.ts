@@ -1,4 +1,4 @@
-import { type GL } from '~/drawingEditor/webgl/glUtils';
+import { type GL } from '~/util/webglWrapper/glUtils';
 import { BrushSettings } from './settings/brushSettings';
 import { defaultFillSettings, type FillSettings } from './settings/fillSettings';
 import SettingsPreset from './settings/settingsPreset';

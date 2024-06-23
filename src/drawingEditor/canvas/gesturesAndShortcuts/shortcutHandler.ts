@@ -2,7 +2,7 @@ import { type AppState } from '~/drawingEditor/application';
 import { type CanvasEvent, type EventString } from '../toolSystem/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { mouseToNormalized, mouseToNormalizedWithEvent } from '../camera';
-import { dot, scale } from '~/drawingEditor/webgl/vector';
+import { dot, scale } from '~/util/webglWrapper/vector';
 import EventManager from '~/util/eventSystem/eventManager';
 import { None } from '~/util/general/option';
 

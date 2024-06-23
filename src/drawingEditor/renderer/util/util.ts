@@ -1,5 +1,5 @@
 import { gl } from '../../application';
-import type FrameBuffer from '../../webgl/frameBuffer';
+import type FrameBuffer from '../../../util/webglWrapper/frameBuffer';
 
 export function clearScreen(r = 1, g = 1, b = 1, a = 1) {
   gl.clearColor(r, g, b, a);

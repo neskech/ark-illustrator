@@ -7,7 +7,7 @@ import {
   getFingerDelta,
 } from './gesture';
 import { type AppState } from '../../../application';
-import { add, copy, midpoint, scale } from '~/drawingEditor/webgl/vector';
+import { add, copy, midpoint, scale } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
 

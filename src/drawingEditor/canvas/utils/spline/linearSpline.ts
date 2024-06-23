@@ -1,8 +1,8 @@
 import type Stabilizer from './stabilizer';
 import { type BrushPoint, newPoint, type BrushSettings } from '../../toolSystem/tools/brush';
 import { assert } from '~/util/general/contracts';
-import { add, copy, scale, sub } from '~/drawingEditor/webgl/vector';
-import { normalize } from '../../../webgl/vector';
+import { add, copy, scale, sub } from '~/util/webglWrapper/vector';
+import { normalize } from '../../../../util/webglWrapper/vector';
 
 export default class LinearStabilizer implements Stabilizer {
   private currentPoints: BrushPoint[];

@@ -1,5 +1,5 @@
-import { Option } from '../../util/general/option';
-import { gl } from '../application';
+import { Option } from '../general/option';
+import { gl } from '../../drawingEditor/application';
 import { GLObject } from './glUtils';
 import { type AttributesObject, type VertexAttributes } from './vertexAttributes';
 

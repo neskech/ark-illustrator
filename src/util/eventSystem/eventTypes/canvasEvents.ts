@@ -1,7 +1,7 @@
 import { type Float32Vector3, type Float32Vector2 } from 'matrixgl';
 import { type Option } from '~/util/general/option';
-import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
-import { type GL } from '~/drawingEditor/webgl/glUtils';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
+import { type GL } from '~/util/webglWrapper/glUtils';
 import type { Func } from '~/util/general/utilTypes';
 
 interface ClearCanvas {
@@ -19,7 +19,7 @@ interface ToggleEyeDropper {
 }
 
 interface ColorChanged {
-  colorChanged: Func<Float32Vector3>
+  colorChanged: Func<Float32Vector3>;
 }
 
 type CanvasEvents = [ClearCanvas, ToggleEyeDropper, ColorChanged];
