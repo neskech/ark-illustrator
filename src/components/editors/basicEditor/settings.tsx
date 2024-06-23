@@ -12,10 +12,10 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import Draggable from 'react-draggable';
-import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
+import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 import CheckIcon from '@mui/icons-material/Check';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { getSpacingFromBrushSettings } from '../../../drawingEditor/canvas/utils/stabilizing/stabilizer';
+import { getSpacingFromBrushSettings } from '../../../drawingEditor/Input/toolSystem/tools/brushTool/stabilizing/stabilizer';
 
 const PaperComponent = (props: PaperProps) => {
   return (

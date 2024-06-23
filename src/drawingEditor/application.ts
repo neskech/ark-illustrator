@@ -1,7 +1,7 @@
 import { Err, Ok, type Result } from '../util/general/result';
 import { getDefaultCanvasState, type CanvasState } from './canvas/canvas';
-import { InputManager } from './canvas/toolSystem/inputManager';
-import { getDefaultSettings, type AllToolSettings } from './canvas/toolSystem/settings';
+import { InputManager } from './Input/toolSystem/inputManager';
+import { getDefaultSettings, type AllToolSettings } from './Input/toolSystem/settings';
 import AssetManager from './renderer/util/assetManager';
 import Renderer from './renderer/renderer';
 import { fetchWebGLContext, type GL } from '../util/webglWrapper/glUtils';

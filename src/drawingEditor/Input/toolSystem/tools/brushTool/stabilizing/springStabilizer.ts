@@ -1,4 +1,4 @@
-import { type BrushPoint } from '../../toolSystem/tools/brush';
+import { type BrushPoint } from '../brushTool';
 import { Stabilizer } from './stabilizer';
 
 export interface SpringStabilizerSettings {

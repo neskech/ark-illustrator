@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import ColorPicker from './colorPicker';
 import BrushSettingsPanel from './brushSettingsPanel';
-import { type InputManager } from '~/drawingEditor/canvas/toolSystem/inputManager';
+import { type InputManager } from '~/drawingEditor/Input/toolSystem/inputManager';
 
 export interface RightBarProps {
   inputManager: InputManager;

@@ -1,5 +1,7 @@
 import { requires } from '../../../../util/general/contracts';
+import { type FillSettings } from '../settings/fillSettings';
 import { Tool, type HandleEventArgs } from '../tool';
+
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -8,27 +10,26 @@ import { Tool, type HandleEventArgs } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export class Circle extends Tool {
+export class FillTool extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs) {
-    requires(this.areValidCircleSettings());
+    requires(this.areValidFillSettings(args.settings.fillSettings));
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
 
     switch (evType) {
       case 'mousemove':
-        this.mouseMovedHandler(args, event);
-        return;
+        return this.mouseMovedHandler(args, event);
       case 'mouseup':
-        this.mouseUpHandler(args, event);
-        return;
+        return this.mouseUpHandler(args, event);
       case 'mousedown':
-        this.mouseDownHandler(args, event);
-        return;
+        return this.mouseDownHandler(args, event);
+      default:
+        return false;
     }
   }
 
@@ -36,20 +37,23 @@ export class Circle extends Tool {
     throw new Error('Method not implemented.');
   }
 
-  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent) {
-    const { appState: canvasState, settings } = args;
+  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+    const { appState, settings } = args;
+    return false;
   }
 
-  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent) {
-    const { appState: canvasState, settings } = args;
+  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+    const { appState, settings } = args;
+    return false;
   }
 
-  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent) {
-    const { appState: canvasState, settings } = args;
+  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
+    const { appState, settings } = args;
+    return false;
   }
 
-  private areValidCircleSettings(): boolean {
-    return true;
+  private areValidFillSettings(f: FillSettings): boolean {
+    return 0 <= f.tolerance && f.tolerance <= 1;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

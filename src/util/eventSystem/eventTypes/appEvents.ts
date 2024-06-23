@@ -1,14 +1,13 @@
-
-import { type ToolType } from '~/drawingEditor/canvas/toolSystem/inputManager';
+import { type ToolType } from '~/drawingEditor/Input/toolSystem/inputManager';
 import type { Func } from '~/util/general/utilTypes';
 
 interface OpenSettings {
-    openSettings: Func<void>
+  openSettings: Func<void>;
 }
 
 interface ToolChanged {
-    toolType: ToolType
+  toolType: ToolType;
 }
 
-type AppEventTypes = [OpenSettings, ToolChanged]
-export default AppEventTypes
+type AppEventTypes = [OpenSettings, ToolChanged];
+export default AppEventTypes;

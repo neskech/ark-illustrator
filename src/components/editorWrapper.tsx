@@ -4,7 +4,7 @@ import { Box, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
 import EditorApplication from '../drawingEditor/application';
-import { type InputManager } from '~/drawingEditor/canvas/toolSystem/inputManager';
+import { type InputManager } from '~/drawingEditor/Input/toolSystem/inputManager';
 
 export interface EditorProps {
   inputManager: InputManager;

@@ -6,7 +6,10 @@ import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import { Box, Button } from '@mui/material';
 import { useState } from 'react';
-import { type InputManager, type ToolType as ToolType_ } from '../../../drawingEditor/canvas/toolSystem/inputManager';
+import {
+  type InputManager,
+  type ToolType as ToolType_,
+} from '../../../drawingEditor/Input/toolSystem/inputManager';
 
 export interface LeftBarProps {
   inputManager: InputManager;
@@ -26,7 +29,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
       return;
     }
 
-    inputManager.setCurrentTool(type)
+    inputManager.setCurrentTool(type);
     setToolType(type);
     brushSettings.isEraser = false;
   }
@@ -50,7 +53,9 @@ function LeftBar({ inputManager }: LeftBarProps) {
         sx={{
           color: '#1c3e8a',
           filter: `brightness(${
-            inputManager.getSettings().brushSettings.getCurrentPreset().isEraser ? SELECTED_OPACITY : 1
+            inputManager.getSettings().brushSettings.getCurrentPreset().isEraser
+              ? SELECTED_OPACITY
+              : 1
           })`,
         }}
         className="m-auto h-10 w-10 border-4 border-solid border-slate-200"

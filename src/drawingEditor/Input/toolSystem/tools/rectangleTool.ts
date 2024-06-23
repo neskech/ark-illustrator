@@ -21,7 +21,7 @@ const MIDDLE_MOUSE = 1;
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export class Rectangle extends Tool {
+export class RectangleTool extends Tool {
   private isDrawingRectangle: boolean;
   private anchorPosition: Float32Vector2 | null;
 
@@ -100,7 +100,7 @@ export class Rectangle extends Tool {
       args.appState.canvasState.canvas
     );
     this.anchorPosition = point;
-    
+
     EventManager.invoke('rectangleContinued', {
       anchorPosition: this.anchorPosition,
       otherPosition: point,

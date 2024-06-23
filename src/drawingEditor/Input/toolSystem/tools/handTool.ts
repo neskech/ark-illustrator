@@ -10,7 +10,7 @@ import { Tool, type HandleEventArgs } from '../tool';
 
 const HAND_SENSITIVITY = 1.0;
 
-export class Hand extends Tool {
+export class HandTool extends Tool {
   constructor() {
     super();
   }

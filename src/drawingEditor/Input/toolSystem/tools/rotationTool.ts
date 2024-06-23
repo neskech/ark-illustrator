@@ -10,7 +10,7 @@ import { Tool, type HandleEventArgs } from '../tool';
 
 const ROTATION_SENSITIVITY = 1.0;
 
-export class Rotator extends Tool {
+export class RotatorTool extends Tool {
   constructor() {
     super();
   }

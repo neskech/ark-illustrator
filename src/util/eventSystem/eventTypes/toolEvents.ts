@@ -1,6 +1,6 @@
-import { type BrushPoint } from '~/drawingEditor/canvas/toolSystem/tools/brush';
+import { type BrushPoint } from '~/drawingEditor/Input/toolSystem/tools/brush';
 import type { Func } from '~/util/general/utilTypes';
-import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
+import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 import { type Float32Vector2 } from 'matrixgl';
 
 ////////////////////////////////////////////////////////////////////////////////////////

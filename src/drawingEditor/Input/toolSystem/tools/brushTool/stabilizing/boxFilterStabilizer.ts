@@ -1,12 +1,12 @@
-import { type BrushSettings } from '../../toolSystem/settings/brushSettings';
-import { type BrushPoint, newPoint } from '../../toolSystem/tools/brush';
+import { type BrushSettings } from '../../../settings/brushSettings';
+import { type BrushPoint, newPoint } from '../brushTool';
 import { assert, requires } from '~/util/general/contracts';
 import { add, copy, scale, sub } from '~/util/webglWrapper/vector';
 import { Float32Vector2 } from 'matrixgl';
 import { CurveInterpolator } from 'curve-interpolator';
 import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
 import EventManager from '~/util/eventSystem/eventManager';
-import Benchmarker, { incrementalLog } from '../../../../util/general/benchmarking';
+import Benchmarker, { incrementalLog } from '../../../../../../util/general/benchmarking';
 import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/module/moduleTypes/brushModule';
 
 const MAX_SMOOTHING = 20;

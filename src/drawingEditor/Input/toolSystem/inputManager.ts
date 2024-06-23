@@ -3,18 +3,18 @@ import GestureHandler from '../gesturesAndShortcuts/gestureHandler';
 import ShortcutHandler from '../gesturesAndShortcuts/shortcutHandler';
 import { type AllToolSettings } from './settings';
 import { type CanvasEvent, type EventString } from './tool';
-import { Brush } from './tools/brush';
-import { Circle } from './tools/circle';
-import { Fill } from './tools/fill';
-import { Hand } from './tools/hand';
-import { Rectangle } from './tools/rectangle';
+import { BrushTool } from './tools/brushTool/brushTool';
+import { CircleTool } from './tools/circleTool';
+import { FillTool } from './tools/fillTool';
+import { HandTool } from './tools/handTool';
+import { RectangleTool } from './tools/rectangleTool';
 
 export type ToolMap = {
-  brush: Brush;
-  fillBucket: Fill;
-  hand: Hand;
-  square: Rectangle;
-  circle: Circle;
+  brush: BrushTool;
+  fillBucket: FillTool;
+  hand: HandTool;
+  square: RectangleTool;
+  circle: CircleTool;
 };
 
 export type ToolType = keyof ToolMap;
@@ -29,11 +29,11 @@ export class InputManager {
   constructor(settings: AllToolSettings, defaultTool: ToolType = 'brush') {
     this.settings = settings;
     this.toolMap = {
-      fillBucket: new Fill(),
-      hand: new Hand(),
-      square: new Rectangle(),
-      circle: new Circle(),
-      brush: new Brush(settings),
+      fillBucket: new FillTool(),
+      hand: new HandTool(),
+      square: new RectangleTool(),
+      circle: new CircleTool(),
+      brush: new BrushTool(settings),
     };
     this.currentTool = defaultTool;
 

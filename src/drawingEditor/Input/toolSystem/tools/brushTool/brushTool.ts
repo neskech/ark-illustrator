@@ -1,11 +1,11 @@
 import { type Float32Vector2 } from 'matrixgl';
 import EventManager from '~/util/eventSystem/eventManager';
-import { requires } from '../../../../util/general/contracts';
-import BoxFilterStabilizer from '../../utils/stabilizing/boxFilterStabilizer';
-import type Stabilizer from '../../utils/stabilizing/stabilizer';
-import { type AllToolSettings } from '../settings';
-import { type BrushSettings } from '../settings/brushSettings';
-import { Tool, type HandleEventArgs } from '../tool';
+import { requires } from '../../../../../util/general/contracts';
+import BoxFilterStabilizer from './stabilizing/boxFilterStabilizer';
+import type Stabilizer from './stabilizing/stabilizer';
+import { type AllToolSettings } from '../../settings';
+import { type BrushSettings } from '../../settings/brushSettings';
+import { Tool, type HandleEventArgs } from '../../tool';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ export const newPoint = (pos: Float32Vector2, pressure: number): BrushPoint => (
   pressure,
 });
 
-export class Brush extends Tool {
+export class BrushTool extends Tool {
   private isPointerDown: boolean;
   private stabilizer: Stabilizer;
 

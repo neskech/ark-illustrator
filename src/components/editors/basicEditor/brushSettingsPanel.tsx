@@ -1,6 +1,6 @@
 import { Box, Slider, Typography } from '@mui/material';
 import { useState } from 'react';
-import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
+import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
 export interface BrushSettingsProps {
   brushSettings: BrushSettings;

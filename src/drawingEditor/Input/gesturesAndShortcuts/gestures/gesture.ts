@@ -1,5 +1,5 @@
 import { Float32Vector2 } from 'matrixgl';
-import { mouseToNormalized } from '../../camera';
+import { mouseToNormalized } from '../../../canvas/camera';
 import { type AppState } from '../../../application';
 
 export interface PointerPos {

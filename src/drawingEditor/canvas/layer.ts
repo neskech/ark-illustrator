@@ -1,18 +1,17 @@
-import { type GL } from '../../util/webglWrapper/glUtils';
-import Texture, { type TextureOptions } from '../../util/webglWrapper/texture';
-
-const LAYER_TEXTURE_OPTIONS: TextureOptions = {
-  wrapX: 'Clamp To Edge',
-  wrapY: 'Clamp To Edge',
-  minFilter: 'Nearest',
-  magFilter: 'Nearest',
-  format: 'RGBA',
-};
+import Texture from '../../util/webglWrapper/texture';
 
 export default class Layer {
   imageData: Texture;
 
-  constructor(gl: GL) {
-    this.imageData = new Texture(LAYER_TEXTURE_OPTIONS);
+  constructor(canvasWidth: number, canvasHeight: number) {
+    this.imageData = new Texture({
+      width: canvasWidth,
+      height: canvasHeight,
+      wrapX: 'Repeat',
+      wrapY: 'Repeat',
+      magFilter: 'Nearest',
+      minFilter: 'Nearest',
+      format: 'RGBA',
+    });
   }
 }

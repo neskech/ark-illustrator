@@ -8,15 +8,13 @@ import { Tool, type HandleEventArgs } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const ZOOM_SENSITIVITY = 1.0;
-
-export class Zoom extends Tool {
+export class CircleTool extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs) {
-    requires(this.areValidRotationSettings());
+    requires(this.areValidCircleSettings());
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
@@ -38,20 +36,20 @@ export class Zoom extends Tool {
     throw new Error('Method not implemented.');
   }
 
-  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent) {
+  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent) {
     const { appState: canvasState, settings } = args;
   }
 
-  mouseUpHandler(args: HandleEventArgs, event: MouseEvent) {
+  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent) {
     const { appState: canvasState, settings } = args;
   }
 
-  mouseDownHandler(args: HandleEventArgs, event: MouseEvent) {
+  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent) {
     const { appState: canvasState, settings } = args;
   }
 
-  areValidRotationSettings(): boolean {
-    return 0 <= ZOOM_SENSITIVITY && ZOOM_SENSITIVITY <= 1;
+  private areValidCircleSettings(): boolean {
+    return true;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

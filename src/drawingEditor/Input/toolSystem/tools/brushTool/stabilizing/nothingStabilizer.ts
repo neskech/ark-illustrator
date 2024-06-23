@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import { Stabilizer } from './stabilizer';
-import { type BrushPoint } from '../../toolSystem/tools/brush';
+import { type BrushPoint } from '../brushTool';
 import { assert } from '~/util/general/contracts';
 
 export interface NothingStabilizerSettings {

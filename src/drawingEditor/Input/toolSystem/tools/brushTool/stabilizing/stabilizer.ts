@@ -1,6 +1,6 @@
 import { unreachable } from '~/util/general/funUtils';
 import NothingStabilizer, { type NothingStabilizerSettings } from './nothingStabilizer';
-import { type BrushPoint } from '../../toolSystem/tools/brush';
+import { type BrushPoint } from '../brushTool';
 import SpringStabilizer, { type SpringStabilizerSettings } from './springStabilizer';
 
 ////////////////////////////////////////////////////////////////////////////////////////

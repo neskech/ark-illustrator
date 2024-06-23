@@ -1,5 +1,5 @@
 import type Stabilizer from './stabilizer';
-import { type BrushPoint, newPoint, type BrushSettings } from '../../toolSystem/tools/brush';
+import { type BrushPoint, newPoint, type BrushSettings } from '../brushTool';
 import { assert } from '~/util/general/contracts';
 import { CurveInterpolator } from 'curve-interpolator';
 import { Float32Vector2 } from 'matrixgl';

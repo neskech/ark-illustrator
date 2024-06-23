@@ -1,7 +1,5 @@
 import { requires } from '../../../../util/general/contracts';
-import { type FillSettings } from '../settings/fillSettings';
 import { Tool, type HandleEventArgs } from '../tool';
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -10,26 +8,29 @@ import { Tool, type HandleEventArgs } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export class Fill extends Tool {
+const ZOOM_SENSITIVITY = 1.0;
+
+export class ZoomTool extends Tool {
   constructor() {
     super();
   }
 
   handleEvent(args: HandleEventArgs) {
-    requires(this.areValidFillSettings(args.settings.fillSettings));
+    requires(this.areValidRotationSettings());
 
     const evType = args.eventString;
     const event = args.event as MouseEvent;
 
     switch (evType) {
       case 'mousemove':
-        return this.mouseMovedHandler(args, event);
+        this.mouseMovedHandler(args, event);
+        return;
       case 'mouseup':
-        return this.mouseUpHandler(args, event);
+        this.mouseUpHandler(args, event);
+        return;
       case 'mousedown':
-        return this.mouseDownHandler(args, event);
-      default:
-        return false;
+        this.mouseDownHandler(args, event);
+        return;
     }
   }
 
@@ -37,23 +38,20 @@ export class Fill extends Tool {
     throw new Error('Method not implemented.');
   }
 
-  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings } = args;
-    return false;
+  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent) {
+    const { appState: canvasState, settings } = args;
   }
 
-  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings } = args;
-    return false;
+  mouseUpHandler(args: HandleEventArgs, event: MouseEvent) {
+    const { appState: canvasState, settings } = args;
   }
 
-  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings } = args;
-    return false;
+  mouseDownHandler(args: HandleEventArgs, event: MouseEvent) {
+    const { appState: canvasState, settings } = args;
   }
 
-  private areValidFillSettings(f: FillSettings): boolean {
-    return 0 <= f.tolerance && f.tolerance <= 1;
+  areValidRotationSettings(): boolean {
+    return 0 <= ZOOM_SENSITIVITY && ZOOM_SENSITIVITY <= 1;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////
