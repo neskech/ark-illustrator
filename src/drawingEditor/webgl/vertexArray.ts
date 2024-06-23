@@ -1,23 +1,22 @@
 import { Option } from '../../util/general/option';
-import { GLObject, type GL } from './glUtils';
+import { gl } from '../application';
+import { GLObject } from './glUtils';
 import { type AttributesObject, type VertexAttributes } from './vertexAttributes';
 
-type VAOid = GLObject<WebGLVertexArrayObject>;
-
 export class VertexArrayObject<T extends AttributesObject> {
-  private id: VAOid;
+  private id: GLObject<WebGLVertexArrayObject>;
   private attributes: VertexAttributes<T>;
 
-  constructor(gl: GL, vertexAttributes: VertexAttributes<T>) {
+  constructor(vertexAttributes: VertexAttributes<T>) {
     const vId = Option.fromNull(gl.createVertexArray());
     const glId = new GLObject(vId.expect("couldn't create new vertex array object"));
     this.id = glId;
     this.attributes = vertexAttributes;
   }
 
-  public applyAttributes(gl: GL) {
+  public applyAttributes() {
     const attributes = this.attributes.orderedAttributes();
-    
+
     const vertexSizeBytes = attributes.reduce(
       (acc, curr) => acc + curr.attribute.count() * curr.attribute.typeSize(),
       0
@@ -56,15 +55,15 @@ export class VertexArrayObject<T extends AttributesObject> {
     logger(string);
   }
 
-  bind(gl: GL) {
+  bind() {
     gl.bindVertexArray(this.id.innerId());
   }
 
-  unBind(gl: GL) {
+  unBind() {
     gl.bindVertexArray(null);
   }
 
-  destroy(gl: GL): void {
+  destroy(): void {
     this.id.destroy((id) => {
       gl.deleteVertexArray(id);
     });

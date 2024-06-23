@@ -2,9 +2,9 @@ import { Err, Ok, type Result } from '../util/general/result';
 import { getDefaultCanvasState, type CanvasState } from './canvas/canvas';
 import { InputManager } from './canvas/toolSystem/inputManager';
 import { getDefaultSettings, type AllToolSettings } from './canvas/toolSystem/settings';
-import AssetManager from './renderer/assetManager';
+import AssetManager from './renderer/util/assetManager';
 import Renderer from './renderer/renderer';
-import { fetchWebGLContext } from './webgl/glUtils';
+import { fetchWebGLContext, type GL } from './webgl/glUtils';
 
 export interface AppState {
   canvasState: CanvasState;
@@ -13,6 +13,8 @@ export interface AppState {
   renderer: Renderer;
   assetManager: AssetManager;
 }
+
+export let gl: GL;
 
 export default class EditorApplication {
   private appState!: AppState;
@@ -40,15 +42,15 @@ export default class EditorApplication {
 
     const context = fetchWebGLContext(canvas, debug);
     if (context.isNone()) return Err('Could not intialize webgl2. Your browser may not support it');
-    const gl = context.unwrap();
+    gl = context.unwrap();
 
     canvas.width = canvas.clientWidth * 2;
     canvas.height = canvas.clientHeight * 2;
 
     const assetManager = new AssetManager();
-    const resShader = await assetManager.initShaders(gl);
+    const resShader = await assetManager.initShaders();
     if (resShader.isErr()) return Err(resShader.unwrapErr());
-    const resTexture = await assetManager.initTextures(gl);
+    const resTexture = await assetManager.initTextures();
     if (resTexture.isErr()) return Err(resTexture.unwrapErr());
 
     const settings = getDefaultSettings(gl);
@@ -57,7 +59,7 @@ export default class EditorApplication {
       settings,
       canvasState,
       inputManager: new InputManager(settings),
-      renderer: new Renderer(gl, canvas, canvasState.camera, assetManager),
+      renderer: new Renderer(canvas, canvasState.camera, assetManager),
       assetManager,
     };
 

@@ -1,8 +1,7 @@
 import { requires } from '~/util/general/contracts';
 import { Err, Ok, Result, unit, type Unit } from '~/util/general/result';
-import { type GL } from '../webgl/glUtils';
-import Shader from '../webgl/shader';
-import Texture from '../webgl/texture';
+import Shader from '../../webgl/shader';
+import Texture from '../../webgl/texture';
 
 interface ShaderManifest {
   shaders: string[];
@@ -19,7 +18,7 @@ export default class AssetManager {
     this.textureMap = new Map();
   }
 
-  async initShaders(gl: GL): Promise<Result<Unit, string>> {
+  async initShaders(): Promise<Result<Unit, string>> {
     const manifest = await Result.fromErrorAsync(fetch('shaders/shaderManifest.json'));
     if (manifest.isErr()) return Err(manifest.unwrapErr().message);
 
@@ -38,18 +37,18 @@ export default class AssetManager {
     const fileContents = await Result.multipleErrorAsync(responses.unwrap().map((r) => r.text()));
     if (fileContents.isErr()) return Err(fileContents.unwrapErr().message);
 
-    const shaders = shaderNames.map((name) => new Shader(gl, name));
+    const shaders = shaderNames.map((name) => new Shader(name));
     fileContents.unwrap().chunks(2, ([vert, frag], idx) => {
       const floored = Math.floor(idx / 2);
-      shaders[floored].compileFromSource(gl, vert, frag);
+      shaders[floored].compileFromSource(vert, frag);
     });
-    shaders.forEach((shader) => shader.link(gl));
+    shaders.forEach((shader) => shader.link());
 
     shaderNames.forEach((name, idx) => this.shaderMap.set(name, shaders[idx]));
     return Ok(unit);
   }
 
-  async initTextures(gl: GL): Promise<Result<Unit, string>> {
+  async initTextures(): Promise<Result<Unit, string>> {
     const manifest = await Result.fromErrorAsync(fetch('textures/textureManifest.json'));
     if (manifest.isErr()) return Err(manifest.unwrapErr().message);
 
@@ -59,7 +58,7 @@ export default class AssetManager {
     const textureNames = (json.unwrap() as TextureManifest).textures;
     const textures = textureNames.map(
       (_) =>
-        new Texture(gl, {
+        new Texture({
           wrapX: 'Repeat',
           wrapY: 'Repeat',
           magFilter: 'Linear',
@@ -68,7 +67,7 @@ export default class AssetManager {
         })
     );
     const res = await Result.multipleErrorAsync(
-      textureNames.map((name, i) => textures[i].allocateFromImageUrlAsync(gl, `textures/${name}`))
+      textureNames.map((name, i) => textures[i].allocateFromImageUrlAsync(`textures/${name}`))
     );
 
     if (res.isErr()) return Err(res.unwrapErr().message);

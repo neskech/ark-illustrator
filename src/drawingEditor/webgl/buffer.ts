@@ -1,42 +1,33 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { unreachable } from '../../util/general/funUtils';
 import { Option } from '../../util/general/option';
-import { type GL, GLObject } from './glUtils';
+import { gl } from '../application';
+import { GLObject } from './glUtils';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPES
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 type BufferType = 'IndexBuffer' | 'VertexBuffer' | 'Uniform Buffer';
 type Usage = 'Static Draw' | 'Dynamic Draw' | 'Stream Draw';
-
-function bufTypeToEnum(gl: GL, t: BufferType): GLenum {
-  switch (t) {
-    case 'IndexBuffer':
-      return gl.ELEMENT_ARRAY_BUFFER;
-    case 'VertexBuffer':
-      return gl.ARRAY_BUFFER;
-    case 'Uniform Buffer':
-      return gl.UNIFORM_BUFFER;
-    default:
-      return unreachable();
-  }
-}
-
-function usageToEnum(gl: GL, t: Usage): GLenum {
-  switch (t) {
-    case 'Static Draw':
-      return gl.STATIC_DRAW;
-    case 'Dynamic Draw':
-      return gl.DYNAMIC_DRAW;
-    case 'Stream Draw':
-      return gl.STREAM_DRAW;
-    default:
-      return unreachable();
-  }
-}
 
 export interface BufferOptions {
   btype: BufferType;
   usage?: Usage;
   autoResizing?: boolean;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! CLASS DEFINITION
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default class GLBuffer {
@@ -46,7 +37,7 @@ export default class GLBuffer {
   private usage: Usage;
   private sizeBytes;
 
-  constructor(gl: GL, { btype, usage, autoResizing }: BufferOptions) {
+  constructor({ btype, usage, autoResizing }: BufferOptions) {
     const bId = Option.fromNull(gl.createBuffer());
     const gId = bId.expect("Couldn't create vertex buffer");
     this.id = new GLObject(gId, 'buffer');
@@ -57,35 +48,35 @@ export default class GLBuffer {
     this.sizeBytes = 0;
   }
 
-  preallocate(gl: GL, sizeBytes: number) {
-    const target = bufTypeToEnum(gl, this.bufType);
-    const usage = usageToEnum(gl, this.usage);
+  preallocate(sizeBytes: number) {
+    const target = bufTypeToEnum(this.bufType);
+    const usage = usageToEnum(this.usage);
     this.sizeBytes = sizeBytes;
 
     gl.bufferData(target, sizeBytes, usage);
   }
 
-  allocateWithData(gl: GL, data: ArrayBufferView, srcOffset = 0) {
-    const target = bufTypeToEnum(gl, this.bufType);
-    const usage = usageToEnum(gl, this.usage);
+  allocateWithData(data: ArrayBufferView, srcOffset = 0) {
+    const target = bufTypeToEnum(this.bufType);
+    const usage = usageToEnum(this.usage);
     this.sizeBytes = data.byteLength;
 
     gl.bufferData(target, data, usage, srcOffset);
   }
 
-  resize(gl: GL, size: number) {
-    const target = bufTypeToEnum(gl, this.bufType);
-    const usage = usageToEnum(gl, this.usage);
+  resize(size: number) {
+    const target = bufTypeToEnum(this.bufType);
+    const usage = usageToEnum(this.usage);
     this.sizeBytes = size;
 
     gl.bufferData(target, size, usage);
   }
 
-  addData(gl: GL, data: ArrayBufferView, dstOffsetBytes = 0, srcOffsetBytes = 0) {
-    const target = bufTypeToEnum(gl, this.bufType);
+  addData(data: ArrayBufferView, dstOffsetBytes = 0, srcOffsetBytes = 0) {
+    const target = bufTypeToEnum(this.bufType);
 
     const endIndex = srcOffsetBytes + data.byteLength - 1;
-    if (endIndex >= this.sizeBytes && this.autoResizing) this.resize(gl, endIndex);
+    if (endIndex >= this.sizeBytes && this.autoResizing) this.resize(endIndex);
     else if (endIndex >= this.sizeBytes && !this.autoResizing && this.sizeBytes != 0)
       throw new Error(`Out of bounds write on gl buffer.\n 
       Data Size Bytes: ${data.byteLength}\n
@@ -98,13 +89,13 @@ export default class GLBuffer {
     gl.bufferSubData(target, dstOffsetBytes, data, srcOffsetBytes);
   }
 
-  bind(gl: GL) {
-    const target = bufTypeToEnum(gl, this.bufType);
+  bind() {
+    const target = bufTypeToEnum(this.bufType);
     gl.bindBuffer(target, this.id.innerId());
   }
 
-  unBind(gl: GL) {
-    const target = bufTypeToEnum(gl, this.bufType);
+  unBind() {
+    const target = bufTypeToEnum(this.bufType);
     gl.bindBuffer(target, null);
   }
 
@@ -120,9 +111,43 @@ export default class GLBuffer {
     logger(this.toString());
   }
 
-  destroy(gl: GL) {
+  destroy() {
     this.id.destroy((id) => {
       gl.deleteBuffer(id);
     });
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! HELPERS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+function bufTypeToEnum(t: BufferType): GLenum {
+  switch (t) {
+    case 'IndexBuffer':
+      return gl.ELEMENT_ARRAY_BUFFER;
+    case 'VertexBuffer':
+      return gl.ARRAY_BUFFER;
+    case 'Uniform Buffer':
+      return gl.UNIFORM_BUFFER;
+    default:
+      return unreachable();
+  }
+}
+
+function usageToEnum(t: Usage): GLenum {
+  switch (t) {
+    case 'Static Draw':
+      return gl.STATIC_DRAW;
+    case 'Dynamic Draw':
+      return gl.DYNAMIC_DRAW;
+    case 'Stream Draw':
+      return gl.STREAM_DRAW;
+    default:
+      return unreachable();
   }
 }

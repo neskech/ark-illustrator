@@ -4,21 +4,24 @@ import {
   VertexAttributeType,
 } from '~/drawingEditor/webgl/vertexAttributes';
 import { VertexArrayObject } from '~/drawingEditor/webgl/vertexArray';
-import { QuadilateralFactory } from '../../geometry/quadFactory';
 import type Shader from '~/drawingEditor/webgl/shader';
 import Buffer from '~/drawingEditor/webgl/buffer';
 import { Float32Vector3 } from 'matrixgl';
 import { type BrushPoint } from '~/drawingEditor/canvas/toolSystem/tools/brush';
 import { type BrushSettings } from '~/drawingEditor/canvas/toolSystem/settings/brushSettings';
 import { angle, displacement } from '~/drawingEditor/webgl/vector';
-import { QuadTransform } from '../../geometry/transform';
-import { QuadPositioner } from '../../geometry/positioner';
-import { QuadRotator } from '../../geometry/rotator';
 import Texture from '~/drawingEditor/webgl/texture';
 import EventManager from '~/util/eventSystem/eventManager';
 import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
-import { clearFramebuffer } from '../../util';
-import CanvasRenderModule, { type CanvasRenderModuleArgs } from '../canvasRenderModule';
+import type OverlayRenderer from '../utilityRenderers.ts/overlayRenderer';
+import type AssetManager from '../util/assetManager';
+import { QuadilateralFactory } from '../geometry/quadFactory';
+import { gl } from '~/drawingEditor/application';
+import { QuadTransform } from '../geometry/transform';
+import { QuadPositioner } from '../geometry/positioner';
+import { QuadRotator } from '../geometry/rotator';
+import { clearFramebuffer } from '../util/util';
+import type UtilityRenderers from '../utilityRenderers.ts/utilityRenderers';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +54,12 @@ const strokeVertexAttributes = new VertexAttributes({
 });
 type StrokeAttribsType = GetAttributesType<typeof strokeVertexAttributes>;
 
-type BrushModuleArgs = CanvasRenderModuleArgs;
+type BrushRendererArgs = {
+  assetManager: AssetManager;
+  canvasFramebuffer: FrameBuffer;
+  canvasOverlayFramebuffer: FrameBuffer;
+  utilityRenderers: UtilityRenderers;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -61,16 +69,24 @@ type BrushModuleArgs = CanvasRenderModuleArgs;
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export default class BrushModule extends CanvasRenderModule {
+export default class BrushToolRenderer {
+  private canvasFramebuffer: FrameBuffer;
+  private canvasOverlayFramebuffer: FrameBuffer;
+  private assetManager: AssetManager;
+  private overlayRenderer: OverlayRenderer;
   private vertexArray: VertexArrayObject<StrokeAttribsType>;
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<StrokeAttribsType>;
   private shader: Shader;
 
-  constructor(args: BrushModuleArgs) {
-    super(args);
-    this.vertexArray = new VertexArrayObject(this.gl, strokeVertexAttributes);
-    this.vertexBuffer = new Buffer(this.gl, {
+  constructor(args: BrushRendererArgs) {
+    this.canvasFramebuffer = args.canvasFramebuffer;
+    this.canvasOverlayFramebuffer = args.canvasOverlayFramebuffer;
+    this.assetManager = args.assetManager;
+    this.overlayRenderer = args.utilityRenderers.getOverlayRenderer();
+
+    this.vertexArray = new VertexArrayObject(strokeVertexAttributes);
+    this.vertexBuffer = new Buffer({
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
@@ -92,17 +108,38 @@ export default class BrushModule extends CanvasRenderModule {
     this.initBuffer();
   }
 
+  public renderBrushStrokeContinued(pointData: BrushPoint[], currentSettings: BrushSettings) {
+    //refresh so there aren't multiple strokes
+    this.clearOverlayFramebuffer();
+    this.renderStrokeToOverlay(pointData, currentSettings);
+  }
+
+  public renderBrushStrokeFinished(pointData: BrushPoint[], currentSettings: BrushSettings) {
+    this.renderStrokeToCanvas(pointData, currentSettings);
+  }
+
+  public renderBrushStrokeCutoff(pointData: BrushPoint[], currentSettings: BrushSettings) {
+    this.renderStrokeToCanvas(pointData, currentSettings);
+    // the world module uses our overlay buffer. We just now rendered to this canvas, but our overlay buffer has been cleared
+    // so we need to make sure the overlay buffer is the same as the canvas
+    this.clearOverlayFramebuffer();
+    this.overlayRenderer.renderCanvasToOverlay(
+      this.canvasFramebuffer,
+      this.canvasOverlayFramebuffer
+    );
+  }
+
   private initBuffer() {
     this.setupEvents();
 
-    this.vertexArray.bind(this.gl);
-    this.vertexBuffer.bind(this.gl);
+    this.vertexArray.bind();
+    this.vertexBuffer.bind();
 
-    this.vertexArray.applyAttributes(this.gl);
-    this.vertexBuffer.allocateWithData(this.gl, new Float32Array(MAX_SIZE_STROKE));
+    this.vertexArray.applyAttributes();
+    this.vertexBuffer.allocateWithData(new Float32Array(MAX_SIZE_STROKE));
 
-    this.vertexArray.unBind(this.gl);
-    this.vertexBuffer.unBind(this.gl);
+    this.vertexArray.unBind();
+    this.vertexBuffer.unBind();
   }
 
   private renderStroke(
@@ -110,25 +147,19 @@ export default class BrushModule extends CanvasRenderModule {
     brushSettings: BrushSettings,
     framebuffer: FrameBuffer
   ) {
-    framebuffer.bind(this.gl);
-    this.vertexArray.bind(this.gl);
-    this.vertexBuffer.bind(this.gl);
-    this.shader.use(this.gl);
+    framebuffer.bind();
+    this.vertexArray.bind();
+    this.vertexBuffer.bind();
+    this.shader.bind();
 
-    Texture.activateUnit(this.gl, 0);
-    brushSettings.texture.unwrap().bind(this.gl);
+    Texture.activateUnit(0);
+    brushSettings.texture.unwrap().bind();
 
-    if (brushSettings.isEraser) this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
-    else
-      this.gl.blendFuncSeparate(
-        this.gl.SRC_ALPHA,
-        this.gl.ONE_MINUS_SRC_ALPHA,
-        this.gl.ONE,
-        this.gl.ONE
-      );
+    if (brushSettings.isEraser) gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
-    this.shader.uploadFloat(this.gl, 'flow', brushSettings.flow);
-    this.shader.uploadTexture(this.gl, 'tex', brushSettings.texture.unwrap(), 0);
+    this.shader.uploadFloat('flow', brushSettings.flow);
+    this.shader.uploadTexture('tex', brushSettings.texture.unwrap(), 0);
 
     const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY;
     const buf = new Float32Array(bufSize);
@@ -161,15 +192,15 @@ export default class BrushModule extends CanvasRenderModule {
       });
     }
 
-    this.vertexBuffer.addData(this.gl, buf);
+    this.vertexBuffer.addData(buf);
 
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
+    gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES_QUAD * points.length);
 
-    this.shader.stopUsing(this.gl);
-    this.vertexArray.unBind(this.gl);
-    this.vertexBuffer.unBind(this.gl);
-    brushSettings.texture.unwrap().unBind(this.gl);
-    framebuffer.unBind(this.gl);
+    this.shader.unBind();
+    this.vertexArray.unBind();
+    this.vertexBuffer.unBind();
+    brushSettings.texture.unwrap().unBind();
+    framebuffer.unBind();
   }
 
   private renderStrokeToOverlay(points: BrushPoint[], brushSettings: BrushSettings) {
@@ -180,7 +211,6 @@ export default class BrushModule extends CanvasRenderModule {
       this.canvasOverlayFramebuffer
     );
     this.renderStroke(points, brushSettings, this.canvasOverlayFramebuffer);
-    this.isOverlayFramebufferEmpty(false);
   }
 
   private renderStrokeToCanvas(points: BrushPoint[], brushSettings: BrushSettings) {
@@ -189,8 +219,7 @@ export default class BrushModule extends CanvasRenderModule {
   }
 
   private clearOverlayFramebuffer() {
-    clearFramebuffer(this.gl, this.canvasOverlayFramebuffer, 1, 1, 1, 1);
-    this.isOverlayFramebufferEmpty(true);
+    clearFramebuffer(this.canvasOverlayFramebuffer, 1, 1, 1, 1);
   }
 
   private setupEvents() {

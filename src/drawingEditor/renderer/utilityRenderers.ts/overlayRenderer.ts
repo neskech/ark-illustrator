@@ -9,11 +9,11 @@ import Buffer from '~/drawingEditor/webgl/buffer';
 import { Float32Vector2 } from 'matrixgl';
 import type FrameBuffer from '~/drawingEditor/webgl/frameBuffer';
 import { QuadilateralFactory } from '../geometry/quadFactory';
-import { type GL } from '~/drawingEditor/webgl/glUtils';
 import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';
 import { QuadRotator } from '../geometry/rotator';
-import type AssetManager from '../assetManager';
+import type AssetManager from '../util/assetManager';
+import { gl } from '~/drawingEditor/application';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -52,16 +52,14 @@ type AttribsType = GetAttributesType<typeof vertexAttributes>;
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export default class OverlayRenderer {
-  private gl: GL;
   private vertexArray: VertexArrayObject<AttribsType>;
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<AttribsType>;
   private shader: Shader;
 
-  constructor(gl: GL, assetManager: AssetManager) {
-    this.gl = gl;
-    this.vertexArray = new VertexArrayObject(this.gl, vertexAttributes);
-    this.vertexBuffer = new Buffer(this.gl, {
+  constructor(assetManager: AssetManager) {
+    this.vertexArray = new VertexArrayObject(vertexAttributes);
+    this.vertexBuffer = new Buffer({
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
@@ -71,10 +69,10 @@ export default class OverlayRenderer {
   }
 
   private initBuffers() {
-    this.vertexArray.bind(this.gl);
-    this.vertexBuffer.bind(this.gl);
+    this.vertexArray.bind();
+    this.vertexBuffer.bind();
 
-    this.vertexArray.applyAttributes(this.gl);
+    this.vertexArray.applyAttributes();
 
     const quadBuffer = new Float32Array(SIZE_FULL_SCREEN_QUAD);
 
@@ -90,32 +88,32 @@ export default class OverlayRenderer {
       offset: 0,
     });
 
-    this.vertexBuffer.allocateWithData(this.gl, quadBuffer);
+    this.vertexBuffer.allocateWithData(quadBuffer);
 
-    this.vertexArray.unBind(this.gl);
-    this.vertexBuffer.unBind(this.gl);
+    this.vertexArray.unBind();
+    this.vertexBuffer.unBind();
   }
 
   renderCanvasToOverlay(canvasFramebuffer: FrameBuffer, canvasOverlayFramebuffer: FrameBuffer) {
-    canvasOverlayFramebuffer.bind(this.gl);
-    this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
+    canvasOverlayFramebuffer.bind();
+    gl.blendFunc(gl.ONE, gl.ZERO);
 
     const canvasTexture = canvasFramebuffer.getTextureAttachment();
 
-    this.vertexArray.bind(this.gl);
-    this.vertexBuffer.bind(this.gl);
-    this.shader.use(this.gl);
+    this.vertexArray.bind();
+    this.vertexBuffer.bind();
+    this.shader.bind();
 
-    this.gl.activeTexture(this.gl.TEXTURE0);
-    canvasTexture.bind(this.gl);
-    this.shader.uploadTexture(this.gl, 'canvas', canvasTexture, 0);
+    gl.activeTexture(gl.TEXTURE0);
+    canvasTexture.bind();
+    this.shader.uploadTexture('canvas', canvasTexture, 0);
 
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    canvasTexture.unBind(this.gl);
-    this.shader.stopUsing(this.gl);
-    this.vertexArray.unBind(this.gl);
-    this.vertexBuffer.unBind(this.gl);
-    canvasOverlayFramebuffer.unBind(this.gl);
+    canvasTexture.unBind();
+    this.shader.unBind();
+    this.vertexArray.unBind();
+    this.vertexBuffer.unBind();
+    canvasOverlayFramebuffer.unBind();
   }
 }

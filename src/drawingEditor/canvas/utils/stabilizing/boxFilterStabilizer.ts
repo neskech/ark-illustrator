@@ -1,4 +1,3 @@
-import type Stabilizer from './stabilizer';
 import { type BrushSettings } from '../../toolSystem/settings/brushSettings';
 import { type BrushPoint, newPoint } from '../../toolSystem/tools/brush';
 import { assert, requires } from '~/util/general/contracts';
@@ -78,7 +77,7 @@ interface Cache {
   previousRawCurveLength: number;
 }
 
-export default class BoxFilterStabilizer implements Stabilizer {
+export default class BoxFilterStabilizer{ 
   private currentPoints: BrushPoint[];
   private numPoints: number;
   private cache: Cache;

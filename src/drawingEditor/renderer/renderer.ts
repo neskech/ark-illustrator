@@ -1,74 +1,68 @@
-import CanvasRenderModuleManager from './module/canvasModuleManager';
-import WorldModuleManager from './module/worldModuleManager';
-import BrushModule from './module/moduleTypes/brushModule';
 import { type GL } from '../webgl/glUtils';
-import type AssetManager from './assetManager';
-import WorldModule from './module/moduleTypes/worldModule';
+import type AssetManager from './util/assetManager';
 import type Camera from '../canvas/camera';
-import { clearScreen } from './util';
-import type FrameBuffer from '../webgl/frameBuffer';
-import RectangleModule from './module/moduleTypes/rectangleModule';
-
+import { clearFramebuffer, clearScreen } from './util/util';
+import FrameBuffer from '../webgl/frameBuffer';
+import { gl } from '../application';
+import ToolRenderers from './toolRenderers/toolRendererList';
+import PrimaryRenderers from './primaryRenderers/primaryRenderers';
+import UtilityRenderers from './utilityRenderers.ts/utilityRenderers';
 export default class Renderer {
-  private gl: GL;
-  private canvasModules: CanvasRenderModuleManager;
-  private worldModules: WorldModuleManager;
+  private primaryRenderers: PrimaryRenderers;
+  private toolRenderers: ToolRenderers;
+  private utilityRenderers: UtilityRenderers;
+  private canvasFramebuffer: FrameBuffer;
+  private overlayFramebuffer: FrameBuffer;
 
-  constructor(gl: GL, canvas: HTMLCanvasElement, camera: Camera, assetManager: AssetManager) {
-    this.gl = gl;
-    this.canvasModules = new CanvasRenderModuleManager(gl, canvas, assetManager);
-    this.worldModules = new WorldModuleManager();
-    this.init(gl, canvas, camera, assetManager);
+  constructor(canvas: HTMLCanvasElement, camera: Camera, assetManager: AssetManager) {
+    this.initGLFlags(canvas);
+    this.canvasFramebuffer = new FrameBuffer({
+      width: canvas.width,
+      height: canvas.height,
+      target: 'Regular',
+      wrapX: 'Repeat',
+      wrapY: 'Repeat',
+      magFilter: 'Nearest',
+      minFilter: 'Nearest',
+      format: 'RGBA',
+    });
+    this.overlayFramebuffer = new FrameBuffer({
+      width: canvas.width,
+      height: canvas.height,
+      target: 'Regular',
+      wrapX: 'Repeat',
+      wrapY: 'Repeat',
+      magFilter: 'Nearest',
+      minFilter: 'Nearest',
+      format: 'RGBA',
+    });
+    clearFramebuffer(this.canvasFramebuffer, 1, 1, 1, 1);
+    clearFramebuffer(this.overlayFramebuffer, 1, 1, 1, 1);
+
+    this.primaryRenderers = new PrimaryRenderers(camera, assetManager);
+    this.utilityRenderers = new UtilityRenderers(assetManager);
+    this.toolRenderers = new ToolRenderers({
+      canvasFramebuffer: this.canvasFramebuffer,
+      canvasOverlayFramebuffer: this.overlayFramebuffer,
+      assetManager: assetManager,
+      utilityRenderers: this.utilityRenderers,
+    });
   }
 
-  render() {
-    const canvas = this.canvasModules.getCanvasFramebufferInUse();
-    this.worldModules.render(canvas);
+  public render() {
+    this.primaryRenderers.getCanvasRenderer().render(this.canvasFramebuffer);
   }
 
-  getGLHandle(): GL {
-    return this.gl;
+  public getToolRenderers() {
+    return this.toolRenderers;
   }
 
-  getCanvasFramebuffer(): FrameBuffer {
-    return this.canvasModules.getCanvasFramebuffer();
-  }
-
-  private init(gl: GL, canvas: HTMLCanvasElement, camera: Camera, assetManager: AssetManager) {
+  private initGLFlags(canvas: HTMLCanvasElement) {
     gl.viewport(0, 0, canvas.width, canvas.height);
 
-    clearScreen(gl);
+    clearScreen();
     gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-    this.setCanvasModules(gl, assetManager);
-    this.setWorldModules(gl, camera, assetManager);
-  }
-
-  private setCanvasModules(gl: GL, assetManager: AssetManager) {
-    this.canvasModules.addModule(
-      new BrushModule({
-        name: 'brush module',
-        gl,
-        assetManager,
-        moduleManager: this.canvasModules,
-      })
-    );
-
-    this.canvasModules.addModule(
-      new RectangleModule({
-        name: 'rectangle module',
-        gl,
-        assetManager,
-        moduleManager: this.canvasModules,
-      })
-    );
-  }
-
-  private setWorldModules(gl: GL, camera: Camera, assetManager: AssetManager) {
-    this.worldModules.addModule(
-      new WorldModule({ name: 'world module', gl, camera, zIndex: 0, assetManager })
-    );
   }
 }

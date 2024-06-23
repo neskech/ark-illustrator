@@ -1,5 +1,6 @@
 import { Option } from '~/util/general/option';
 import { ensures, requires } from '../../util/general/contracts';
+import { gl } from '../application';
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const WebGLDebugUtils = require('webgl-debug');
 
@@ -38,6 +39,21 @@ export class GLObject<T> {
   }
 }
 
+type BindFunc = () => void;
+type UnbindFunc = () => void;
+export class BindHandle implements Disposable {
+  private unBindFunc: UnbindFunc;
+
+  constructor(bindFunc: BindFunc, unBindFunc: UnbindFunc) {
+    this.unBindFunc = unBindFunc;
+    bindFunc()
+  }
+
+  [Symbol.dispose]() {
+    this.unBindFunc()
+  }
+}
+
 export function fetchWebGLContext(canvas: HTMLCanvasElement, debug = false): Option<GL> {
   const context = Option.fromNull(
     canvas.getContext('webgl2', {
@@ -60,7 +76,7 @@ export function fetchWebGLContext(canvas: HTMLCanvasElement, debug = false): Opt
   return debugCtx;
 }
 
-export function checkError(gl: GL, fnName = 'unknown') {
+export function checkError(fnName = 'unknown') {
   ensures(() => {
     const err = gl.getError();
 

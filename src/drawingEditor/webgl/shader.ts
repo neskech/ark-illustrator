@@ -8,9 +8,10 @@ import {
 } from 'matrixgl';
 import { Option } from '../../util/general/option';
 import { Err, Ok, Result, unit, type Unit } from '../../util/general/result';
-import { GLObject, type GL } from './glUtils';
+import { GLObject } from './glUtils';
 import type Texture from './texture';
 import { type Int32Vector2, type Int32Vector3, type Int32Vector4 } from './vector';
+import { gl } from '../application';
 
 export default class Shader {
   private vertexShaderId: GLObject<WebGLShader>;
@@ -20,7 +21,7 @@ export default class Shader {
   private compiled: boolean;
   private linked: boolean;
 
-  constructor(gl: GL, name = 'unknown') {
+  constructor(name = 'unknown') {
     const vId = Option.fromNull(gl.createShader(gl.VERTEX_SHADER));
     const vgId = vId.expect("Couldn't create vertex shader");
     this.vertexShaderId = new GLObject(vgId, 'vertex shader');
@@ -38,7 +39,7 @@ export default class Shader {
     this.name = name;
   }
 
-  async compileFromFile(gl: GL, shaderName: string): Promise<Result<Unit, string>> {
+  async compileFromFile(shaderName: string): Promise<Result<Unit, string>> {
     try {
       this.name = shaderName;
       const vert = await Result.fromErrorAsync(fetch(`shaders/${shaderName}.vert`));
@@ -51,7 +52,7 @@ export default class Shader {
       const fragText = await Result.fromErrorAsync(frag.unwrap().text());
       if (fragText.isErr()) return Err(fragText.unwrapErr().message);
 
-      this.compileFromSource(gl, vertText.unwrap(), fragText.unwrap());
+      this.compileFromSource(vertText.unwrap(), fragText.unwrap());
       return Ok(unit);
     } catch (err) {
       if (err instanceof Error) return Err(err.message);
@@ -59,7 +60,7 @@ export default class Shader {
     }
   }
 
-  compileFromSource(gl: GL, vertexSource: string, fragmentSource: string) {
+  compileFromSource(vertexSource: string, fragmentSource: string) {
     if (this.compiled) throw new Error('Tried compiling shader twice');
 
     gl.shaderSource(this.vertexShaderId.innerId(), vertexSource);
@@ -71,7 +72,7 @@ export default class Shader {
     this.compiled = true;
   }
 
-  link(gl: GL): Result<Unit, string> {
+  link(): Result<Unit, string> {
     if (!this.compiled) throw new Error('tried linking shaders before compilation');
 
     if (this.linked) throw new Error('tried linking shader twice');
@@ -102,30 +103,30 @@ export default class Shader {
     return Ok(unit);
   }
 
-  async construct(gl: GL, shaderName: string): Promise<Result<Unit, string>> {
-    const result = await this.compileFromFile(gl, shaderName);
+  async construct(shaderName: string): Promise<Result<Unit, string>> {
+    const result = await this.compileFromFile(shaderName);
     if (result.isErr()) return result;
 
-    const result2 = this.link(gl);
+    const result2 = this.link();
     if (result2.isErr()) return result2;
 
     return Ok(unit);
   }
 
-  constructFromSource(gl: GL, vertexSource: string, fragmentSource: string): Result<Unit, string> {
-    this.compileFromSource(gl, vertexSource, fragmentSource);
-    return this.link(gl);
+  constructFromSource(vertexSource: string, fragmentSource: string): Result<Unit, string> {
+    this.compileFromSource(vertexSource, fragmentSource);
+    return this.link();
   }
 
-  use(gl: GL) {
+  bind() {
     gl.useProgram(this.programId.innerId());
   }
 
-  stopUsing(gl: GL) {
+  unBind() {
     gl.useProgram(null);
   }
 
-  destroy(gl: GL) {
+  destroy() {
     this.programId.destroy((pid) => {
       gl.deleteProgram(pid);
     });
@@ -139,22 +140,22 @@ export default class Shader {
     });
   }
 
-  uploadFloat(gl: GL, location: string, val: number) {
+  uploadFloat(location: string, val: number) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform1f(loc, val);
   }
 
-  uploadFloatArray(gl: GL, location: string, vals: number[]) {
+  uploadFloatArray(location: string, vals: number[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform1fv(loc, vals);
   }
 
-  uploadFloatVec2(gl: GL, location: string, val: Float32Vector2) {
+  uploadFloatVec2(location: string, val: Float32Vector2) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2f(loc, val.x, val.y);
   }
 
-  uploadFloatVec2Array(gl: GL, location: string, vals: Float32Vector2[]) {
+  uploadFloatVec2Array(location: string, vals: Float32Vector2[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2fv(
       loc,
@@ -162,12 +163,12 @@ export default class Shader {
     );
   }
 
-  uploadFloatVec3(gl: GL, location: string, val: Float32Vector3) {
+  uploadFloatVec3(location: string, val: Float32Vector3) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3f(loc, val.x, val.y, val.z);
   }
 
-  uploadFloatVec3Array(gl: GL, location: string, vals: Float32Vector3[]) {
+  uploadFloatVec3Array(location: string, vals: Float32Vector3[]) {
     ``;
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3fv(
@@ -176,12 +177,12 @@ export default class Shader {
     );
   }
 
-  uploadFloatVec4(gl: GL, location: string, val: Float32Vector4) {
+  uploadFloatVec4(location: string, val: Float32Vector4) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform4f(loc, val.x, val.y, val.z, val.w);
   }
 
-  uploadFloatVec4Array(gl: GL, location: string, vals: Float32Vector4[]) {
+  uploadFloatVec4Array(location: string, vals: Float32Vector4[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3fv(
       loc,
@@ -189,22 +190,22 @@ export default class Shader {
     );
   }
 
-  uploadInt(gl: GL, location: string, val: number) {
+  uploadInt(location: string, val: number) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform1i(loc, val);
   }
 
-  uploadIntArray(gl: GL, location: string, vals: number[]) {
+  uploadIntArray(location: string, vals: number[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform1iv(loc, vals);
   }
 
-  uploadIntVec2(gl: GL, location: string, val: Int32Vector2) {
+  uploadIntVec2(location: string, val: Int32Vector2) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2i(loc, val.x, val.y);
   }
 
-  uploadIntVec2Array(gl: GL, location: string, vals: Int32Vector2[]) {
+  uploadIntVec2Array(location: string, vals: Int32Vector2[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2iv(
       loc,
@@ -212,12 +213,12 @@ export default class Shader {
     );
   }
 
-  uploadInttVec3(gl: GL, location: string, val: Int32Vector3) {
+  uploadInttVec3(location: string, val: Int32Vector3) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3i(loc, val.x, val.y, val.z);
   }
 
-  uploadIntVec3Array(gl: GL, location: string, vals: Int32Vector3[]) {
+  uploadIntVec3Array(location: string, vals: Int32Vector3[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3iv(
       loc,
@@ -225,12 +226,12 @@ export default class Shader {
     );
   }
 
-  uploadIntVec4(gl: GL, location: string, val: Int32Vector4) {
+  uploadIntVec4(location: string, val: Int32Vector4) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform4i(loc, val.x, val.y, val.z, val.w);
   }
 
-  uploadIntVec4Array(gl: GL, location: string, vals: Int32Vector4[]) {
+  uploadIntVec4Array(location: string, vals: Int32Vector4[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform4iv(
       loc,
@@ -238,27 +239,27 @@ export default class Shader {
     );
   }
 
-  uploadMatrix2x2(gl: GL, location: string, matrix: Matrix2x2) {
+  uploadMatrix2x2(location: string, matrix: Matrix2x2) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniformMatrix2fv(loc, false, matrix.values);
   }
 
-  uploadMatrix3x3(gl: GL, location: string, matrix: Matrix3x3) {
+  uploadMatrix3x3(location: string, matrix: Matrix3x3) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniformMatrix3fv(loc, false, matrix.values);
   }
 
-  uploadMatrix4x4(gl: GL, location: string, matrix: Matrix4x4) {
+  uploadMatrix4x4(location: string, matrix: Matrix4x4) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniformMatrix4fv(loc, false, matrix.values);
   }
 
-  uploadTexture(gl: GL, location: string, texture: Texture, override: number | null = null) {
+  uploadTexture(location: string, texture: Texture, override: number | null = null) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform1i(loc, override ? override : (texture.getId().innerId() as number));
   }
 
-  uploadTextureArray(gl: GL, location: string, textures: Texture[]) {
+  uploadTextureArray(location: string, textures: Texture[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform1iv(
       loc,

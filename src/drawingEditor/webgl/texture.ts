@@ -5,49 +5,22 @@ import { unreachable } from '../../util/general/funUtils';
 import { None, Option, Some } from '../../util/general/option';
 import type FrameBuffer from './frameBuffer';
 import { type ReadPixelOptions } from './frameBuffer';
-import { GLObject, type GL, checkError } from './glUtils';
+import { GLObject, checkError } from './glUtils';
 import { Err, Ok, Result, type Unit, unit } from '../../util/general/result';
+import { gl } from '../application';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPES
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 type TextureFilter = 'Linear' | 'Nearest';
 type TextureWrap = 'Clamp To Edge' | 'Repeat' | 'Mirrored Repeat';
 type Format = 'RGBA' | 'RGB' | 'ALPHA';
 
-function formatToEnum(gl: GL, f: Format): GLenum {
-  switch (f) {
-    case 'RGBA':
-      return gl.RGBA;
-    case 'RGB':
-      return gl.RGB;
-    case 'ALPHA':
-      return gl.ALPHA;
-    default:
-      return unreachable();
-  }
-}
-
-function textureFilterToEnum(gl: GL, t: TextureFilter): GLenum {
-  switch (t) {
-    case 'Linear':
-      return gl.LINEAR;
-    case 'Nearest':
-      return gl.NEAREST;
-    default:
-      return unreachable();
-  }
-}
-
-function textureWrapToEnum(gl: GL, t: TextureWrap): GLenum {
-  switch (t) {
-    case 'Clamp To Edge':
-      return gl.CLAMP_TO_EDGE;
-    case 'Repeat':
-      return gl.REPEAT;
-    case 'Mirrored Repeat':
-      return gl.MIRRORED_REPEAT;
-    default:
-      return unreachable();
-  }
-}
 
 export interface CopySubTextureOptions {
   lowerDestinationX: number;
@@ -58,7 +31,6 @@ export interface CopySubTextureOptions {
   sourceHeight: number;
   format: Format;
 }
-
 export interface TextureOptions {
   width?: number;
   height?: number;
@@ -69,19 +41,27 @@ export interface TextureOptions {
   format: Format;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! CLASS DEFINITION
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
 export default class Texture {
   private id: GLObject<WebGLTexture>;
   private options: TextureOptions;
   private width: Option<number>;
   private height: Option<number>;
 
-  constructor(gl: GL, options: TextureOptions) {
+  constructor(options: TextureOptions) {
     const bId = Option.fromNull(gl.createTexture());
     const gId = bId.expect(`Couldn't create texture with options ${options}`);
     this.id = new GLObject(gId, 'texture');
 
     this.options = options;
-    this.setTextureParams(gl);
+    this.setTextureParams();
 
     this.width = options.width == null ? None() : Some(options.width);
     this.height = options.height == null ? None() : Some(options.height);
@@ -112,27 +92,27 @@ export default class Texture {
     );
   }
 
-  private setTextureParams(gl: GL) {
-    this.bind(gl);
+  private setTextureParams() {
+    this.bind();
 
     gl.texParameteri(
       gl.TEXTURE_2D,
       gl.TEXTURE_MAG_FILTER,
-      textureFilterToEnum(gl, this.options.magFilter)
+      textureFilterToEnum(this.options.magFilter)
     );
     gl.texParameteri(
       gl.TEXTURE_2D,
       gl.TEXTURE_MIN_FILTER,
-      textureFilterToEnum(gl, this.options.minFilter)
+      textureFilterToEnum(this.options.minFilter)
     );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, textureWrapToEnum(gl, this.options.wrapX));
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, textureWrapToEnum(gl, this.options.wrapY));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, textureWrapToEnum(this.options.wrapX));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, textureWrapToEnum(this.options.wrapY));
 
-    this.unBind(gl);
+    this.unBind();
   }
 
-  allocateFromPixels(gl: GL, width: number, height: number, data: ArrayBufferView, offset = 0) {
-    this.bind(gl);
+  allocateFromPixels(width: number, height: number, data: ArrayBufferView, offset = 0) {
+    this.bind();
 
     const mipMapLevels = 0; //something to consider for future
     const border = 0;
@@ -140,42 +120,42 @@ export default class Texture {
     gl.texImage2D(
       gl.TEXTURE_2D,
       mipMapLevels,
-      formatToEnum(gl, this.options.format),
+      formatToEnum(this.options.format),
       width,
       height,
       border,
-      formatToEnum(gl, this.options.format),
+      formatToEnum(this.options.format),
       gl.UNSIGNED_BYTE,
       data,
       offset
     );
 
-    this.unBind(gl);
+    this.unBind();
   }
 
-  allocateEmpty(gl: GL, width: number, height: number) {
+  allocateEmpty(width: number, height: number) {
     this.setDimensions(width, height);
 
-    this.bind(gl);
+    this.bind();
 
     const mipMapLevels = 0;
     const border = 0;
     gl.texImage2D(
       gl.TEXTURE_2D,
       mipMapLevels,
-      formatToEnum(gl, this.options.format),
+      formatToEnum(this.options.format),
       width,
       height,
       border,
-      formatToEnum(gl, this.options.format),
+      formatToEnum(this.options.format),
       gl.UNSIGNED_BYTE,
       null
     );
 
-    this.unBind(gl);
+    this.unBind();
   }
 
-  allocateFromImageUrl(gl: GL, url: string, preload = true) {
+  allocateFromImageUrl(url: string, preload = true) {
     const img = new Image();
 
     /**
@@ -187,23 +167,23 @@ export default class Texture {
      */
     if (preload) {
       const pixel = new Uint8Array([255, 255, 255, 255]);
-      this.allocateFromPixels(gl, 1, 1, pixel);
+      this.allocateFromPixels(1, 1, pixel);
     }
 
-    const format = formatToEnum(gl, this.options.format);
+    const format = formatToEnum(this.options.format);
     function allocateFromImg() {
       const mipMapLevels = 0;
       const texelType = gl.UNSIGNED_BYTE;
 
       gl.texImage2D(gl.TEXTURE_2D, mipMapLevels, format, format, texelType, img);
 
-      checkError(gl, 'texImage2D');
+      checkError('texImage2D');
     }
 
     img.onload = () => {
-      this.bind(gl);
+      this.bind();
       allocateFromImg();
-      this.unBind(gl);
+      this.unBind();
 
       this.setDimensions(img.width, img.height);
     };
@@ -212,7 +192,7 @@ export default class Texture {
     img.crossOrigin = 'anonymous';
   }
 
-  async allocateFromImageUrlAsync(gl: GL, url: string): Promise<Result<Unit, string>> {
+  async allocateFromImageUrlAsync(url: string): Promise<Result<Unit, string>> {
     function asyncImgLoad(img: HTMLImageElement, url: string) {
       return new Promise((resolve, reject) => {
         img.onload = resolve;
@@ -226,21 +206,21 @@ export default class Texture {
     const res = await Result.fromErrorAsync(asyncImgLoad(img, url));
     if (res.isErr()) return Err(res.unwrapErr().message);
 
-    this.bind(gl);
+    this.bind();
 
-    const format = formatToEnum(gl, this.options.format);
+    const format = formatToEnum(this.options.format);
     const mipMapLevels = 0;
     const texelType = gl.UNSIGNED_BYTE;
     gl.texImage2D(gl.TEXTURE_2D, mipMapLevels, format, format, texelType, img);
-    checkError(gl, 'texImage2D');
+    checkError('texImage2D');
     this.setDimensions(img.width, img.height);
 
-    this.unBind(gl);
+    this.unBind();
 
     return Ok(unit);
   }
 
-  allocateFromSubFramebuffer(gl: GL, options: CopySubTextureOptions) {
+  allocateFromSubFramebuffer(options: CopySubTextureOptions) {
     this.setDimensions(options.sourceWidth, options.sourceHeight);
 
     const mipMapLevels = 0;
@@ -256,8 +236,8 @@ export default class Texture {
     );
   }
 
-  copyFromFramebuffer(gl: GL, frameBuffer: FrameBuffer) {
-    this.bind(gl);
+  copyFromFramebuffer(frameBuffer: FrameBuffer) {
+    this.bind();
 
     const mipMapLevels = 0;
     const xOffset = 0;
@@ -269,7 +249,7 @@ export default class Texture {
     gl.copyTexSubImage2D(
       gl.TEXTURE_2D,
       mipMapLevels,
-      formatToEnum(gl, this.options.format),
+      formatToEnum(this.options.format),
       xOffset,
       yOffset,
       this.width.unwrap(),
@@ -277,32 +257,30 @@ export default class Texture {
       border
     );
 
-    this.unBind(gl);
+    this.unBind();
   }
 
   readPixelsViaFramebuffer(
-    gl: GL,
     frameBuffer: FrameBuffer,
     options: ReadPixelOptions,
     pixelBuf: Uint8Array,
     handleBinding = false
   ) {
     if (handleBinding) {
-      frameBuffer.bind(gl);
-      this.bind(gl);
+      frameBuffer.bind();
+      this.bind();
     }
 
     this.setDimensions(frameBuffer.getWidth(), frameBuffer.getHeight());
-    frameBuffer.readPixelsTo(gl, pixelBuf, options);
+    frameBuffer.readPixelsTo(pixelBuf, options);
 
     if (handleBinding) {
-      this.unBind(gl);
-      frameBuffer.unBind(gl);
+      this.unBind();
+      frameBuffer.unBind();
     }
   }
 
   async writeToFileViaFramebuffer(
-    gl: GL,
     filePath: string,
     frameBuffer: FrameBuffer,
     options: ReadPixelOptions
@@ -315,7 +293,7 @@ export default class Texture {
     const channels = 4; // r g b a
 
     const pixelBuf = new Uint8Array(w * h * channels);
-    this.readPixelsViaFramebuffer(gl, frameBuffer, options, pixelBuf, true);
+    this.readPixelsViaFramebuffer(frameBuffer, options, pixelBuf, true);
 
     try {
       const img = await Jimp.create(w, h);
@@ -338,15 +316,15 @@ export default class Texture {
     }
   }
 
-  bind(gl: GL) {
+  bind() {
     gl.bindTexture(gl.TEXTURE_2D, this.id.innerId());
   }
 
-  unBind(gl: GL) {
+  unBind() {
     gl.bindTexture(gl.TEXTURE_2D, null);
   }
 
-  static activateUnit(gl: GL, unitOffset: number) {
+  static activateUnit(unitOffset: number) {
     gl.activeTexture(gl.TEXTURE0 + unitOffset);
   }
 
@@ -380,5 +358,50 @@ export default class Texture {
 
   log(logger: (s: string) => void = console.log) {
     logger(this.toString());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! HELPERS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+function formatToEnum(f: Format): GLenum {
+  switch (f) {
+    case 'RGBA':
+      return gl.RGBA;
+    case 'RGB':
+      return gl.RGB;
+    case 'ALPHA':
+      return gl.ALPHA;
+    default:
+      return unreachable();
+  }
+}
+
+function textureFilterToEnum(t: TextureFilter): GLenum {
+  switch (t) {
+    case 'Linear':
+      return gl.LINEAR;
+    case 'Nearest':
+      return gl.NEAREST;
+    default:
+      return unreachable();
+  }
+}
+
+function textureWrapToEnum(t: TextureWrap): GLenum {
+  switch (t) {
+    case 'Clamp To Edge':
+      return gl.CLAMP_TO_EDGE;
+    case 'Repeat':
+      return gl.REPEAT;
+    case 'Mirrored Repeat':
+      return gl.MIRRORED_REPEAT;
+    default:
+      return unreachable();
   }
 }

@@ -1,6 +1,3 @@
-import { symbol } from 'zod';
-import { GL, GLObject } from './glUtils';
-
 type BindFunc = () => void;
 type UnbindFunc = () => void;
 

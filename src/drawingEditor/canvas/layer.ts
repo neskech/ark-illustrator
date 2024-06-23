@@ -13,6 +13,6 @@ export default class Layer {
   imageData: Texture;
 
   constructor(gl: GL) {
-    this.imageData = new Texture(gl, LAYER_TEXTURE_OPTIONS);
+    this.imageData = new Texture(LAYER_TEXTURE_OPTIONS);
   }
 }
