@@ -7,13 +7,11 @@ import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
 import type Shader from '~/util/webglWrapper/shader';
 import Buffer from '~/util/webglWrapper/buffer';
 import { Float32Vector3 } from 'matrixgl';
-import { type BrushPoint } from '~/drawingEditor/Input/toolSystem/tools/brush';
+import { type BrushPoint } from '~/drawingEditor/Input/toolSystem/tools/brushTool/brushTool';
 import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 import { angle, displacement } from '~/util/webglWrapper/vector';
 import Texture from '~/util/webglWrapper/texture';
-import EventManager from '~/util/eventSystem/eventManager';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
-import type OverlayRenderer from '../utilityRenderers.ts/overlayRenderer';
 import type AssetManager from '../util/assetManager';
 import { QuadilateralFactory } from '../geometry/quadFactory';
 import { gl } from '~/drawingEditor/application';
@@ -21,7 +19,7 @@ import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';
 import { QuadRotator } from '../geometry/rotator';
 import { clearFramebuffer } from '../util/util';
-import type UtilityRenderers from '../utilityRenderers.ts/utilityRenderers';
+import { type RenderContext } from '../renderer';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -54,12 +52,10 @@ const strokeVertexAttributes = new VertexAttributes({
 });
 type StrokeAttribsType = GetAttributesType<typeof strokeVertexAttributes>;
 
-type BrushRendererArgs = {
-  assetManager: AssetManager;
-  canvasFramebuffer: FrameBuffer;
-  canvasOverlayFramebuffer: FrameBuffer;
-  utilityRenderers: UtilityRenderers;
-};
+type BrushRendererContext = {
+  pointData: BrushPoint[];
+  brushSettings: BrushSettings;
+} & RenderContext;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -70,21 +66,12 @@ type BrushRendererArgs = {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export default class BrushToolRenderer {
-  private canvasFramebuffer: FrameBuffer;
-  private canvasOverlayFramebuffer: FrameBuffer;
-  private assetManager: AssetManager;
-  private overlayRenderer: OverlayRenderer;
   private vertexArray: VertexArrayObject<StrokeAttribsType>;
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<StrokeAttribsType>;
   private shader: Shader;
 
-  constructor(args: BrushRendererArgs) {
-    this.canvasFramebuffer = args.canvasFramebuffer;
-    this.canvasOverlayFramebuffer = args.canvasOverlayFramebuffer;
-    this.assetManager = args.assetManager;
-    this.overlayRenderer = args.utilityRenderers.getOverlayRenderer();
-
+  constructor(assetManager: AssetManager) {
     this.vertexArray = new VertexArrayObject(strokeVertexAttributes);
     this.vertexBuffer = new Buffer({
       btype: 'VertexBuffer',
@@ -104,34 +91,33 @@ export default class BrushToolRenderer {
         texCord: [1, 1],
       },
     });
-    this.shader = this.assetManager.getShader('stroke');
+    this.shader = assetManager.getShader('stroke');
     this.initBuffer();
   }
 
-  public renderBrushStrokeContinued(pointData: BrushPoint[], currentSettings: BrushSettings) {
+  public renderBrushStrokeContinued(context: BrushRendererContext) {
     //refresh so there aren't multiple strokes
-    this.clearOverlayFramebuffer();
-    this.renderStrokeToOverlay(pointData, currentSettings);
+    clearFramebuffer(context.overlayFramebuffer);
+    this.renderStrokeToOverlay(context);
   }
 
-  public renderBrushStrokeFinished(pointData: BrushPoint[], currentSettings: BrushSettings) {
-    this.renderStrokeToCanvas(pointData, currentSettings);
+  public renderBrushStrokeFinished(context: BrushRendererContext) {
+    this.renderStrokeToCanvas(context);
   }
 
-  public renderBrushStrokeCutoff(pointData: BrushPoint[], currentSettings: BrushSettings) {
-    this.renderStrokeToCanvas(pointData, currentSettings);
+  public renderBrushStrokeCutoff(context: BrushRendererContext) {
+    this.renderStrokeToCanvas(context);
     // the world module uses our overlay buffer. We just now rendered to this canvas, but our overlay buffer has been cleared
     // so we need to make sure the overlay buffer is the same as the canvas
-    this.clearOverlayFramebuffer();
-    this.overlayRenderer.renderCanvasToOverlay(
-      this.canvasFramebuffer,
-      this.canvasOverlayFramebuffer
+    clearFramebuffer(context.overlayFramebuffer);
+    const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
+    overlayRenderer.renderCanvasToOverlay(
+      context.layerManager.getCanvasFramebuffer(),
+      context.overlayFramebuffer
     );
   }
 
   private initBuffer() {
-    this.setupEvents();
-
     this.vertexArray.bind();
     this.vertexBuffer.bind();
 
@@ -203,45 +189,23 @@ export default class BrushToolRenderer {
     framebuffer.unBind();
   }
 
-  private renderStrokeToOverlay(points: BrushPoint[], brushSettings: BrushSettings) {
-    if (points.length == 0) return;
+  private renderStrokeToOverlay(context: BrushRendererContext) {
+    if (context.pointData.length == 0) return;
 
-    this.overlayRenderer.renderCanvasToOverlay(
-      this.canvasFramebuffer,
-      this.canvasOverlayFramebuffer
+    const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
+    overlayRenderer.renderCanvasToOverlay(
+      context.layerManager.getCanvasFramebuffer(),
+      context.overlayFramebuffer
     );
-    this.renderStroke(points, brushSettings, this.canvasOverlayFramebuffer);
+    this.renderStroke(context.pointData, context.brushSettings, context.overlayFramebuffer);
   }
 
-  private renderStrokeToCanvas(points: BrushPoint[], brushSettings: BrushSettings) {
-    if (points.length == 0) return;
-    this.renderStroke(points, brushSettings, this.canvasFramebuffer);
-  }
-
-  private clearOverlayFramebuffer() {
-    clearFramebuffer(this.canvasOverlayFramebuffer, 1, 1, 1, 1);
-  }
-
-  private setupEvents() {
-    EventManager.subscribe('brushStrokeContinued', ({ pointData, currentSettings }) => {
-      //refresh so there aren't multiple strokes
-      this.clearOverlayFramebuffer();
-      this.renderStrokeToOverlay(pointData, currentSettings);
-    });
-
-    EventManager.subscribe('brushStrokEnd', ({ pointData, currentSettings }) => {
-      this.renderStrokeToCanvas(pointData, currentSettings);
-    });
-
-    EventManager.subscribe('brushStrokCutoff', ({ pointData, currentSettings }) => {
-      this.renderStrokeToCanvas(pointData, currentSettings);
-      // the world module uses our overlay buffer. We just now rendered to this canvas, but our overlay buffer has been cleared
-      // so we need to make sure the overlay buffer is the same as the canvas
-      this.clearOverlayFramebuffer();
-      this.overlayRenderer.renderCanvasToOverlay(
-        this.canvasFramebuffer,
-        this.canvasOverlayFramebuffer
-      );
-    });
+  private renderStrokeToCanvas(context: BrushRendererContext) {
+    if (context.pointData.length == 0) return;
+    this.renderStroke(
+      context.pointData,
+      context.brushSettings,
+      context.layerManager.getCanvasFramebuffer()
+    );
   }
 }

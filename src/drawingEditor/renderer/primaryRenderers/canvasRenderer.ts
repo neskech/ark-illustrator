@@ -56,7 +56,6 @@ export default class CanvasRenderer {
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<AttribsType>;
   private shader: Shader;
-  private camera: Camera;
 
   constructor(camera: Camera, assetManager: AssetManager) {
     this.vertexArray = new VertexArrayObject(vertexAttributes);
@@ -66,17 +65,16 @@ export default class CanvasRenderer {
     });
     this.quadFactory = new QuadilateralFactory(vertexAttributes);
     this.shader = assetManager.getShader('world');
-    this.camera = camera;
 
-    this.initBuffers();
+    this.initBuffers(camera);
   }
 
-  private initBuffers() {
+  private initBuffers(camera: Camera) {
     this.vertexArray.bind();
     this.vertexBuffer.bind();
 
     this.vertexArray.applyAttributes();
-    const aspectRatio = this.camera.getAspRatio();
+    const aspectRatio = camera.getAspRatio();
     const quadBuffer = new Float32Array(NUM_VERTEX_QUAD * SIZE_VERTEX);
 
     this.quadFactory.emplaceRectangle({
@@ -110,7 +108,7 @@ export default class CanvasRenderer {
     this.vertexBuffer.unBind();
   }
 
-  render(canvasFramebuffer: FrameBuffer): void {
+  render(camera: Camera, canvasFramebuffer: FrameBuffer): void {
     this.vertexArray.bind();
     this.vertexBuffer.bind();
 
@@ -120,8 +118,8 @@ export default class CanvasRenderer {
     gl.blendFunc(gl.ONE, gl.ZERO);
 
     this.shader.bind();
-    this.shader.uploadMatrix4x4('view', this.camera.getViewMatrix());
-    this.shader.uploadMatrix4x4('projection', this.camera.getProjectionMatrix());
+    this.shader.uploadMatrix4x4('view', camera.getViewMatrix());
+    this.shader.uploadMatrix4x4('projection', camera.getProjectionMatrix());
 
     gl.activeTexture(gl.TEXTURE0);
     canvasTexture.bind();

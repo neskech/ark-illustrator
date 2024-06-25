@@ -11,14 +11,13 @@ import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { type Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { midpoint } from '~/util/webglWrapper/vector';
 import type AssetManager from '../util/assetManager';
-import type OverlayRenderer from '../utilityRenderers.ts/overlayRenderer';
 import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';
 import { QuadRotator } from '../geometry/rotator';
 import { clearFramebuffer } from '../util/util';
 import { gl } from '~/drawingEditor/application';
 import { QuadilateralFactory } from '../geometry/quadFactory';
-import type UtilityRenderers from '../utilityRenderers.ts/utilityRenderers';
+import { type RenderContext } from '../renderer';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -45,37 +44,34 @@ const vertexAttributes = new VertexAttributes({
 });
 type AttribsType = GetAttributesType<typeof vertexAttributes>;
 
-type SquareRendererArgs = {
-  assetManager: AssetManager;
-  canvasFramebuffer: FrameBuffer;
-  canvasOverlayFramebuffer: FrameBuffer;
-  utilityRenderers: UtilityRenderers;
-};
+type RectangleRendererContext = {
+  anchorPosition: Float32Vector2;
+  otherPosition: Float32Vector2;
+} & RenderContext;
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! MAIN CLASS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 export default class RectangleToolRenderer {
-  private canvasFramebuffer: FrameBuffer;
-  private canvasOverlayFramebuffer: FrameBuffer;
-  private assetManager: AssetManager;
-  private overlayRenderer: OverlayRenderer;
   private vertexArray: VertexArrayObject<AttribsType>;
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<AttribsType>;
   private shader: Shader;
   private color: Float32Vector3;
 
-  constructor(args: SquareRendererArgs) {
-    this.canvasFramebuffer = args.canvasFramebuffer;
-    this.canvasOverlayFramebuffer = args.canvasOverlayFramebuffer;
-    this.assetManager = args.assetManager;
-    this.overlayRenderer = args.utilityRenderers.getOverlayRenderer();
-
+  constructor(assetManager: AssetManager) {
     this.vertexArray = new VertexArrayObject(vertexAttributes);
     this.vertexBuffer = new Buffer({
       btype: 'VertexBuffer',
       usage: 'Static Draw',
     });
     this.quadFactory = new QuadilateralFactory(vertexAttributes);
-    this.shader = this.assetManager.getShader('rectangle');
+    this.shader = assetManager.getShader('rectangle');
     this.color = new Float32Vector3(0, 0, 0);
     this.initBuffer();
   }
@@ -92,21 +88,26 @@ export default class RectangleToolRenderer {
     this.vertexBuffer.unBind();
   }
 
-  public renderRectangleContinued(anchorPosition: Float32Vector2, otherPosition: Float32Vector2) {
-    clearFramebuffer(this.canvasOverlayFramebuffer, 1, 1, 1, 1);
-    this.overlayRenderer.renderCanvasToOverlay(
-      this.canvasFramebuffer,
-      this.canvasOverlayFramebuffer
+  public renderRectangleContinued(context: RectangleRendererContext) {
+    clearFramebuffer(context.overlayFramebuffer);
+    const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
+    overlayRenderer.renderCanvasToOverlay(
+      context.layerManager.getCanvasFramebuffer(),
+      context.overlayFramebuffer
     );
-    this.renderRectangle(this.canvasOverlayFramebuffer, anchorPosition, otherPosition);
+    this.renderRectangle(context.overlayFramebuffer, context.anchorPosition, context.otherPosition);
   }
 
-  public renderRectangleFinished(anchorPosition: Float32Vector2, otherPosition: Float32Vector2) {
-    this.renderRectangle(this.canvasFramebuffer, anchorPosition, otherPosition);
-    clearFramebuffer(this.canvasOverlayFramebuffer, 1, 1, 1, 1);
+  public renderRectangleFinished(context: RectangleRendererContext) {
+    this.renderRectangle(
+      context.layerManager.getCanvasFramebuffer(),
+      context.anchorPosition,
+      context.otherPosition
+    );
+    clearFramebuffer(context.overlayFramebuffer);
   }
-  public renderRectangleCancled() {
-    clearFramebuffer(this.canvasOverlayFramebuffer, 1, 1, 1, 1);
+  public renderRectangleCancled(context: RectangleRendererContext) {
+    clearFramebuffer(context.overlayFramebuffer);
   }
 
   private renderRectangle(framebuffer: FrameBuffer, anchor: Float32Vector2, other: Float32Vector2) {

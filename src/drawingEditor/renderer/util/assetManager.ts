@@ -1,7 +1,8 @@
 import { requires } from '~/util/general/contracts';
 import { Err, Ok, Result, unit, type Unit } from '~/util/general/result';
 import Shader from '../../../util/webglWrapper/shader';
-import Texture from '../../../util/webglWrapper/texture';
+import type Texture from '../../../util/webglWrapper/texture';
+import { TextureCreator } from '../../../util/webglWrapper/texture';
 
 interface ShaderManifest {
   shaders: string[];
@@ -56,21 +57,23 @@ export default class AssetManager {
     if (json.isErr()) return Err(manifest.unwrapErr().message);
 
     const textureNames = (json.unwrap() as TextureManifest).textures;
-    const textures = textureNames.map(
-      (_) =>
-        new Texture({
-          wrapX: 'Repeat',
-          wrapY: 'Repeat',
-          magFilter: 'Linear',
-          minFilter: 'Linear',
-          format: 'RGBA',
-        })
+    const texturePromises = textureNames.map((name) =>
+      TextureCreator.allocateFromImageUrlAsync({
+        url: `textures/${name}`,
+        wrapX: 'Repeat',
+        wrapY: 'Repeat',
+        magFilter: 'Linear',
+        minFilter: 'Linear',
+        format: 'RGBA',
+      })
     );
-    const res = await Result.multipleErrorAsync(
-      textureNames.map((name, i) => textures[i].allocateFromImageUrlAsync(`textures/${name}`))
-    );
+    const res = await Result.multipleErrorAsync(texturePromises);
 
     if (res.isErr()) return Err(res.unwrapErr().message);
+    const textures = res
+      .unwrap()
+      .filter((t) => t.isOk())
+      .map((t) => t.unwrap());
 
     textureNames.forEach((name, i) => this.textureMap.set(name, textures[i]));
     return Ok(unit);

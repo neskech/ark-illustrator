@@ -2,10 +2,9 @@ import { type Float32Vector2 } from 'matrixgl';
 import EventManager from '~/util/eventSystem/eventManager';
 import { requires } from '../../../../../util/general/contracts';
 import BoxFilterStabilizer from './stabilizing/boxFilterStabilizer';
-import type Stabilizer from './stabilizing/stabilizer';
 import { type AllToolSettings } from '../../settings';
 import { type BrushSettings } from '../../settings/brushSettings';
-import { Tool, type HandleEventArgs } from '../../tool';
+import { Tool, ToolContext, type HandleEventArgs } from '../../tool';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +73,24 @@ export class BrushTool extends Tool {
 
   update(_: number): void {
     return;
+  }
+
+  pointerMove(context: ToolContext, event: PointerEvent): void {
+    const brushSettings = context.settings.brushSettings.getCurrentPreset();
+
+    const point = context.camera.mouseToWorld(event, appState.canvasState.canvas);
+    const brushPoint = newPoint(point, event.pressure);
+    if (this.isPointerDown) {
+      this.stabilizer.addPoint(brushPoint, brushSettings);
+      EventManager.invoke('brushStrokeContinued', {
+        pointData: this.stabilizer.getProcessedCurve(brushSettings),
+        currentSettings: brushSettings,
+      });
+      EventManager.invoke('brushStrokeContinuedRaw', {
+        pointData: this.stabilizer.getRawCurve(brushSettings),
+        currentSettings: brushSettings,
+      });
+    }
   }
 
   private pointerMovedHandler(args: HandleEventArgs, event: PointerEvent) {

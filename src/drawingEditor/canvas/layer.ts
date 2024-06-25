@@ -1,7 +1,7 @@
 import Texture from '../../util/webglWrapper/texture';
 
 export default class Layer {
-  imageData: Texture;
+  private imageData: Texture;
 
   constructor(canvasWidth: number, canvasHeight: number) {
     this.imageData = new Texture({
@@ -13,5 +13,9 @@ export default class Layer {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
+  }
+
+  getTexture() {
+    return this.imageData
   }
 }

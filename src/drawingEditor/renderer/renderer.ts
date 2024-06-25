@@ -6,26 +6,25 @@ import { gl } from '../application';
 import ToolRenderers from './toolRenderers/toolRendererList';
 import PrimaryRenderers from './primaryRenderers/primaryRenderers';
 import UtilityRenderers from './utilityRenderers.ts/utilityRenderers';
+import type LayerManager from '../canvas/layerManager';
+
+export type RenderContext = {
+  assetManager: AssetManager;
+  layerManager: LayerManager;
+  overlayFramebuffer: FrameBuffer;
+  utilityRenderers: UtilityRenderers;
+};
+
 export default class Renderer {
   private primaryRenderers: PrimaryRenderers;
   private toolRenderers: ToolRenderers;
   private utilityRenderers: UtilityRenderers;
-  private canvasFramebuffer: FrameBuffer;
   private overlayFramebuffer: FrameBuffer;
 
   constructor(canvas: HTMLCanvasElement, camera: Camera, assetManager: AssetManager) {
     this.initGLFlags(canvas);
-    this.canvasFramebuffer = new FrameBuffer({
-      width: canvas.width,
-      height: canvas.height,
-      target: 'Regular',
-      wrapX: 'Repeat',
-      wrapY: 'Repeat',
-      magFilter: 'Nearest',
-      minFilter: 'Nearest',
-      format: 'RGBA',
-    });
     this.overlayFramebuffer = new FrameBuffer({
+      type: 'no texture',
       width: canvas.width,
       height: canvas.height,
       target: 'Regular',
@@ -35,25 +34,27 @@ export default class Renderer {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
-    clearFramebuffer(this.canvasFramebuffer, 1, 1, 1, 1);
     clearFramebuffer(this.overlayFramebuffer, 1, 1, 1, 1);
 
     this.primaryRenderers = new PrimaryRenderers(camera, assetManager);
     this.utilityRenderers = new UtilityRenderers(assetManager);
-    this.toolRenderers = new ToolRenderers({
-      canvasFramebuffer: this.canvasFramebuffer,
-      canvasOverlayFramebuffer: this.overlayFramebuffer,
-      assetManager: assetManager,
-      utilityRenderers: this.utilityRenderers,
-    });
+    this.toolRenderers = new ToolRenderers(assetManager);
   }
 
-  public render() {
-    this.primaryRenderers.getCanvasRenderer().render(this.canvasFramebuffer);
+  public render(camera: Camera, layerManager: LayerManager) {
+    this.primaryRenderers.getCanvasRenderer().render(camera, layerManager.getCanvasFramebuffer());
   }
 
   public getToolRenderers() {
     return this.toolRenderers;
+  }
+
+  public getUtilityRenderers() {
+    return this.utilityRenderers;
+  }
+
+  public getOverlayFramebuffer() {
+    return this.overlayFramebuffer;
   }
 
   private initGLFlags(canvas: HTMLCanvasElement) {

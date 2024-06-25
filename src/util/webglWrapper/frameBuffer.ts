@@ -3,7 +3,8 @@ import { unreachable } from '../general/funUtils';
 import { Option } from '../general/option';
 import { gl } from '../../drawingEditor/application';
 import { GLObject } from './glUtils';
-import Texture from './texture';
+import type Texture from './texture';
+import { TextureCreator } from './texture';
 import { type TextureOptions } from './texture';
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -24,9 +25,10 @@ export interface ReadPixelOptions {
   width: number;
   height: number;
   format: Format;
+  pixelBuffer: Uint8Array;
 }
 
-export interface BlitOptions {
+interface BlitOptions {
   srcBottomLeft: [number, number];
   srcTopLeft: [number, number];
   dstBottomLeft: [number, number];
@@ -34,11 +36,18 @@ export interface BlitOptions {
   filter: Filter;
 }
 
-export type FrameBufferOptions = {
+type FrameBufferOptionsWithNoTexture = {
+  type: 'no texture';
   target: FrameBufferTarget;
-  width: number;
-  height: number;
 } & TextureOptions;
+
+type FrameBufferOptionsWithTexture = {
+  type: 'with texture';
+  target: FrameBufferTarget;
+  texture: Texture;
+};
+
+type FrameBufferOptions = FrameBufferOptionsWithTexture | FrameBufferOptionsWithNoTexture;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -60,9 +69,18 @@ export default class FrameBuffer {
     const fgId = fId.expect("Couldn't create frame buffer");
     this.id = new GLObject(fgId);
     this.target = options.target;
+
+    if (options.type == 'with texture') {
+      this.attachedTexture = options.texture;
+      this.width = options.texture.getWidth();
+      this.height = options.texture.getHeight();
+      this.attachTexture();
+      return;
+    }
+
     this.width = options.width;
     this.height = options.height;
-    this.attachedTexture = new Texture({
+    this.attachedTexture = TextureCreator.allocateEmpty({
       width: options.width,
       height: options.height,
       wrapX: options.wrapX,
@@ -71,21 +89,10 @@ export default class FrameBuffer {
       magFilter: options.magFilter,
       format: options.format,
     });
-    this.attachedTexture.allocateEmpty(options.width, options.height);
     this.attachTexture();
   }
 
-  assertOkStatus() {
-    this.bind();
-
-    const status = gl.checkFramebufferStatus(targetToEnum(this.target));
-    if (status != gl.FRAMEBUFFER_COMPLETE)
-      throw new Error(`Invalid framebuffer status with status ${fStatusToString(status)}`);
-
-    this.unBind();
-  }
-
-  blitTo(readBuffer: FrameBuffer, blitOptions: BlitOptions, handleBinding = false) {
+  public blitTo(readBuffer: FrameBuffer, blitOptions: BlitOptions, handleBinding = false) {
     if (handleBinding) {
       this.bind();
       readBuffer.bind();
@@ -113,6 +120,53 @@ export default class FrameBuffer {
     readBuffer.assertOkStatus();
   }
 
+  public readPixelsTo(pixelBuf: Uint8Array, options: ReadPixelOptions) {
+    gl.readPixels(
+      options.lowerLeftX,
+      options.lowerLeftY,
+      options.width,
+      options.height,
+      formatToEnum(options.format),
+      gl.UNSIGNED_BYTE,
+      pixelBuf
+    );
+  }
+
+  public swapTexture(texture: Texture) {
+    requires(
+      this.width == texture.getWidth() && this.height == texture.getHeight(),
+      'texture must have same dimensions as framebuffer'
+    );
+    this.attachedTexture = texture;
+    this.attachTexture();
+  }
+
+  public bind() {
+    gl.bindFramebuffer(targetToEnum(this.target), this.id.innerId());
+  }
+
+  public unBind() {
+    gl.bindFramebuffer(targetToEnum(this.target), null);
+  }
+
+  public getWidth() {
+    return this.width;
+  }
+
+  public getHeight() {
+    return this.height;
+  }
+
+  public getTextureAttachment(): Texture {
+    return this.attachedTexture;
+  }
+
+  public destroy() {
+    this.id.destroy((id) => {
+      gl.deleteFramebuffer(id);
+    });
+  }
+
   private attachTexture() {
     const mipMapLevels = 0;
 
@@ -136,42 +190,14 @@ export default class FrameBuffer {
     this.assertOkStatus();
   }
 
-  readPixelsTo(pixelBuf: Uint8Array, options: ReadPixelOptions) {
-    gl.readPixels(
-      options.lowerLeftX,
-      options.lowerLeftY,
-      options.width,
-      options.height,
-      formatToEnum(options.format),
-      gl.UNSIGNED_BYTE,
-      pixelBuf
-    );
-  }
+  private assertOkStatus() {
+    this.bind();
 
-  bind() {
-    gl.bindFramebuffer(targetToEnum(this.target), this.id.innerId());
-  }
+    const status = gl.checkFramebufferStatus(targetToEnum(this.target));
+    if (status != gl.FRAMEBUFFER_COMPLETE)
+      throw new Error(`Invalid framebuffer status with status ${fStatusToString(status)}`);
 
-  unBind() {
-    gl.bindFramebuffer(targetToEnum(this.target), null);
-  }
-
-  getWidth() {
-    return this.width;
-  }
-
-  getHeight() {
-    return this.height;
-  }
-
-  getTextureAttachment(): Texture {
-    return this.attachedTexture;
-  }
-
-  destroy() {
-    this.id.destroy((id) => {
-      gl.deleteFramebuffer(id);
-    });
+    this.unBind();
   }
 }
 
