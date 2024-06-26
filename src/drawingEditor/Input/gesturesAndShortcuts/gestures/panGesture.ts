@@ -1,19 +1,20 @@
 import { Float32Vector2 } from 'matrixgl';
 import {
   type PointerPos,
-  type Gesture,
+  Gesture,
   areValidPointerIDs,
   areValidPositions,
   getFingerDelta,
 } from './gesture';
-import { type AppState } from '../../../application';
 import { add, copy, midpoint, scale } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
+import { type GestureContext } from './gesture';
+import type Camera from '../../../renderer/camera';
 
 const PAN_FACTOR = 1.5;
 
-export default class PanGesture implements Gesture {
+export default class PanGesture extends Gesture {
   private originPosition1: Float32Vector2;
   private originPosition2: Float32Vector2;
   private pointerId1: number;
@@ -21,6 +22,7 @@ export default class PanGesture implements Gesture {
   private originCameraPos: Float32Vector2;
 
   constructor() {
+    super();
     this.originPosition1 = new Float32Vector2(-1, -1);
     this.originPosition2 = new Float32Vector2(-1, -1);
     this.pointerId1 = -1;
@@ -28,9 +30,9 @@ export default class PanGesture implements Gesture {
     this.originCameraPos = new Float32Vector2(-1, -1);
   }
 
-  fingerMoved(positions: PointerPos[], appState: AppState) {
+  fingerMoved(context: GestureContext, positions: PointerPos[]) {
     if (!this.isInitialized()) {
-      this.tryInitialize(positions, appState);
+      this.tryInitialize(context.camera, positions);
       return;
     }
 
@@ -41,25 +43,21 @@ export default class PanGesture implements Gesture {
 
     const originalMid = midpoint(this.originPosition1, this.originPosition2);
     const newMid = midpoint(positions[0].pos, positions[1].pos);
-    const deltaVector = getFingerDelta(newMid, originalMid, appState);
+    const deltaVector = getFingerDelta(newMid, originalMid, context.canvas);
     const newPos = add(
       copy(this.originCameraPos),
-      scale(deltaVector, -PAN_FACTOR * appState.canvasState.camera.getCameraWidth())
+      scale(deltaVector, -PAN_FACTOR * context.camera.getCameraWidth())
     );
-    appState.canvasState.camera.setPosition(newPos);
+    context.camera.setPosition(newPos);
   }
 
-  fingerTapped(_: PointerPos[], __: AppState) {
-    return;
-  }
-
-  fingerReleased(removedIds: number[]) {
+  fingerReleased(_: GestureContext, removedIds: number[]) {
     if ([this.pointerId1, this.pointerId2].some((id) => removedIds.includes(id)))
       this.deInitialize();
     return;
   }
 
-  private tryInitialize(positions: PointerPos[], appState: AppState) {
+  private tryInitialize(camera: Camera, positions: PointerPos[]) {
     const isInit = this.isInitialized();
 
     if (!isInit && positions.length == 2) {
@@ -67,7 +65,7 @@ export default class PanGesture implements Gesture {
       this.originPosition2 = copy(positions[1].pos);
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
-      this.originCameraPos = appState.canvasState.camera.getPosition();
+      this.originCameraPos = camera.getPosition();
       assert(this.isInitialized());
     }
   }

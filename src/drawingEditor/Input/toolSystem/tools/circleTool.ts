@@ -1,5 +1,5 @@
-import { RenderContext } from '~/drawingEditor/renderer/renderer';
-import ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
+import { type RenderContext } from '~/drawingEditor/renderer/renderer';
+import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
 import { Tool } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -14,10 +14,12 @@ export class CircleTool extends Tool {
     super();
   }
 
-  update(_: number): void {
+  update(deltaTime: number): void {
     throw new Error('Method not implemented.');
   }
-
+  acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void {
+    throw new Error('Method not implemented.');
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

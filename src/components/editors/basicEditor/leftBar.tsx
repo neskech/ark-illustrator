@@ -20,7 +20,7 @@ const SELECTED_OPACITY = 0.3;
 
 function LeftBar({ inputManager }: LeftBarProps) {
   const [toolType, setToolType] = useState<ToolType>(inputManager.getCurrentTool());
-  const brushSettings = inputManager.getSettings().brushSettings.getCurrentPreset();
+  const brushSettings = inputManager.getSettings().brushConfigurations.getCurrentPreset();
 
   function setType(type: ToolType) {
     if (type == 'Eraser') {
@@ -53,7 +53,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
         sx={{
           color: '#1c3e8a',
           filter: `brightness(${
-            inputManager.getSettings().brushSettings.getCurrentPreset().isEraser
+            inputManager.getSettings().brushConfigurations.getCurrentPreset().isEraser
               ? SELECTED_OPACITY
               : 1
           })`,

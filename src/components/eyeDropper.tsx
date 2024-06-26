@@ -5,7 +5,7 @@ import { rgbaToHsl, hslToHex } from '~/util/general/color';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { type GL } from '~/util/webglWrapper/glUtils';
 import { Int32Vector3 } from '~/util/webglWrapper/vector';
-import { mouseToNormalized } from '../drawingEditor/canvas/camera';
+import { mouseToNormalized } from '../drawingEditor/renderer/camera';
 import { type EyeDropperArgs } from '~/util/eventSystem/eventTypes/canvasEvents';
 
 interface RenderObjects {

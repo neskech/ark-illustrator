@@ -1,24 +1,20 @@
-import { type PointerPos, type Gesture } from './gesture';
-import { type AppState } from '../../../application';
+import { type PointerPos, Gesture, type GestureContext } from './gesture';
 import { assert } from '~/util/general/contracts';
 import EventManager from '~/util/eventSystem/eventManager';
 
 const TAP_DELAY_MILLIS = 300;
 
-export default class OpenSettingsGesture implements Gesture {
+export default class OpenSettingsGesture extends Gesture {
   private tapCount: number;
   private lastTapTime: number;
 
   constructor() {
+    super();
     this.tapCount = -1;
     this.lastTapTime = -1;
   }
 
-  fingerMoved(_: PointerPos[], __: AppState) {
-    return
-  }
-
-  fingerTapped(positions: PointerPos[], _: AppState) {
+  fingerTapped(_: GestureContext, positions: PointerPos[]) {
     if (!this.isInitialized()) {
       this.deInitialize();
       this.tryInitialize(positions);
@@ -26,11 +22,11 @@ export default class OpenSettingsGesture implements Gesture {
 
     if (positions.length > 4) {
       this.deInitialize();
-      return
+      return;
     }
 
     if (!this.isValidInput(positions)) {
-      return
+      return;
     }
 
     const now = new Date().getTime();
@@ -42,11 +38,6 @@ export default class OpenSettingsGesture implements Gesture {
       }
       this.lastTapTime = now;
     }
-
-  }
-
-  fingerReleased() {
-    return
   }
 
   private tryInitialize(positions: PointerPos[]) {

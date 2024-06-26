@@ -60,11 +60,13 @@ export default class AssetManager {
     const texturePromises = textureNames.map((name) =>
       TextureCreator.allocateFromImageUrlAsync({
         url: `textures/${name}`,
-        wrapX: 'Repeat',
-        wrapY: 'Repeat',
-        magFilter: 'Linear',
-        minFilter: 'Linear',
-        format: 'RGBA',
+        texureOptions: {
+          wrapX: 'Repeat',
+          wrapY: 'Repeat',
+          magFilter: 'Linear',
+          minFilter: 'Linear',
+          format: 'RGBA',
+        },
       })
     );
     const res = await Result.multipleErrorAsync(texturePromises);

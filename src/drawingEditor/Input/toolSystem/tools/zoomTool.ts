@@ -1,5 +1,6 @@
-import { requires } from '../../../../util/general/contracts';
-import { Tool, type HandleEventArgs } from '../tool';
+import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
+import { Tool } from '../tool';
+import { type RenderContext } from '~/drawingEditor/renderer/renderer';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -15,43 +16,11 @@ export class ZoomTool extends Tool {
     super();
   }
 
-  handleEvent(args: HandleEventArgs) {
-    requires(this.areValidRotationSettings());
-
-    const evType = args.eventString;
-    const event = args.event as MouseEvent;
-
-    switch (evType) {
-      case 'mousemove':
-        this.mouseMovedHandler(args, event);
-        return;
-      case 'mouseup':
-        this.mouseUpHandler(args, event);
-        return;
-      case 'mousedown':
-        this.mouseDownHandler(args, event);
-        return;
-    }
-  }
-
   update(deltaTime: number): void {
     throw new Error('Method not implemented.');
   }
-
-  mouseMovedHandler(args: HandleEventArgs, event: MouseEvent) {
-    const { appState: canvasState, settings } = args;
-  }
-
-  mouseUpHandler(args: HandleEventArgs, event: MouseEvent) {
-    const { appState: canvasState, settings } = args;
-  }
-
-  mouseDownHandler(args: HandleEventArgs, event: MouseEvent) {
-    const { appState: canvasState, settings } = args;
-  }
-
-  areValidRotationSettings(): boolean {
-    return 0 <= ZOOM_SENSITIVITY && ZOOM_SENSITIVITY <= 1;
+  acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void {
+    throw new Error('Method not implemented.');
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

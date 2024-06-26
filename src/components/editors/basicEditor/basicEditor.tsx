@@ -28,12 +28,14 @@ export function BasicEditor({ inputManager }: EditorProps) {
         <RightBar inputManager={inputManager} />
       </Box>
 
-      <EyeDropper brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()} />
+      <EyeDropper
+        brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset()}
+      />
 
       {showSettings ? (
         <SettingsDialog
           open={showSettings}
-          brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()}
+          brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset()}
           onClose={() => setShowSettings(false)}
         />
       ) : (

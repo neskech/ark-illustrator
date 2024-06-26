@@ -1,19 +1,24 @@
-import { type BrushSettings } from '../../../settings/brushSettings';
 import { type BrushPoint, newPoint } from '../brushTool';
 import { assert, requires } from '~/util/general/contracts';
 import { add, copy, scale, sub } from '~/util/webglWrapper/vector';
 import { Float32Vector2 } from 'matrixgl';
-import { CurveInterpolator } from 'curve-interpolator';
 import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
 import EventManager from '~/util/eventSystem/eventManager';
 import Benchmarker, { incrementalLog } from '../../../../../../util/general/benchmarking';
-import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/module/moduleTypes/brushModule';
+import { Stabilizer } from './stabilizer';
+import { type BaseBrushSettings } from '../../../settings/brushSettings';
+import { Interpolator, type InterpolatorSettings } from '../interpolator/interpolator';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! CONSTANTS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 const MAX_SMOOTHING = 20;
 const MIN_SMOOTHING = 0;
-
-const SMOOTHER_TENSION = 0;
-const SMOOTHER_ALPHA = 1;
 
 /**
  * Number of box filters to apply to the curve
@@ -70,6 +75,20 @@ const LOOK_AHEAD = 5;
 
 const OPACITY_COMPRESSION = 0.000001;
 
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export interface BoxFilterStabilizerSettings {
+  type: 'box';
+  stabilization: number;
+  interpolatorSettings: InterpolatorSettings;
+}
+
 interface Cache {
   weightsCache: number[];
   cachedSmoothing: number;
@@ -77,19 +96,29 @@ interface Cache {
   previousRawCurveLength: number;
 }
 
-export default class BoxFilterStabilizer {
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! MAIN CLASS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export default class BoxFilterStabilizer extends Stabilizer {
   private currentPoints: BrushPoint[];
   private numPoints: number;
   private cache: Cache;
   private maxSize: number;
+  private settings: BoxFilterStabilizerSettings;
+  private interpolator: Interpolator;
 
-  constructor(settings: BrushSettings) {
-    this.maxSize = Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(settings) * 0.5);
+  constructor(settings: BoxFilterStabilizerSettings, brushSettings: BaseBrushSettings) {
+    super('box');
 
-    //TODO: Add mutation observer on the s
-
+    this.maxSize = 300; //Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(brushSettings) * 0.5);
     this.currentPoints = new Array(this.maxSize).map((_) => newPoint(new Float32Vector2(0, 0), 0));
     this.numPoints = 0;
+    this.settings = settings;
 
     this.cache = {
       weightsCache: [],
@@ -97,36 +126,30 @@ export default class BoxFilterStabilizer {
       runningSumPointCache: new Array(this.maxSize).map((_) => new Float32Vector2(0, 0)),
       previousRawCurveLength: 0,
     };
+
+    this.interpolator = Interpolator.getInterpolatorOfAppropiateType(
+      settings.interpolatorSettings,
+      brushSettings
+    );
   }
 
-  addPoint(p: BrushPoint, settings: BrushSettings) {
+  addPoint(p: BrushPoint, brushSettings: BaseBrushSettings) {
     this.currentPoints[this.numPoints] = p;
     this.numPoints += 1;
-    if (this.numPoints == this.maxSize) this.handleOverflow(settings);
+    if (this.numPoints == this.maxSize) this.handleOverflow(brushSettings);
   }
 
-  getProcessedCurve(settings: Readonly<BrushSettings>): BrushPoint[] {
-    requires(this.maxSize > settings.stabilization * 2 + 1);
+  getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[] {
+    requires(this.maxSize > this.settings.stabilization * 2 + 1);
     const processed = process_(
       this.currentPoints,
       this.numPoints,
-      settings,
+      brushSettings,
       this.cache
     ) as BrushPoint[];
     this.assertValid();
 
-    return processed;
-  }
-
-  getProcessedCurveWithPoints(
-    points: BrushPoint[],
-    settings: Readonly<BrushSettings>
-  ): BrushPoint[] {
-    return process_(points, settings, this.cache) as BrushPoint[];
-  }
-
-  getRawCurve(): BrushPoint[] {
-    return this.currentPoints.slice(0, this.numPoints);
+    return this.interpolator.process(processed, brushSettings);
   }
 
   reset() {
@@ -134,7 +157,7 @@ export default class BoxFilterStabilizer {
     this.cache.previousRawCurveLength = 0;
   }
 
-  private handleOverflow(settings: BrushSettings) {
+  private handleOverflow(brushSettings: BaseBrushSettings) {
     if (!allowLimitedStrokeLength) {
       this.numPoints = 0;
       return;
@@ -145,10 +168,10 @@ export default class BoxFilterStabilizer {
     const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
 
     const shavedOff = this.currentPoints.slice(0, this.numPoints);
-    const processed = process(shavedOff, this.numPoints, settings, this.cache);
+    const processed = process(shavedOff, this.numPoints, this.settings, brushSettings, this.cache);
     EventManager.invoke('brushStrokCutoff', {
       pointData: processed,
-      currentSettings: settings,
+      currentSettings: brushSettings,
     });
 
     shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
@@ -168,13 +191,13 @@ export default class BoxFilterStabilizer {
 function process(
   rawCurve: BrushPoint[],
   rawCurveLength: number,
-  settings: BrushSettings,
+  settings: BoxFilterStabilizerSettings,
+  brushSettings: BaseBrushSettings,
   cache: Cache
 ): BrushPoint[] {
   if (rawCurveLength <= 2) return rawCurve.slice(0, rawCurveLength);
 
   const smoothing = getSmoothingValueFromStabilization(settings.stabilization);
-  const spacing = getSpacingFromBrushSettings(settings);
   updateCache(cache, smoothing, rawCurve, rawCurveLength);
 
   let boxed = rawCurve;
@@ -190,7 +213,7 @@ function process(
     smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
   }
 
-  return addPointsCartmollInterpolation3D(boxed, SMOOTHER_TENSION, SMOOTHER_ALPHA, spacing);
+  return boxed;
 }
 
 const process_ = Benchmarker.trackRuntime(process, {
@@ -373,40 +396,6 @@ function carmullRom2D(
   return results;
 }
 
-function addPointsCartmollInterpolation3D(
-  rawCurve: BrushPoint[],
-  tension: number,
-  alpha: number,
-  spacing: number
-): BrushPoint[] {
-  if (rawCurve.length <= 1) return rawCurve;
-
-  const points = rawCurve.map((p) => [
-    p.position.x,
-    p.position.y,
-    p.pressure * OPACITY_COMPRESSION,
-  ]);
-  const interpolator = new CurveInterpolator(points, {
-    tension,
-    alpha,
-  });
-
-  const curveDist = interpolator.getLengthAt(1);
-  const numSteps = Math.ceil(curveDist / spacing);
-
-  const output: BrushPoint[] = [];
-  for (let i = 0; i < numSteps; i++) {
-    const parameter = Math.min(1, (spacing * i) / curveDist);
-    const point = interpolator.getPointAt(parameter);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    output.push(
-      newPoint(new Float32Vector2(point[0], point[1]), point[2]! * (1 / OPACITY_COMPRESSION))
-    );
-  }
-
-  return output;
-}
-
 function updateCache(
   weightsCache: Cache,
   newSmoothing: number,
@@ -481,14 +470,14 @@ function getSmoothingValueFromStabilization(stabilization: number): number {
   return MIN_SMOOTHING + range * stabilization;
 }
 
-const BRUSH_SIZE_SPACING_FACTOR = (settings: BrushSettings) =>
-  getSpacingFromBrushSettings(settings) / (settings.size * settings.maxSize);
-const MAX_SIZE_RAW_BRUSH_POINT_ARRAY = (settings: BrushSettings) =>
-  Math.floor(MAX_POINTS_PER_FRAME * BRUSH_SIZE_SPACING_FACTOR(settings));
+// const BRUSH_SIZE_SPACING_FACTOR = (settings: BaseBrushSettings) =>
+//   getSpacingFromBrushSettings(settings) / (settings.size * settings.maxSize);
+// const MAX_SIZE_RAW_BRUSH_POINT_ARRAY = (settings: BaseBrushSettings) =>
+//   Math.floor(MAX_POINTS_PER_FRAME * BRUSH_SIZE_SPACING_FACTOR(settings));
 
-const getSpacingFromBrushSettings = (settings: BrushSettings): number => {
-  return settings.spacing == 'auto' ? settings.size * 0.5 : settings.spacing;
-};
+// const getSpacingFromBrushSettings = (settings: BaseBrushSettings): number => {
+//   return settings.spacing;
+// };
 
 function getNumDeletedElementsFromDeleteFactor(deleteFactor: number, maxSize: number): number {
   return Math.floor(maxSize * deleteFactor);

@@ -1,10 +1,9 @@
 import { unreachable } from '~/util/general/funUtils';
-import NothingStabilizer, { type NothingStabilizerSettings } from './nothingStabilizer';
 import { type BrushPoint } from '../brushTool';
-import SpringStabilizer, { type SpringStabilizerSettings } from './springStabilizer';
-import { assert } from '~/util/general/contracts';
+import { SmoothedInterpolator, type SmoothedInterpolatorSettings } from './smoothedInterpolator';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
-import BoxFilterStabilizer, { type BoxFilterStabilizerSettings } from './boxFilterStabilizer';
+import { assert } from '~/util/general/contracts';
+import { LinearInterpolator, type LinearInterpolatorSettings } from './linearInterpolator';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -14,11 +13,8 @@ import BoxFilterStabilizer, { type BoxFilterStabilizerSettings } from './boxFilt
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export type StabilizerSettings =
-  | NothingStabilizerSettings
-  | SpringStabilizerSettings
-  | BoxFilterStabilizerSettings;
-type StabilizerType = StabilizerSettings['type'];
+export type InterpolatorSettings = SmoothedInterpolatorSettings | LinearInterpolatorSettings;
+type InterpolatorType = InterpolatorSettings['type'];
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -28,50 +24,39 @@ type StabilizerType = StabilizerSettings['type'];
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export abstract class Stabilizer {
-  private stabilizerType: StabilizerType;
+export abstract class Interpolator {
+  private interpolatorType: InterpolatorType;
 
-  constructor(stabilizerType: StabilizerType) {
-    this.stabilizerType = stabilizerType;
-    this.assertCorrectStabilizerType(stabilizerType);
+  constructor(interpolatorType: InterpolatorType) {
+    this.interpolatorType = interpolatorType;
+    this.assertCorrectStabilizerType(interpolatorType);
   }
 
-  abstract addPoint(point: BrushPoint, brushSettings: BaseBrushSettings): void;
-  abstract getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[];
-  abstract reset(): void;
+  abstract process(points: BrushPoint[], brushSettings: BaseBrushSettings): BrushPoint[];
+  abstract estimateWorstCaseLengthOfOutput(brushSettings: BaseBrushSettings): number;
 
-  // Optiona override.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(deltaTime: number, brushSettings: BaseBrushSettings) {
-    return;
-  }
-
-  public static getStabilizerOfAppropiateType(
-    settings: StabilizerSettings,
-    brushSettings: BaseBrushSettings
-  ): Stabilizer {
+  public static getInterpolatorOfAppropiateType(
+    settings: InterpolatorSettings,
+    _: BaseBrushSettings
+  ): Interpolator {
     switch (settings.type) {
-      case 'box':
-        return new BoxFilterStabilizer(settings, brushSettings);
-      case 'spring':
-        return new SpringStabilizer(settings, brushSettings);
-      case 'nothing':
-        return new NothingStabilizer(settings, brushSettings);
+      case 'smoothed':
+        return new SmoothedInterpolator(settings);
+      case 'linear':
+        return new LinearInterpolator(settings);
       default:
         return unreachable();
     }
   }
 
-  public isOfType(stabilizerType: StabilizerType): boolean {
-    return this.stabilizerType == stabilizerType;
+  public isOfType(stabilizerType: InterpolatorType): boolean {
+    return this.interpolatorType == stabilizerType;
   }
 
-  private assertCorrectStabilizerType(stabilizerType: StabilizerType) {
-    switch (stabilizerType) {
-      case 'spring':
-        assert(this instanceof SpringStabilizer);
-      case 'nothing':
-        assert(this instanceof NothingStabilizer);
+  private assertCorrectStabilizerType(interpolatorType: InterpolatorType) {
+    switch (interpolatorType) {
+      case 'smoothed':
+        assert(this instanceof SmoothedInterpolator);
       default:
         return unreachable();
     }
@@ -86,6 +71,6 @@ export abstract class Stabilizer {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export function getDefaultStabilizerSettings(): StabilizerSettings {
-  return { type: 'spring' };
+export function getDefaultInterpolatorSettings(): InterpolatorSettings {
+  return { type: 'linear', spacing: 0.5 };
 }

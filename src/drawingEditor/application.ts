@@ -1,16 +1,15 @@
 import { Err, Ok, type Result } from '../util/general/result';
-import { getDefaultCanvasState, type CanvasState } from './canvas/canvas';
 import { InputManager } from './Input/toolSystem/inputManager';
-import { getDefaultSettings, type AllToolSettings } from './Input/toolSystem/settings';
 import AssetManager from './renderer/util/assetManager';
 import Renderer from './renderer/renderer';
 import { fetchWebGLContext, type GL } from '../util/webglWrapper/glUtils';
+import LayerManager from './canvas/layerManager';
 
 export interface AppState {
-  canvasState: CanvasState;
-  settings: AllToolSettings;
+  layerManager: LayerManager;
   inputManager: InputManager;
   renderer: Renderer;
+  canvas: HTMLCanvasElement;
   assetManager: AssetManager;
 }
 
@@ -53,13 +52,12 @@ export default class EditorApplication {
     const resTexture = await assetManager.initTextures();
     if (resTexture.isErr()) return Err(resTexture.unwrapErr());
 
-    const settings = getDefaultSettings(gl);
-    const canvasState = getDefaultCanvasState(canvas);
+    const layerManager = new LayerManager(canvas);
     instance.appState = {
-      settings,
-      canvasState,
-      inputManager: new InputManager(settings),
-      renderer: new Renderer(canvas, canvasState.camera, assetManager),
+      layerManager,
+      inputManager: new InputManager(),
+      renderer: new Renderer(canvas, assetManager),
+      canvas,
       assetManager,
     };
 
@@ -91,7 +89,12 @@ export default class EditorApplication {
 
     canvasEvents.forEach((e) => {
       canvas.addEventListener(e, (ev) => {
-        this.appState.inputManager.handleEvent(ev, this.appState);
+        this.appState.inputManager.handleEvent(
+          ev,
+          this.appState.renderer.getCamera(),
+          this.appState.layerManager,
+          this.appState.canvas
+        );
       });
     });
 
@@ -99,7 +102,12 @@ export default class EditorApplication {
 
     globalEvents.forEach((e) => {
       document.addEventListener(e, (ev) => {
-        this.appState.inputManager.handleEvent(ev, this.appState);
+        this.appState.inputManager.handleEvent(
+          ev,
+          this.appState.renderer.getCamera(),
+          this.appState.layerManager,
+          this.appState.canvas
+        );
       });
     });
   }
@@ -110,7 +118,20 @@ export default class EditorApplication {
     this.lastUpdateTime = now;
 
     this.appState.inputManager.handleUpdate(delta);
-    this.appState.renderer.render();
+    this.appState.inputManager.handleRender(this.appState.renderer.getToolRenderers(), {
+      camera: this.appState.renderer.getCamera(),
+      utilityRenderers: this.appState.renderer.getUtilityRenderers(),
+      assetManager: this.appState.assetManager,
+      layerManager: this.appState.layerManager,
+      overlayFramebuffer: this.appState.renderer.getOverlayFramebuffer(),
+    });
+    this.appState.renderer.render({
+      camera: this.appState.renderer.getCamera(),
+      utilityRenderers: this.appState.renderer.getUtilityRenderers(),
+      layerManager: this.appState.layerManager,
+      overlayFramebuffer: this.appState.renderer.getOverlayFramebuffer(),
+    });
+
     window.requestAnimationFrame(this.updateLoop.bind(this));
   }
 }

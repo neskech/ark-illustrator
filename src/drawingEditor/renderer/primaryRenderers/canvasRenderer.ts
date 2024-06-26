@@ -7,7 +7,6 @@ import {
 } from '~/util/webglWrapper/vertexAttributes';
 import type Shader from '~/util/webglWrapper/shader';
 import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
-import type Camera from '~/drawingEditor/canvas/camera';
 import Buffer from '~/util/webglWrapper/buffer';
 import type AssetManager from '../util/assetManager';
 import { QuadilateralFactory } from '../geometry/quadFactory';
@@ -15,7 +14,9 @@ import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';
 import { QuadRotator } from '../geometry/rotator';
 import { gl } from '~/drawingEditor/application';
-import { clearScreen } from '../util/util';
+import { clearScreen } from '../util/renderUtils';
+import type Camera from '../camera';
+import { type PrimaryRendererContext } from './primaryRenderers';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -43,6 +44,8 @@ const vertexAttributes = new VertexAttributes({
 });
 
 type AttribsType = GetAttributesType<typeof vertexAttributes>;
+
+type CanvasRendererContext = { canvasFramebuffer: FrameBuffer } & PrimaryRendererContext;
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -108,18 +111,18 @@ export default class CanvasRenderer {
     this.vertexBuffer.unBind();
   }
 
-  render(camera: Camera, canvasFramebuffer: FrameBuffer): void {
+  render(context: CanvasRendererContext): void {
     this.vertexArray.bind();
     this.vertexBuffer.bind();
 
-    const canvasTexture = canvasFramebuffer.getTextureAttachment();
+    const canvasTexture = context.canvasFramebuffer.getTextureAttachment();
 
     clearScreen(0, 0, 0, 1);
     gl.blendFunc(gl.ONE, gl.ZERO);
 
     this.shader.bind();
-    this.shader.uploadMatrix4x4('view', camera.getViewMatrix());
-    this.shader.uploadMatrix4x4('projection', camera.getProjectionMatrix());
+    this.shader.uploadMatrix4x4('view', context.camera.getViewMatrix());
+    this.shader.uploadMatrix4x4('projection', context.camera.getProjectionMatrix());
 
     gl.activeTexture(gl.TEXTURE0);
     canvasTexture.bind();

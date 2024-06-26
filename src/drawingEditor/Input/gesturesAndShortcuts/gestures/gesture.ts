@@ -1,23 +1,68 @@
 import { Float32Vector2 } from 'matrixgl';
-import { mouseToNormalized } from '../../../canvas/camera';
-import { type AppState } from '../../../application';
+import Camera from '~/drawingEditor/renderer/camera';
+import { type EventTypeName } from '../../toolSystem/tool';
+import type LayerManager from '~/drawingEditor/canvas/layerManager';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export type GestureContext = {
+  eventType: EventTypeName;
+  camera: Camera;
+  canvas: HTMLCanvasElement;
+  layerManager: LayerManager;
+};
 
 export interface PointerPos {
   pos: Float32Vector2;
   id: number;
 }
 
-export interface Gesture {
-  fingerMoved: (positions: PointerPos[], appState: AppState) => void;
-  fingerTapped: (positions: PointerPos[], appState: AppState) => void;
-  fingerReleased: (removedIds: number[], appState: AppState) => void;
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! MAIN CLASS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export abstract class Gesture {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fingerMoved(context: GestureContext, positions: PointerPos[]) {
+    return;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fingerTapped(context: GestureContext, positions: PointerPos[]) {
+    return;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fingerReleased(context: GestureContext, removedIds: number[]) {
+    return;
+  }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! EXPORTED HELPERS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 export function isValidPosition(pos: Float32Vector2): boolean {
   return pos.x != -1 && pos.y != -1;
 }
 
 export function areValidPositions(...positions: Float32Vector2[]): boolean {
+  return positions.every(isValidPosition);
+}
+
+export function isValidPositionsList(positions: Float32Vector2[]): boolean {
   return positions.every(isValidPosition);
 }
 
@@ -29,13 +74,17 @@ export function areValidPointerIDs(...ids: number[]): boolean {
   return ids.every(isValidPointerID);
 }
 
+export function isValidPointerIDList(...ids: number[]): boolean {
+  return ids.every(isValidPointerID);
+}
+
 export function getFingerDelta(
   a: Float32Vector2,
   b: Float32Vector2,
-  appState: AppState
+  canvas: HTMLCanvasElement
 ): Float32Vector2 {
-  const aNorm = mouseToNormalized(a, appState.canvasState.canvas);
-  const bNorm = mouseToNormalized(b, appState.canvasState.canvas);
+  const aNorm = Camera.mouseToNormalized(a, canvas);
+  const bNorm = Camera.mouseToNormalized(b, canvas);
 
   const deltaX = aNorm.x - bNorm.x;
   const deltaY = aNorm.y - bNorm.y;

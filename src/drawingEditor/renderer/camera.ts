@@ -8,7 +8,6 @@ import {
   type Matrix4x4,
 } from 'matrixgl';
 import { Int32Vector2, add, copy } from '../../util/webglWrapper/vector';
-import { type CanvasState } from './canvas';
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.05;
@@ -168,7 +167,7 @@ export default class Camera {
   }
 
   mouseToWorld(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
-    const p = mouseToNDC(event, canvas);
+    const p = Camera.mouseToNDC(event, canvas);
 
     /**
      * Standard NDC coordinates put p in a [-1, 1] range with
@@ -223,43 +222,37 @@ export default class Camera {
   getRotation(): number {
     return this.rotation;
   }
-}
 
-export function mouseToCanvas(event: MouseEvent, state: CanvasState): Int32Vector2 {
-  const rect = state.canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  return new Int32Vector2(x, y);
-}
+  static mouseToCanvas(event: MouseEvent, canvas: HTMLCanvasElement): Int32Vector2 {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    return new Int32Vector2(x, y);
+  }
 
-export function mouseToNormalizedWithEvent(
-  event: PointerEvent | MouseEvent,
-  canvas: HTMLCanvasElement
-): Float32Vector2 {
-  const rect = canvas.getBoundingClientRect();
-  const x = (event.clientX - rect.left) / canvas.clientWidth;
-  const y = (event.clientY - rect.top) / canvas.clientHeight;
-  return new Float32Vector2(x, 1.0 - y);
-}
+  static mouseToNormalizedWithEvent(
+    event: PointerEvent | MouseEvent,
+    canvas: HTMLCanvasElement
+  ): Float32Vector2 {
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / canvas.clientWidth;
+    const y = (event.clientY - rect.top) / canvas.clientHeight;
+    return new Float32Vector2(x, 1.0 - y);
+  }
 
-export function mouseToNormalized(
-  mousePos: Float32Vector2,
-  canvas: HTMLCanvasElement
-): Float32Vector2 {
-  const rect = canvas.getBoundingClientRect();
-  const x = (mousePos.x - rect.left) / canvas.clientWidth;
-  const y = (mousePos.y - rect.top) / canvas.clientHeight;
-  return new Float32Vector2(x, 1.0 - y);
-}
+  static mouseToNormalized(mousePos: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
+    const rect = canvas.getBoundingClientRect();
+    const x = (mousePos.x - rect.left) / canvas.clientWidth;
+    const y = (mousePos.y - rect.top) / canvas.clientHeight;
+    return new Float32Vector2(x, 1.0 - y);
+  }
 
-export function mouseToNDC(
-  event: PointerEvent | MouseEvent,
-  canvas: HTMLCanvasElement
-): Float32Vector2 {
-  const p = mouseToNormalizedWithEvent(event, canvas);
-  p.x = (p.x - 0.5) * 2.0;
-  p.y = (p.y - 0.5) * 2.0;
-  return p;
+  static mouseToNDC(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+    const p = Camera.mouseToNormalizedWithEvent(event, canvas);
+    p.x = (p.x - 0.5) * 2.0;
+    p.y = (p.y - 0.5) * 2.0;
+    return p;
+  }
 }
 
 function matMult(m: Matrix4x4, v: Float32Vector4): Float32Vector4 {

@@ -1,15 +1,30 @@
-import type Camera from '~/drawingEditor/canvas/camera';
 import CanvasRenderer from './canvasRenderer';
 import type AssetManager from '../util/assetManager';
+import type Camera from '../camera';
+import type LayerManager from '~/drawingEditor/canvas/layerManager';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
+import LayerRenderer from './layerRenderer';
+import type UtilityRenderers from '../utilityRenderers.ts/utilityRenderers';
+
+export type PrimaryRendererContext = {
+  camera: Camera;
+  layerManager: LayerManager;
+  overlayFramebuffer: FrameBuffer;
+  utilityRenderers: UtilityRenderers;
+};
 
 export default class PrimaryRenderers {
   private canvasRenderer: CanvasRenderer;
+  private layerRenderer: LayerRenderer;
 
-  constructor(camera: Camera, assetManager: AssetManager) {
+  constructor(assetManager: AssetManager, camera: Camera, canvas: HTMLCanvasElement) {
     this.canvasRenderer = new CanvasRenderer(camera, assetManager);
+    this.layerRenderer = new LayerRenderer(canvas);
   }
 
-  getCanvasRenderer() {
-    return this.canvasRenderer;
+  render(renderContext: PrimaryRendererContext) {
+    this.layerRenderer.renderOntoOverlayFramebuffer(renderContext);
+    const finalResult = renderContext.overlayFramebuffer;
+    this.canvasRenderer.render({ canvasFramebuffer: finalResult, ...renderContext });
   }
 }

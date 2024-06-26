@@ -14,7 +14,7 @@ import type AssetManager from '../util/assetManager';
 import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';
 import { QuadRotator } from '../geometry/rotator';
-import { clearFramebuffer } from '../util/util';
+import { clearFramebuffer } from '../util/renderUtils';
 import { gl } from '~/drawingEditor/application';
 import { QuadilateralFactory } from '../geometry/quadFactory';
 import { type RenderContext } from '../renderer';
@@ -90,11 +90,6 @@ export default class RectangleToolRenderer {
 
   public renderRectangleContinued(context: RectangleRendererContext) {
     clearFramebuffer(context.overlayFramebuffer);
-    const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
-    overlayRenderer.renderCanvasToOverlay(
-      context.layerManager.getCanvasFramebuffer(),
-      context.overlayFramebuffer
-    );
     this.renderRectangle(context.overlayFramebuffer, context.anchorPosition, context.otherPosition);
   }
 

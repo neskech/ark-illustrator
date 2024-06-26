@@ -30,6 +30,10 @@ export default class LayerManager {
     return this.layerStack[this.currentLayer];
   }
 
+  public getCurrentLayerIndex(): number {
+    return this.currentLayer
+  }
+
   public switchToLayer(layerIndex: number) {
     requires(0 <= layerIndex && layerIndex < this.layerStack.length);
     this.currentLayer = layerIndex;
@@ -51,6 +55,10 @@ export default class LayerManager {
 
   public getCanvasFramebuffer() {
     return this.canvasFramebuffer;
+  }
+
+  public getLayers(): Iterable<Layer> {
+    return this.layerStack
   }
 
   private setupEvents() {

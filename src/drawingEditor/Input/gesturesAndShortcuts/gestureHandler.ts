@@ -1,21 +1,21 @@
-import { type CanvasEvent, type EventString } from '../toolSystem/tool';
 import { Float32Vector2 } from 'matrixgl';
 import { find } from '~/util/general/arrayUtils';
 import { requires } from '~/util/general/contracts';
-import { type PointerPos, type Gesture } from './gestures/gesture';
+import { type PointerPos, type Gesture, type GestureContext } from './gestures/gesture';
 import PanGesture from './gestures/panGesture';
 import RotationGesture from './gestures/rotationGesture';
 import ZoomGesture from './gestures/zoomGesture';
 import ClearScreenGesture from './gestures/clearScreenGesture';
 import OpenSettingsGesture from './gestures/openSettingsGesture';
 import EyeDropperGesture from './gestures/EyeDropperGesture';
-import { type AppState } from '../../application';
+import EventHandler from '../toolSystem/eventHandler';
 
-export default class GestureHandler {
+export default class GestureHandler extends EventHandler<GestureContext> {
   private pointerPositions: PointerPos[];
   private gestures: Gesture[];
 
   constructor() {
+    super();
     this.pointerPositions = [];
     this.gestures = [
       new PanGesture(),
@@ -27,52 +27,26 @@ export default class GestureHandler {
     ];
   }
 
-  handleEvent(event: CanvasEvent, appState: AppState, eventType: EventString) {
-    if (!(event instanceof PointerEvent)) return;
-    if (event.pointerType != 'touch') return;
-
-    switch (eventType) {
-      case 'pointerdown':
-        this.handlePointerDown(event, appState);
-        return;
-      case 'pointerup':
-        this.handlePointerUp(event, appState);
-        return;
-      case 'pointercancel':
-        this.handlePointerUp(event, appState);
-        return;
-      case 'pointerout':
-        this.handlePointerUp(event, appState);
-        return;
-      case 'pointerleave':
-        this.handlePointerUp(event, appState);
-        return;
-      case 'pointermove':
-        this.handlePointerMove(event, appState);
-        return;
-    }
-  }
-
-  handlePointerDown(event: PointerEvent, appState: AppState) {
+  pointerDown(context: GestureContext, event: PointerEvent): void {
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
     this.pointerPositions.push({
       pos: new Float32Vector2(event.clientX, event.clientY),
       id: event.pointerId,
     });
 
-    for (const gesture of this.gestures) gesture.fingerTapped(this.pointerPositions, appState);
+    for (const gesture of this.gestures) gesture.fingerTapped(context, this.pointerPositions);
   }
 
-  handlePointerMove(event: PointerEvent, appState: AppState) {
+  pointerMove(context: GestureContext, event: PointerEvent): void {
     find(this.pointerPositions, (p) => p.id == event.pointerId).map((p) => {
       p.pos.x = event.clientX;
       p.pos.y = event.clientY;
     });
 
-    for (const gesture of this.gestures) gesture.fingerMoved(this.pointerPositions, appState);
+    for (const gesture of this.gestures) gesture.fingerMoved(context, this.pointerPositions);
   }
 
-  handlePointerUp(event: PointerEvent, appState: AppState) {
+  pointerUp(context: GestureContext, event: PointerEvent): void {
     const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
@@ -82,6 +56,6 @@ export default class GestureHandler {
       }
     }
 
-    for (const gesture of this.gestures) gesture.fingerReleased(removedIds, appState);
+    for (const gesture of this.gestures) gesture.fingerReleased(context, removedIds);
   }
 }

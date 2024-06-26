@@ -1,28 +1,29 @@
-import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
-import { type AppState } from '../../../application';
+import { type PointerPos, Gesture, areValidPointerIDs, type GestureContext } from './gesture';
 import { angle } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
 import { displacement } from '../../../../util/webglWrapper/vector';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
+import type Camera from '~/drawingEditor/renderer/camera';
 
 const ROTATION_FACTOR = 1;
 
-export default class RotationGesture implements Gesture {
+export default class RotationGesture extends Gesture {
   private pointerId1: number;
   private pointerId2: number;
   private originalRotation: number;
   private originalCameraRotation: number;
 
   constructor() {
+    super();
     this.pointerId1 = -1;
     this.pointerId2 = -1;
     this.originalRotation = NaN;
     this.originalCameraRotation = NaN;
   }
 
-  fingerMoved(positions: PointerPos[], appState: AppState) {
+  fingerMoved(context: GestureContext, positions: PointerPos[]) {
     if (!this.isInitialized()) {
-      this.tryInitialize(positions, appState);
+      this.tryInitialize(context.camera, positions);
       return;
     }
 
@@ -33,26 +34,20 @@ export default class RotationGesture implements Gesture {
 
     const newAngle = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
     const rotation = newAngle - this.originalRotation;
-    appState.canvasState.camera.setRotation(
-      this.originalCameraRotation + rotation * ROTATION_FACTOR
-    );
+    context.camera.setRotation(this.originalCameraRotation + rotation * ROTATION_FACTOR);
   }
 
-  fingerReleased(removedIds: number[]) {
+  fingerReleased(_: GestureContext, removedIds: number[]) {
     if ([this.pointerId1, this.pointerId2].some((id) => removedIds.includes(id)))
       this.deInitialize();
   }
 
-  fingerTapped(_: PointerPos[], __: AppState) {
-    return;
-  }
-
-  private tryInitialize(positions: PointerPos[], appState: AppState) {
+  private tryInitialize(camera: Camera, positions: PointerPos[]) {
     if (positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalRotation = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
-      this.originalCameraRotation = appState.canvasState.camera.getRotation();
+      this.originalCameraRotation = camera.getRotation();
       assert(this.isInitialized());
     }
   }

@@ -254,15 +254,19 @@ export default class Texture {
 type AllocateFromPixelsOptions = {
   data: ArrayBufferView;
   offset?: number;
-} & TextureOptions;
+  textureOptions: TextureOptions;
+};
 
 type AllocateEmptyOptions = TextureOptions;
 
-type AllocateFromImageOptions = { url: string } & Omit<TextureOptions, 'width' | 'height'>;
+type AllocateFromImageOptions = {
+  url: string;
+  texureOptions: Omit<TextureOptions, 'width' | 'height'>;
+};
 
 export class TextureCreator {
   static allocateFromPixels(options: AllocateFromPixelsOptions): Texture {
-    const texture = new Texture(options);
+    const texture = new Texture(options.textureOptions);
     texture.bind();
 
     const mipMapLevels = 0; //something to consider for future
@@ -271,11 +275,11 @@ export class TextureCreator {
     gl.texImage2D(
       gl.TEXTURE_2D,
       mipMapLevels,
-      formatToEnum(options.format),
-      options.width,
-      options.height,
+      formatToEnum(options.textureOptions.format),
+      options.textureOptions.width,
+      options.textureOptions.height,
       border,
-      formatToEnum(options.format),
+      formatToEnum(options.textureOptions.format),
       gl.UNSIGNED_BYTE,
       options.data,
       options.offset ?? 0
@@ -311,12 +315,12 @@ export class TextureCreator {
     const img = new Image();
     let texture: Texture | null = null;
 
-    const format = formatToEnum(options.format);
+    const format = formatToEnum(options.texureOptions.format);
     function allocateFromImg() {
       const mipMapLevels = 0;
       const texelType = gl.UNSIGNED_BYTE;
 
-      texture = new Texture({ width: img.width, height: img.height, ...options });
+      texture = new Texture({ width: img.width, height: img.height, ...options.texureOptions });
 
       texture.bind();
       gl.texImage2D(gl.TEXTURE_2D, mipMapLevels, format, format, texelType, img);
@@ -355,10 +359,10 @@ export class TextureCreator {
     const res = await Result.fromErrorAsync(asyncImgLoad(img, options.url));
     if (res.isErr()) return Err(res.unwrapErr().message);
 
-    const texture = new Texture({ width: img.width, height: img.height, ...options });
+    const texture = new Texture({ width: img.width, height: img.height, ...options.texureOptions });
     texture.bind();
 
-    const format = formatToEnum(options.format);
+    const format = formatToEnum(options.texureOptions.format);
     const mipMapLevels = 0;
     const texelType = gl.UNSIGNED_BYTE;
     gl.texImage2D(gl.TEXTURE_2D, mipMapLevels, format, format, texelType, img);

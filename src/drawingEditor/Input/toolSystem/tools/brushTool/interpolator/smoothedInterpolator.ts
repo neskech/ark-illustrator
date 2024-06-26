@@ -1,0 +1,79 @@
+import { type BrushPoint, newPoint } from '../brushTool';
+import { CurveInterpolator } from 'curve-interpolator';
+import { Float32Vector2 } from 'matrixgl';
+import { Interpolator } from './interpolator';
+import { type BaseBrushSettings } from '../../../settings/brushSettings';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export type SmoothedInterpolatorSettings = {
+  type: 'smoothed';
+  alpha: number;
+  tension: number;
+  spacing: number;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! MAIN CLASS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export class SmoothedInterpolator extends Interpolator {
+  private settings: SmoothedInterpolatorSettings;
+
+  constructor(settings: SmoothedInterpolatorSettings) {
+    super('smoothed');
+    this.settings = settings;
+  }
+
+  process(points: BrushPoint[]): BrushPoint[] {
+    return addPointsCartmollInterpolation(
+      points,
+      this.settings.tension,
+      this.settings.alpha,
+      this.settings.spacing
+    );
+  }
+
+  estimateWorstCaseLengthOfOutput(brushSettings: BaseBrushSettings): number {
+    const CANVAS_WIDTH = 2;
+    const at_interval_of_spacing = CANVAS_WIDTH / this.settings.spacing;
+    return at_interval_of_spacing;
+  }
+}
+
+function addPointsCartmollInterpolation(
+  rawCurve: BrushPoint[],
+  tension: number,
+  alpha: number,
+  spacing: number
+): BrushPoint[] {
+  if (rawCurve.length <= 1) return rawCurve;
+
+  const points = rawCurve.map((p) => [p.position.x, p.position.y]);
+  const interpolator = new CurveInterpolator(points, {
+    tension,
+    alpha,
+  });
+
+  const curveDist = interpolator.getLengthAt(1);
+  const numSteps = Math.ceil(curveDist / spacing);
+
+  const output: BrushPoint[] = [];
+  for (let i = 0; i < numSteps; i++) {
+    const parameter = Math.min(1, (spacing * i) / curveDist);
+    const point = interpolator.getPointAt(parameter);
+    output.push(newPoint(new Float32Vector2(point[0], point[1]), 1));
+  }
+
+  return output;
+}

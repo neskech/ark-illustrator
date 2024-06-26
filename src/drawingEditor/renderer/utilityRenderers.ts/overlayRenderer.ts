@@ -14,6 +14,7 @@ import { QuadPositioner } from '../geometry/positioner';
 import { QuadRotator } from '../geometry/rotator';
 import type AssetManager from '../util/assetManager';
 import { gl } from '~/drawingEditor/application';
+import type Texture from '~/util/webglWrapper/texture';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -68,6 +69,27 @@ export default class OverlayRenderer {
     this.initBuffers();
   }
 
+  renderTextureOntoFramebuffer(texture: Texture, framebuffer: FrameBuffer) {
+    framebuffer.bind();
+    gl.blendFunc(gl.ONE, gl.ZERO);
+
+    this.vertexArray.bind();
+    this.vertexBuffer.bind();
+    this.shader.bind();
+
+    gl.activeTexture(gl.TEXTURE0);
+    texture.bind();
+    this.shader.uploadTexture('canvas', texture, 0);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    texture.unBind();
+    this.shader.unBind();
+    this.vertexArray.unBind();
+    this.vertexBuffer.unBind();
+    framebuffer.unBind();
+  }
+
   private initBuffers() {
     this.vertexArray.bind();
     this.vertexBuffer.bind();
@@ -92,28 +114,5 @@ export default class OverlayRenderer {
 
     this.vertexArray.unBind();
     this.vertexBuffer.unBind();
-  }
-
-  renderCanvasToOverlay(canvasFramebuffer: FrameBuffer, canvasOverlayFramebuffer: FrameBuffer) {
-    canvasOverlayFramebuffer.bind();
-    gl.blendFunc(gl.ONE, gl.ZERO);
-
-    const canvasTexture = canvasFramebuffer.getTextureAttachment();
-
-    this.vertexArray.bind();
-    this.vertexBuffer.bind();
-    this.shader.bind();
-
-    gl.activeTexture(gl.TEXTURE0);
-    canvasTexture.bind();
-    this.shader.uploadTexture('canvas', canvasTexture, 0);
-
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-    canvasTexture.unBind();
-    this.shader.unBind();
-    this.vertexArray.unBind();
-    this.vertexBuffer.unBind();
-    canvasOverlayFramebuffer.unBind();
   }
 }

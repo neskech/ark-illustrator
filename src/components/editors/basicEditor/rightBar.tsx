@@ -13,14 +13,14 @@ function RightBar({ inputManager }: RightBarProps) {
       <Box className="h-[30%] pb-3 pt-11">
         <ColorPicker
           size={130}
-          brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()}
+          brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset()}
         />
       </Box>
 
       <Box className="h-fit w-full pl-4 pr-4 pt-4">
         <BrushSettingsPanel
           height={300}
-          brushSettings={inputManager.getSettings().brushSettings.getCurrentPreset()}
+          brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset()}
         />
       </Box>
     </Box>

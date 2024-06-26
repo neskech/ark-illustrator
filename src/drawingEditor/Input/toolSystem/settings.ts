@@ -1,15 +1,15 @@
-import { BrushSettings } from './settings/brushSettings';
+import { getDefaultBrushConfig, type BrushConfiguration } from './settings/brushConfig';
 import { defaultFillSettings, type FillSettings } from './settings/fillSettings';
 import SettingsPreset from './settings/settingsPreset';
 
 export interface AllToolSettings {
-  readonly brushSettings: SettingsPreset<BrushSettings>;
+  readonly brushConfigurations: SettingsPreset<BrushConfiguration>;
   readonly fillSettings: FillSettings;
 }
 
 export function getDefaultSettings(): AllToolSettings {
   return {
-    brushSettings: new SettingsPreset(3, BrushSettings.default()),
+    brushConfigurations: new SettingsPreset(3, getDefaultBrushConfig()),
     fillSettings: defaultFillSettings(),
   };
 }

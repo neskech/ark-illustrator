@@ -1,25 +1,21 @@
 import EventManager from '~/util/eventSystem/eventManager';
 import { None, Some, type Option } from '~/util/general/option';
-import { type AppState } from '../../../application';
-import { type Gesture, type PointerPos } from './gesture';
+import { type GestureContext, Gesture, type PointerPos } from './gesture';
 
 const EYEDROPPER_DELAY_MILLIS = 500;
 
-export default class EyeDropperGesture implements Gesture {
+export default class EyeDropperGesture extends Gesture {
   private downPointerId: Option<number>;
 
   constructor() {
+    super()
     this.downPointerId = None();
   }
 
-  fingerMoved(_: PointerPos[], __: AppState) {
-    return;
-  }
-
-  fingerTapped(positions: PointerPos[], appState: AppState) {
+  fingerTapped(context: GestureContext, positions: PointerPos[]) {
     if (!this.isInitialized()) {
       this.deInitialize();
-      this.tryInitialize(positions);
+      this.tryInitialize();
     }
 
     if (!this.isValidInput(positions)) {
@@ -31,9 +27,8 @@ export default class EyeDropperGesture implements Gesture {
     setTimeout(() => {
       if (this.downPointerId.isNone()) return;
       EventManager.invoke('toggleEyeDropper', {
-        canvas: appState.canvasState.canvas,
-        canvasFramebuffer: appState.renderer.getCanvasFramebuffer(),
-        gl: appState.renderer.getGLHandle(),
+        canvas: context.canvas,
+        canvasFramebuffer: context.layerManager.getCanvasFramebuffer(),
         originPosition: Some(positions[0].pos),
       });
     }, EYEDROPPER_DELAY_MILLIS);
@@ -41,7 +36,7 @@ export default class EyeDropperGesture implements Gesture {
     return true;
   }
 
-  fingerReleased(removedFingers: number[], _: AppState) {
+  fingerReleased(_: GestureContext, removedFingers: number[]) {
     const contained = removedFingers.some(
       (p) => this.downPointerId.isSome() && this.downPointerId.unwrap() == p
     );
@@ -49,7 +44,7 @@ export default class EyeDropperGesture implements Gesture {
     if (contained) this.downPointerId = None();
   }
 
-  private tryInitialize(_: PointerPos[]) {
+  private tryInitialize() {
     this.downPointerId = None();
   }
 

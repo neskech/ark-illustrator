@@ -1,27 +1,28 @@
-import { type PointerPos, type Gesture, areValidPointerIDs } from './gesture';
-import { type AppState } from '../../../application';
+import { type PointerPos, Gesture, areValidPointerIDs, type GestureContext } from './gesture';
 import { distance } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
+import type Camera from '~/drawingEditor/renderer/camera';
 
 const ZOOM_FACTOR = 1 / 300;
 
-export default class ZoomGesture implements Gesture {
+export default class ZoomGesture extends Gesture {
   private pointerId1: number;
   private pointerId2: number;
   private originalDistance: number;
   private originalZoom: number;
 
   constructor() {
+    super();
     this.pointerId1 = -1;
     this.pointerId2 = -1;
     this.originalDistance = Infinity;
     this.originalZoom = Infinity;
   }
 
-  fingerMoved(positions: PointerPos[], appState: AppState) {
+  fingerMoved(context: GestureContext, positions: PointerPos[]) {
     if (!this.isInitialized()) {
-      this.tryInitialize(positions, appState);
+      this.tryInitialize(context.camera, positions);
       return;
     }
 
@@ -32,24 +33,24 @@ export default class ZoomGesture implements Gesture {
 
     const newDistance = distance(positions[0].pos, positions[1].pos);
     const deltaDistance = this.originalDistance - newDistance;
-    appState.canvasState.camera.setZoom(this.originalZoom + deltaDistance * ZOOM_FACTOR);
+    context.camera.setZoom(this.originalZoom + deltaDistance * ZOOM_FACTOR);
   }
 
-  fingerTapped(_: PointerPos[], __: AppState) {
+  fingerTapped() {
     return;
   }
 
-  fingerReleased(removedIds: number[]) {
+  fingerReleased(_: GestureContext, removedIds: number[]) {
     if ([this.pointerId1, this.pointerId2].some((id) => removedIds.includes(id)))
       this.deInitialize();
   }
 
-  private tryInitialize(positions: PointerPos[], appState: AppState) {
+  private tryInitialize(camera: Camera, positions: PointerPos[]) {
     if (positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
       this.originalDistance = distance(positions[0].pos, positions[1].pos);
-      this.originalZoom = appState.canvasState.camera.getZoomLevel();
+      this.originalZoom = camera.getZoomLevel();
       assert(this.isInitialized());
     }
   }

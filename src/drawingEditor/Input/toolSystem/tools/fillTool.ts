@@ -1,6 +1,6 @@
-import { requires } from '../../../../util/general/contracts';
-import { type FillSettings } from '../settings/fillSettings';
-import { Tool, type HandleEventArgs } from '../tool';
+import { type RenderContext } from '~/drawingEditor/renderer/renderer';
+import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
+import { Tool, ToolUpdateContext } from '../tool';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -15,45 +15,12 @@ export class FillTool extends Tool {
     super();
   }
 
-  handleEvent(args: HandleEventArgs) {
-    requires(this.areValidFillSettings(args.settings.fillSettings));
-
-    const evType = args.eventString;
-    const event = args.event as MouseEvent;
-
-    switch (evType) {
-      case 'mousemove':
-        return this.mouseMovedHandler(args, event);
-      case 'mouseup':
-        return this.mouseUpHandler(args, event);
-      case 'mousedown':
-        return this.mouseDownHandler(args, event);
-      default:
-        return false;
-    }
+  update(context: ToolUpdateContext, deltaTime: number): void {
+    return;
   }
 
-  update(deltaTime: number): void {
+  acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void {
     throw new Error('Method not implemented.');
-  }
-
-  private mouseMovedHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings } = args;
-    return false;
-  }
-
-  private mouseUpHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings } = args;
-    return false;
-  }
-
-  private mouseDownHandler(args: HandleEventArgs, event: MouseEvent): boolean {
-    const { appState, settings } = args;
-    return false;
-  }
-
-  private areValidFillSettings(f: FillSettings): boolean {
-    return 0 <= f.tolerance && f.tolerance <= 1;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

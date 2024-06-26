@@ -18,8 +18,8 @@ import { gl } from '~/drawingEditor/application';
 import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';
 import { QuadRotator } from '../geometry/rotator';
-import { clearFramebuffer } from '../util/util';
 import { type RenderContext } from '../renderer';
+import { clearFramebuffer } from '../util/renderUtils';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -96,25 +96,18 @@ export default class BrushToolRenderer {
   }
 
   public renderBrushStrokeContinued(context: BrushRendererContext) {
-    //refresh so there aren't multiple strokes
-    clearFramebuffer(context.overlayFramebuffer);
+    clearFramebuffer(context.overlayFramebuffer)
     this.renderStrokeToOverlay(context);
   }
 
   public renderBrushStrokeFinished(context: BrushRendererContext) {
+    clearFramebuffer(context.overlayFramebuffer)
     this.renderStrokeToCanvas(context);
   }
 
   public renderBrushStrokeCutoff(context: BrushRendererContext) {
+    clearFramebuffer(context.overlayFramebuffer)
     this.renderStrokeToCanvas(context);
-    // the world module uses our overlay buffer. We just now rendered to this canvas, but our overlay buffer has been cleared
-    // so we need to make sure the overlay buffer is the same as the canvas
-    clearFramebuffer(context.overlayFramebuffer);
-    const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
-    overlayRenderer.renderCanvasToOverlay(
-      context.layerManager.getCanvasFramebuffer(),
-      context.overlayFramebuffer
-    );
   }
 
   private initBuffer() {
@@ -191,12 +184,6 @@ export default class BrushToolRenderer {
 
   private renderStrokeToOverlay(context: BrushRendererContext) {
     if (context.pointData.length == 0) return;
-
-    const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
-    overlayRenderer.renderCanvasToOverlay(
-      context.layerManager.getCanvasFramebuffer(),
-      context.overlayFramebuffer
-    );
     this.renderStroke(context.pointData, context.brushSettings, context.overlayFramebuffer);
   }
 
