@@ -5,6 +5,7 @@ import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRende
 import { type BrushConfiguration } from '../../settings/brushConfig';
 import { Stabilizer } from './stabilizing/stabilizer';
 import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/toolRenderers/brush/stampBrushRenderer';
+import StabilizerFactory from './stabilizing/stabilizerFactory';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +51,7 @@ export class BrushTool extends Tool {
     super();
 
     const config = settings.brushConfigurations.getCurrentPreset();
-    this.stabilizer = Stabilizer.getStabilizerOfAppropiateType(
+    this.stabilizer = StabilizerFactory.getStabilizerOfAppropiateType(
       config.stabilizerSettings,
       config.brushSettings
     );
@@ -153,7 +154,7 @@ export class BrushTool extends Tool {
   private setAppropiateStabilizer(brushConfig: BrushConfiguration) {
     if (this.stabilizer.isOfType(brushConfig.stabilizerSettings.type)) return;
 
-    this.stabilizer = Stabilizer.getStabilizerOfAppropiateType(
+    this.stabilizer = StabilizerFactory.getStabilizerOfAppropiateType(
       brushConfig.stabilizerSettings,
       brushConfig.brushSettings
     );

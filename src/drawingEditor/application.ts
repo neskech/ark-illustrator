@@ -4,6 +4,7 @@ import AssetManager from './renderer/util/assetManager';
 import Renderer from './renderer/renderer';
 import { fetchWebGLContext, type GL } from '../util/webglWrapper/glUtils';
 import LayerManager from './canvas/layerManager';
+import { getDefaultSettings } from './Input/toolSystem/settings';
 
 export interface AppState {
   layerManager: LayerManager;
@@ -53,7 +54,7 @@ export default class EditorApplication {
     if (resTexture.isErr()) return Err(resTexture.unwrapErr());
 
     const layerManager = new LayerManager(canvas);
-    const inputManager = new InputManager();
+    const inputManager = new InputManager(await getDefaultSettings());
     const renderer = new Renderer(canvas, inputManager.getSettings(), assetManager);
     instance.appState = {
       layerManager,
@@ -132,13 +133,6 @@ export default class EditorApplication {
         overlayFramebuffer: this.appState.renderer.getOverlayFramebuffer(),
       }
     );
-    this.appState.inputManager.handleRender(this.appState.renderer.getToolRenderers(), {
-      camera: this.appState.renderer.getCamera(),
-      utilityRenderers: this.appState.renderer.getUtilityRenderers(),
-      assetManager: this.appState.assetManager,
-      layerManager: this.appState.layerManager,
-      overlayFramebuffer: this.appState.renderer.getOverlayFramebuffer(),
-    });
     this.appState.renderer.render({
       camera: this.appState.renderer.getCamera(),
       utilityRenderers: this.appState.renderer.getUtilityRenderers(),

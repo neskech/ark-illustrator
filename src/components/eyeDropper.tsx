@@ -3,15 +3,13 @@ import { useEffect, useState } from 'react';
 import EventManager from '~/util/eventSystem/eventManager';
 import { rgbaToHsl, hslToHex } from '~/util/general/color';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
-import { type GL } from '~/util/webglWrapper/glUtils';
 import { Int32Vector3 } from '~/util/webglWrapper/vector';
-import { mouseToNormalized } from '../drawingEditor/renderer/camera';
+import Camera from '../drawingEditor/renderer/camera';
 import { type EyeDropperArgs } from '~/util/eventSystem/eventTypes/canvasEvents';
 
 interface RenderObjects {
   canvasFramebuffer: FrameBuffer;
   canvas: HTMLCanvasElement;
-  gl: GL;
 }
 let renderObjects: RenderObjects | null;
 let toggle: ((obj: EyeDropperArgs) => void) | null;
@@ -31,7 +29,6 @@ function EyeDropper() {
       renderObjects = {
         canvasFramebuffer: obj.canvasFramebuffer,
         canvas: obj.canvas,
-        gl: obj.gl,
       };
       obj.originPosition.map((p) => setPosition(p));
     };
@@ -56,7 +53,7 @@ function EyeDropper() {
   useEffect(() => {
     if (!renderObjects || !isVisible) return;
 
-    const norm = mouseToNormalized(position, renderObjects.canvas);
+    const norm = Camera.mouseToNormalized(position, renderObjects.canvas);
 
     if (norm.x < 0 || norm.x > 1 || norm.y < 0 || norm.y > 1) return;
 
@@ -66,7 +63,8 @@ function EyeDropper() {
     );
 
     const pixels = new Uint8Array(4);
-    renderObjects.canvasFramebuffer.readPixelsTo(renderObjects.gl, pixels, {
+    renderObjects.canvasFramebuffer.readPixelsTo({
+      pixelBuffer: pixels,
       lowerLeftX: Math.floor(unorm.x),
       lowerLeftY: Math.floor(unorm.y),
       width: 1,

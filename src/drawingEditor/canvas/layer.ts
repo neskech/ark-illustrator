@@ -1,10 +1,11 @@
-import Texture from '../../util/webglWrapper/texture';
+import type Texture from '../../util/webglWrapper/texture';
+import { TextureCreator } from '../../util/webglWrapper/texture';
 
 export default class Layer {
   private imageData: Texture;
 
   constructor(canvasWidth: number, canvasHeight: number) {
-    this.imageData = new Texture({
+    this.imageData = TextureCreator.allocateEmpty({
       width: canvasWidth,
       height: canvasHeight,
       wrapX: 'Repeat',
@@ -16,6 +17,6 @@ export default class Layer {
   }
 
   getTexture() {
-    return this.imageData
+    return this.imageData;
   }
 }

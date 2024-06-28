@@ -73,7 +73,7 @@ export abstract class BaseBrushSettings {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const DEFAULT_TEXTURE =
-  'https://cdn.discordapp.com/attachments/960353053842735144/1250664441037717606/file_1.png?ex=667060c6&is=666f0f46&hm=3a2da93c057ccfe37acab8b7430ef820acab6bad27c0e82f56ec68c82da58966&';
+  'https://cdn.discordapp.com/attachments/760962934217244702/1255650605792366612/mmorgan_240612_17778.jpg?ex=66808a41&is=667f38c1&hm=d7f8a1e1fb789240258e022ccc9b9f5f3267fd6ac22643dc54a5afbd6ce8a44f&';
 interface StampBrushSettingsArgs extends BaseBrushSettingsArgs {
   flow: number;
   stabilization: number;
@@ -102,8 +102,8 @@ export class StampBrushSettings extends BaseBrushSettings {
     });
   }
 
-  static default(): StampBrushSettings {
-    const brushTexture = TextureCreator.allocateFromImageUrlSync({
+  static async default(): Promise<StampBrushSettings> {
+    const brushTexture = await TextureCreator.allocateFromImageUrlAsync({
       url: DEFAULT_TEXTURE,
       texureOptions: {
         wrapX: 'Repeat',
@@ -127,7 +127,7 @@ export class StampBrushSettings extends BaseBrushSettings {
       pressureOpacitySettings: BezierFunction.getLinearBezier(),
       color: new Float32Vector3(0, 0, 0),
       isEraser: false,
-      texture: Some(brushTexture),
+      texture: Some(brushTexture.unwrap()),
     });
   }
 }

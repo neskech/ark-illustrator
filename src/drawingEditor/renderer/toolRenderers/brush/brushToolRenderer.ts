@@ -1,11 +1,12 @@
 import { type BrushConfiguration } from '~/drawingEditor/Input/toolSystem/settings/brushConfig';
-import { BrushImplementationRenderer, type BrushRendererContext } from './brushImplementationRenderer';
+import { type BrushImplementationRenderer, type BrushRendererContext } from './brushImplementationRenderer';
 import type AssetManager from '../../util/assetManager';
+import BrushRendererFactory from './brushRendererFactory';
 
 export default class BrushToolRenderer {
   private currentRenderer: BrushImplementationRenderer;
   constructor(assetManager: AssetManager, brushConfig: BrushConfiguration) {
-    this.currentRenderer = BrushImplementationRenderer.GetRendererOfAppropiateType(
+    this.currentRenderer = BrushRendererFactory.GetRendererOfAppropiateType(
       assetManager,
       brushConfig
     );
@@ -45,7 +46,7 @@ export default class BrushToolRenderer {
     brushConfig: BrushConfiguration
   ): BrushImplementationRenderer {
     if (this.currentRenderer.isOfType(brushConfig.type)) return this.currentRenderer;
-    return (this.currentRenderer = BrushImplementationRenderer.GetRendererOfAppropiateType(
+    return (this.currentRenderer = BrushRendererFactory.GetRendererOfAppropiateType(
       assetManager,
       brushConfig
     ));

@@ -1,7 +1,7 @@
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
 import GestureHandler from '../gesturesAndShortcuts/gestureHandler';
 import ShortcutHandler, { type ShortcutContext } from '../gesturesAndShortcuts/shortcutHandler';
-import { getDefaultSettings, type AllToolSettings } from './settings';
+import { type AllToolSettings } from './settings';
 import {
   type ToolMap,
   type ToolType,
@@ -29,8 +29,8 @@ export class InputManager {
   private gestures: GestureHandler;
   private shortcuts: ShortcutHandler;
 
-  constructor(defaultTool: ToolType = 'brush') {
-    this.settings = getDefaultSettings();
+  constructor(settings: AllToolSettings, defaultTool: ToolType = 'brush') {
+    this.settings = settings
     this.toolMap = {
       fillBucket: new FillTool(),
       hand: new HandTool(),
@@ -102,11 +102,6 @@ export class InputManager {
       },
       renderers
     );
-  }
-
-  handleRender(renderers: ToolRenderers, renderContext: RenderContext) {
-    const tool = this.toolMap[this.currentTool];
-    tool.acceptRenderer(renderers, renderContext);
   }
 
   getCurrentTool() {

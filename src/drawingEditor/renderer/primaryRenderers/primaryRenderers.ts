@@ -5,6 +5,7 @@ import type LayerManager from '~/drawingEditor/canvas/layerManager';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import LayerRenderer from './layerRenderer';
 import type UtilityRenderers from '../utilityRenderers.ts/utilityRenderers';
+import { clearFramebuffer } from '../util/renderUtils';
 
 export type PrimaryRendererContext = {
   camera: Camera;
@@ -25,6 +26,7 @@ export default class PrimaryRenderers {
   render(renderContext: PrimaryRendererContext) {
     this.layerRenderer.renderOntoOverlayFramebuffer(renderContext);
     const finalResult = renderContext.overlayFramebuffer;
+    clearFramebuffer(finalResult)
     this.canvasRenderer.render({ canvasFramebuffer: finalResult, ...renderContext });
   }
 }

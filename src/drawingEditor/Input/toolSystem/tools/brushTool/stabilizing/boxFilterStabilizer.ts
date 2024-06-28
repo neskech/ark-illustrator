@@ -4,7 +4,8 @@ import { add, copy, distance, scale } from '~/util/webglWrapper/vector';
 import { Float32Vector2 } from 'matrixgl';
 import { BatchedStabilizer } from './stabilizer';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
-import { Interpolator, type InterpolatorSettings } from '../interpolator/interpolator';
+import { Interpolator } from '../interpolator/interpolator';
+import InterpolatorFactory, { InterpolatorSettings } from '../interpolator/interpolatorFactory';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +61,6 @@ const DISTANCE_TO_STROKE_END_FIXING = 10;
  */
 const UNIFORMITY_DECAY_EXPONENT = 4;
 
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ export default class BoxFilterStabilizer extends BatchedStabilizer {
     this.settings = settings;
     this.pathLength = 0;
 
-    this.interpolator = Interpolator.getInterpolatorOfAppropiateType(
+    this.interpolator = InterpolatorFactory.getInterpolatorOfAppropiateType(
       settings.interpolatorSettings,
       brushSettings
     );

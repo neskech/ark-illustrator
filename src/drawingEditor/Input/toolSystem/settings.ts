@@ -7,9 +7,9 @@ export interface AllToolSettings {
   readonly fillSettings: FillSettings;
 }
 
-export function getDefaultSettings(): AllToolSettings {
+export async function getDefaultSettings(): Promise<AllToolSettings> {
   return {
-    brushConfigurations: new SettingsPreset(3, getDefaultBrushConfig()),
+    brushConfigurations: new SettingsPreset(3, await getDefaultBrushConfig()),
     fillSettings: defaultFillSettings(),
   };
 }

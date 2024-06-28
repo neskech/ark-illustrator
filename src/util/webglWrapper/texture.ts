@@ -156,7 +156,7 @@ export default class Texture {
     frameBuffer.bind();
     this.bind();
 
-    frameBuffer.readPixelsTo(options.pixelBuffer, options);
+    frameBuffer.readPixelsTo(options);
 
     this.unBind();
     frameBuffer.unBind();
@@ -325,7 +325,6 @@ export class TextureCreator {
       texture.bind();
       gl.texImage2D(gl.TEXTURE_2D, mipMapLevels, format, format, texelType, img);
       checkError('texImage2D');
-
       texture.unBind();
     }
 

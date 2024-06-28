@@ -120,7 +120,7 @@ export default class FrameBuffer {
     readBuffer.assertOkStatus();
   }
 
-  public readPixelsTo(pixelBuf: Uint8Array, options: ReadPixelOptions) {
+  public readPixelsTo(options: ReadPixelOptions) {
     gl.readPixels(
       options.lowerLeftX,
       options.lowerLeftY,
@@ -128,7 +128,7 @@ export default class FrameBuffer {
       options.height,
       formatToEnum(options.format),
       gl.UNSIGNED_BYTE,
-      pixelBuf
+      options.pixelBuffer
     );
   }
 

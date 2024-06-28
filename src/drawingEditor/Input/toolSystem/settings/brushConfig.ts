@@ -1,7 +1,5 @@
-import {
-  getDefaultStabilizerSettings,
-  type StabilizerSettings,
-} from '../tools/brushTool/stabilizing/stabilizer';
+
+import { getDefaultStabilizerSettings, type StabilizerSettings } from '../tools/brushTool/stabilizing/stabilizerFactory';
 import { StampBrushSettings, type LineBrushSettings } from './brushSettings';
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -15,10 +13,10 @@ import { StampBrushSettings, type LineBrushSettings } from './brushSettings';
 export type BrushConfiguration = StampBrushConfiguration | LineBrushConfiguration;
 export type BrushConfigType = BrushConfiguration['type'];
 
-export function getDefaultBrushConfig(): BrushConfiguration {
+export async function getDefaultBrushConfig(): Promise<BrushConfiguration> {
   return {
     type: 'stamp',
-    brushSettings: StampBrushSettings.default(),
+    brushSettings: await StampBrushSettings.default(),
     stabilizerSettings: getDefaultStabilizerSettings(),
   };
 }

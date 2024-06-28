@@ -236,12 +236,12 @@ export default class Camera {
   }
 
   static mouseToNormalizedWithEvent(
-    position: Float32Vector2,
+    event: PointerEvent,
     canvas: HTMLCanvasElement
   ): Float32Vector2 {
     const rect = canvas.getBoundingClientRect();
-    const x = (position.x - rect.left) / canvas.clientWidth;
-    const y = (position.y - rect.top) / canvas.clientHeight;
+    const x = (event.clientX - rect.left) / canvas.clientWidth;
+    const y = (event.clientY - rect.top) / canvas.clientHeight;
     return new Float32Vector2(x, 1.0 - y);
   }
 
@@ -253,7 +253,7 @@ export default class Camera {
   }
 
   static mouseToNDC(position: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
-    const p = Camera.mouseToNormalizedWithEvent(position, canvas);
+    const p = Camera.mouseToNormalized(position, canvas);
     p.x = (p.x - 0.5) * 2.0;
     p.y = (p.y - 0.5) * 2.0;
     return p;

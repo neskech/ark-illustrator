@@ -22,7 +22,7 @@ export default class LayerManager {
       texture: this.getCurrentLayer().getTexture(),
     });
     this.hasBeenMutated = false;
-    this.setupEvents();
+    //this.setupEvents();
   }
 
   public getCurrentLayer(): Layer {

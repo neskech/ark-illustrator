@@ -1,9 +1,5 @@
-import { unreachable } from '~/util/general/funUtils';
 import { type BrushPoint } from '../brushTool';
-import { SmoothedInterpolator, type SmoothedInterpolatorSettings } from './smoothedInterpolator';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
-import { assert } from '~/util/general/contracts';
-import { LinearInterpolator, type LinearInterpolatorSettings } from './linearInterpolator';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -13,8 +9,7 @@ import { LinearInterpolator, type LinearInterpolatorSettings } from './linearInt
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export type InterpolatorSettings = SmoothedInterpolatorSettings | LinearInterpolatorSettings;
-type InterpolatorType = InterpolatorSettings['type'];
+type InterpolatorType = 'smoothed' | 'linear';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -29,37 +24,13 @@ export abstract class Interpolator {
 
   constructor(interpolatorType: InterpolatorType) {
     this.interpolatorType = interpolatorType;
-    this.assertCorrectStabilizerType(interpolatorType);
   }
 
   abstract process(points: BrushPoint[], brushSettings: BaseBrushSettings): BrushPoint[];
   abstract estimateOutputSize(inputPathLength: number): number;
 
-  public static getInterpolatorOfAppropiateType(
-    settings: InterpolatorSettings,
-    _: BaseBrushSettings
-  ): Interpolator {
-    switch (settings.type) {
-      case 'smoothed':
-        return new SmoothedInterpolator(settings);
-      case 'linear':
-        return new LinearInterpolator(settings);
-      default:
-        return unreachable();
-    }
-  }
-
   public isOfType(stabilizerType: InterpolatorType): boolean {
     return this.interpolatorType == stabilizerType;
-  }
-
-  private assertCorrectStabilizerType(interpolatorType: InterpolatorType) {
-    switch (interpolatorType) {
-      case 'smoothed':
-        assert(this instanceof SmoothedInterpolator);
-      default:
-        return unreachable();
-    }
   }
 }
 
@@ -70,7 +41,3 @@ export abstract class Interpolator {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-
-export function getDefaultInterpolatorSettings(): InterpolatorSettings {
-  return { type: 'linear', spacing: 0.5 };
-}

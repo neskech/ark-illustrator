@@ -68,7 +68,7 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
     context.camera.translateZoom(scrollAmount);
   }
 
-  mouseMove(context: ShortcutContext, mouseEvent: MouseEvent): void {
+  pointerMove(context: ShortcutContext, mouseEvent: MouseEvent): void {
     const isCurrPositionValid = isValidMousePos(this.mousePosition);
 
     if (isCurrPositionValid && this.isMiddleMouseHeldDown > 0) {
@@ -89,7 +89,7 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
     this.mousePosition.y = mouseEvent.clientY;
   }
 
-  mouseDown(_: ShortcutContext, mouseEvent: MouseEvent): void {
+  pointerDown(_: ShortcutContext, mouseEvent: MouseEvent): void {
     switch (mouseEvent.button) {
       case LEFT_MOUSE:
         this.isLeftMouseHeldDown += 1;
@@ -100,7 +100,7 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
     }
   }
 
-  mouseUp(_: ShortcutContext, mouseEvent: MouseEvent): void {
+  pointerUp(_: ShortcutContext, mouseEvent: MouseEvent): void {
     switch (mouseEvent.button) {
       case LEFT_MOUSE:
         this.isLeftMouseHeldDown -= 1;
@@ -125,6 +125,7 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
     }
 
     if (keyEvent.key == 'i') {
+      alert('he')
       EventManager.invoke('toggleEyeDropper', {
         canvas: context.canvas,
         canvasFramebuffer: context.layerManager.getCanvasFramebuffer(),
@@ -148,7 +149,7 @@ function getMouseDeltaFromEvent(
   canvas: HTMLCanvasElement
 ): Float32Vector2 {
   const normCurrPos = Camera.mouseToNormalized(mouse, canvas);
-  const normEventPos = Camera.mouseToNormalizedWithEvent(event, canvas);
+  const normEventPos = Camera.mouseToNormalizedWithEvent(event as PointerEvent, canvas);
 
   const deltaX = normEventPos.x - normCurrPos.x;
   const deltaY = normEventPos.y - normCurrPos.y;

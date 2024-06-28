@@ -112,11 +112,11 @@ export default class InputState extends NoContextEventHandler {
 
   constructor() {
     super();
-    this.mouseButtonState = new Array(NUM_MOUSE_BUTTONS).map((_) => ({
+    this.mouseButtonState = new Array(NUM_MOUSE_BUTTONS).fill(({
       isPressed: false,
       isAltPressed: false,
       isControlPressed: false,
-    }));
+    })) as MouseButtonState[];
     this.mousePositionState = {
       client: new Float32Vector2(0, 0),
       previousClient: new Float32Vector2(0, 0),
@@ -125,7 +125,7 @@ export default class InputState extends NoContextEventHandler {
       offset: new Float32Vector2(0, 0),
       screen: new Float32Vector2(0, 0),
     };
-    this.pointerState = new Array(NUM_POINTER_TYPES).map((_) => ({
+    this.pointerState = new Array(NUM_POINTER_TYPES).fill(({
       isDown: false,
       client: new Float32Vector2(0, 0),
       previousClient: new Float32Vector2(0, 0),
@@ -134,7 +134,7 @@ export default class InputState extends NoContextEventHandler {
       offset: new Float32Vector2(0, 0),
       screen: new Float32Vector2(0, 0),
       hasMoved: false,
-    }));
+    })) as PointerState[];
     this.keyState = new Map();
     this.scrollWheelState = {
       delta: new Float32Vector3(0, 0, 0),

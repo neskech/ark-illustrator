@@ -1,10 +1,7 @@
 import { unreachable } from '~/util/general/funUtils';
-import NothingStabilizer, { type NothingStabilizerSettings } from './nothingStabilizer';
 import { type BrushPoint } from '../brushTool';
-import SpringStabilizer, { type SpringStabilizerSettings } from './springStabilizer';
 import { assert } from '~/util/general/contracts';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
-import BoxFilterStabilizer, { type BoxFilterStabilizerSettings } from './boxFilterStabilizer';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -14,11 +11,7 @@ import BoxFilterStabilizer, { type BoxFilterStabilizerSettings } from './boxFilt
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export type StabilizerSettings =
-  | NothingStabilizerSettings
-  | SpringStabilizerSettings
-  | BoxFilterStabilizerSettings;
-type StabilizerType = StabilizerSettings['type'];
+type StabilizerType = 'nothing' | 'spring' | 'box';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +26,6 @@ export abstract class Stabilizer {
 
   constructor(stabilizerType: StabilizerType) {
     this.stabilizerType = stabilizerType;
-    this.assertCorrectStabilizerType(stabilizerType);
   }
 
   public abstract addPoint(point: BrushPoint, brushSettings: BaseBrushSettings): void;
@@ -64,33 +56,6 @@ export abstract class Stabilizer {
 
   public assertIsIncremental(): asserts this is IncrementalStabilizer {
     assert(this.isIncrementalStabilizer());
-  }
-
-  public static getStabilizerOfAppropiateType(
-    settings: StabilizerSettings,
-    brushSettings: BaseBrushSettings
-  ): Stabilizer {
-    switch (settings.type) {
-      case 'box':
-        return new BoxFilterStabilizer(settings, brushSettings);
-      case 'spring':
-        return new SpringStabilizer(settings, brushSettings);
-      case 'nothing':
-        return new NothingStabilizer(settings, brushSettings);
-      default:
-        return unreachable();
-    }
-  }
-
-  private assertCorrectStabilizerType(stabilizerType: StabilizerType) {
-    switch (stabilizerType) {
-      case 'spring':
-        assert(this instanceof SpringStabilizer);
-      case 'nothing':
-        assert(this instanceof NothingStabilizer);
-      default:
-        return unreachable();
-    }
   }
 }
 
@@ -125,6 +90,3 @@ export abstract class IncrementalStabilizer extends Stabilizer {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export function getDefaultStabilizerSettings(): StabilizerSettings {
-  return { type: 'spring', springConstant: 0.3, friction: 0.5 };
-}
