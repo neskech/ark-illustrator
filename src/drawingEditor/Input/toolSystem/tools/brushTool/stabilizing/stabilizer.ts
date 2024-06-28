@@ -36,14 +36,34 @@ export abstract class Stabilizer {
     this.assertCorrectStabilizerType(stabilizerType);
   }
 
-  abstract addPoint(point: BrushPoint, brushSettings: BaseBrushSettings): void;
-  abstract getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[];
-  abstract reset(): void;
+  public abstract addPoint(point: BrushPoint, brushSettings: BaseBrushSettings): void;
+  public abstract getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[];
+  public abstract reset(): void;
 
   // Optiona override.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(deltaTime: number, brushSettings: BaseBrushSettings) {
+  public update(deltaTime: number, brushSettings: BaseBrushSettings) {
     return;
+  }
+
+  public isOfType(stabilizerType: StabilizerType): boolean {
+    return this.stabilizerType == stabilizerType;
+  }
+
+  public isBatchedStabilizer(): this is BatchedStabilizer {
+    return this instanceof BatchedStabilizer;
+  }
+
+  public assertIsBatched(): asserts this is BatchedStabilizer {
+    assert(this.isBatchedStabilizer());
+  }
+
+  public isIncrementalStabilizer(): this is IncrementalStabilizer {
+    return this instanceof IncrementalStabilizer;
+  }
+
+  public assertIsIncremental(): asserts this is IncrementalStabilizer {
+    assert(this.isIncrementalStabilizer());
   }
 
   public static getStabilizerOfAppropiateType(
@@ -62,10 +82,6 @@ export abstract class Stabilizer {
     }
   }
 
-  public isOfType(stabilizerType: StabilizerType): boolean {
-    return this.stabilizerType == stabilizerType;
-  }
-
   private assertCorrectStabilizerType(stabilizerType: StabilizerType) {
     switch (stabilizerType) {
       case 'spring':
@@ -81,11 +97,34 @@ export abstract class Stabilizer {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
+//! SUB CLASSES
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export abstract class BatchedStabilizer extends Stabilizer {
+  constructor(stabilizerType: StabilizerType) {
+    super(stabilizerType);
+  }
+
+  abstract predictSizeOfOutput(): number;
+  abstract partitionStroke(brushSettings: BaseBrushSettings, maxSizeStroke: number): BrushPoint[];
+}
+
+export abstract class IncrementalStabilizer extends Stabilizer {
+  constructor(stabilizerType: StabilizerType) {
+    super(stabilizerType);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 //! EXPORTED HELPERS
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export function getDefaultStabilizerSettings(): StabilizerSettings {
-  return { type: 'spring' };
+  return { type: 'spring', springConstant: 0.3, friction: 0.5 };
 }

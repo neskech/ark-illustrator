@@ -33,7 +33,7 @@ export abstract class Interpolator {
   }
 
   abstract process(points: BrushPoint[], brushSettings: BaseBrushSettings): BrushPoint[];
-  abstract estimateWorstCaseLengthOfOutput(brushSettings: BaseBrushSettings): number;
+  abstract estimateOutputSize(inputPathLength: number): number;
 
   public static getInterpolatorOfAppropiateType(
     settings: InterpolatorSettings,

@@ -13,6 +13,7 @@ import { StampBrushSettings, type LineBrushSettings } from './brushSettings';
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export type BrushConfiguration = StampBrushConfiguration | LineBrushConfiguration;
+export type BrushConfigType = BrushConfiguration['type'];
 
 export function getDefaultBrushConfig(): BrushConfiguration {
   return {

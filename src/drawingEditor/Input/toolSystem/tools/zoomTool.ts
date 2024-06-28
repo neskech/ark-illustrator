@@ -1,6 +1,5 @@
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
-import { Tool } from '../tool';
-import { type RenderContext } from '~/drawingEditor/renderer/renderer';
+import { Tool, type ToolUpdateContext } from '../tool';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -16,11 +15,8 @@ export class ZoomTool extends Tool {
     super();
   }
 
-  update(deltaTime: number): void {
-    throw new Error('Method not implemented.');
-  }
-  acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void {
-    throw new Error('Method not implemented.');
+  updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void {
+    if (context.inputState.isMouseButtonPressed('left')) return;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

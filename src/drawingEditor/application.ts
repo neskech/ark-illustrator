@@ -53,10 +53,12 @@ export default class EditorApplication {
     if (resTexture.isErr()) return Err(resTexture.unwrapErr());
 
     const layerManager = new LayerManager(canvas);
+    const inputManager = new InputManager();
+    const renderer = new Renderer(canvas, inputManager.getSettings(), assetManager);
     instance.appState = {
       layerManager,
-      inputManager: new InputManager(),
-      renderer: new Renderer(canvas, assetManager),
+      inputManager,
+      renderer,
       canvas,
       assetManager,
     };
@@ -117,7 +119,19 @@ export default class EditorApplication {
     const delta = (now - this.lastUpdateTime) / 1000.0;
     this.lastUpdateTime = now;
 
-    this.appState.inputManager.handleUpdate(delta);
+    this.appState.inputManager.handleUpdate(
+      delta,
+      this.appState.inputManager.getSettings(),
+      this.appState.canvas,
+      this.appState.renderer.getToolRenderers(),
+      {
+        camera: this.appState.renderer.getCamera(),
+        utilityRenderers: this.appState.renderer.getUtilityRenderers(),
+        assetManager: this.appState.assetManager,
+        layerManager: this.appState.layerManager,
+        overlayFramebuffer: this.appState.renderer.getOverlayFramebuffer(),
+      }
+    );
     this.appState.inputManager.handleRender(this.appState.renderer.getToolRenderers(), {
       camera: this.appState.renderer.getCamera(),
       utilityRenderers: this.appState.renderer.getUtilityRenderers(),

@@ -5,7 +5,7 @@ import EventManager from '~/util/eventSystem/eventManager';
 import { None } from '~/util/general/option';
 import Camera from '~/drawingEditor/renderer/camera';
 import type LayerManager from '~/drawingEditor/canvas/layerManager';
-import EventHandler from '../toolSystem/eventHandler';
+import { EventHandler } from '../toolSystem/eventHandler';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

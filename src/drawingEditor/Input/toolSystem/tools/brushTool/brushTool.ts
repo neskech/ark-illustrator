@@ -1,10 +1,10 @@
 import { type Float32Vector2 } from 'matrixgl';
 import { type AllToolSettings } from '../../settings';
-import { Tool, type ToolContext } from '../../tool';
-import { Stabilizer } from './stabilizing/stabilizer';
-import { type RenderContext } from '~/drawingEditor/renderer/renderer';
+import { Tool, type ToolUpdateContext, type ToolContext } from '../../tool';
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
 import { type BrushConfiguration } from '../../settings/brushConfig';
+import { Stabilizer } from './stabilizing/stabilizer';
+import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/toolRenderers/brush/stampBrushRenderer';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -14,12 +14,10 @@ import { type BrushConfiguration } from '../../settings/brushConfig';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const MIDDLE_MOUSE = 1;
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-//! CLASS DEFINITION
+//! TYPE DEFINITIONS & HELPERS
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -34,76 +32,122 @@ export const newPoint = (pos: Float32Vector2, pressure: number): BrushPoint => (
   pressure,
 });
 
+type StrokeState = 'notDrawing' | 'drawing' | 'finished';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! CLASS DEFINITION
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
 export class BrushTool extends Tool {
-  private isPointerDown: boolean;
   private stabilizer: Stabilizer;
+  private strokeState: StrokeState;
 
   constructor(settings: AllToolSettings) {
     super();
-    this.isPointerDown = false;
+
     const config = settings.brushConfigurations.getCurrentPreset();
     this.stabilizer = Stabilizer.getStabilizerOfAppropiateType(
       config.stabilizerSettings,
       config.brushSettings
     );
+
+    this.strokeState = 'notDrawing';
   }
 
-  update(context: ToolContext, deltaTime: number): void {
-    const config = context.settings.brushConfigurations.getCurrentPreset();
-    this.setAppropiateStabilizer(config);
+  updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void {
+    if (this.strokeState == 'notDrawing') return;
 
     this.stabilizer.update(
-      deltaTime,
+      context.deltaTime,
       context.settings.brushConfigurations.getCurrentPreset().brushSettings
     );
-  }
 
-  acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void {
-    throw new Error('Method not implemented.');
+    const brushConfig = context.settings.brushConfigurations.getCurrentPreset();
+    const renderer = toolRenderers.getBrushToolRenderer();
+
+    if (this.strokeState == 'finished') {
+      this.strokeState = 'notDrawing';
+
+      if (this.stabilizer.isBatchedStabilizer()) {
+        const size = this.stabilizer.predictSizeOfOutput();
+
+        if (size > MAX_POINTS_PER_FRAME) {
+          const partition = this.stabilizer.partitionStroke(
+            brushConfig.brushSettings,
+            MAX_POINTS_PER_FRAME
+          );
+          renderer.renderBatchedStrokePartitioned(
+            { pointData: partition, ...context },
+            brushConfig
+          );
+        }
+
+        const points = this.stabilizer.getProcessedCurve(brushConfig.brushSettings);
+        renderer.renderBatchedStrokeFinished({ pointData: points, ...context }, brushConfig);
+      } else {
+        const points = this.stabilizer.getProcessedCurve(brushConfig.brushSettings);
+        renderer.renderIncrementalStroke({ pointData: points, ...context }, brushConfig);
+      }
+
+      this.stabilizer.reset();
+      return;
+    }
+
+    if (this.stabilizer.isBatchedStabilizer()) {
+      const size = this.stabilizer.predictSizeOfOutput();
+
+      if (size > MAX_POINTS_PER_FRAME) {
+        const points = this.stabilizer.partitionStroke(
+          brushConfig.brushSettings,
+          MAX_POINTS_PER_FRAME
+        );
+        renderer.renderBatchedStrokePartitioned({ pointData: points, ...context }, brushConfig);
+      } else {
+        const points = this.stabilizer.getProcessedCurve(brushConfig.brushSettings);
+        renderer.renderBatchedStrokeContinued({ pointData: points, ...context }, brushConfig);
+      }
+    } else {
+      const points = this.stabilizer.getProcessedCurve(brushConfig.brushSettings);
+      renderer.renderIncrementalStroke({ pointData: points, ...context }, brushConfig);
+    }
   }
 
   pointerMove(context: ToolContext, event: PointerEvent): void {
+    if (this.strokeState != 'drawing') return;
+
     const config = context.settings.brushConfigurations.getCurrentPreset();
     this.setAppropiateStabilizer(config);
 
-    const point = context.camera.mouseToWorld(event, context.canvas);
+    const point = context.camera.mouseToWorldByEvent(event, context.canvas);
     const brushPoint = newPoint(point, event.pressure);
-    if (this.isPointerDown) {
-      this.stabilizer.addPoint(brushPoint, config.brushSettings);
-    }
+    this.stabilizer.addPoint(brushPoint, config.brushSettings);
   }
 
-  pointerUp(context: ToolContext, event: PointerEvent): void {
+  pointerUp(context: ToolContext): void {
+    if (this.strokeState != 'drawing') return;
+
     const config = context.settings.brushConfigurations.getCurrentPreset();
     this.setAppropiateStabilizer(config);
 
-    this.stabilizer.reset();
-    this.isPointerDown = false;
+    this.strokeState = 'finished';
   }
 
   pointerDown(context: ToolContext, event: PointerEvent): void {
+    if (this.strokeState != 'notDrawing') return;
+
     const config = context.settings.brushConfigurations.getCurrentPreset();
     this.setAppropiateStabilizer(config);
 
-    const point = context.camera.mouseToWorld(event, context.canvas);
+    const point = context.camera.mouseToWorldByEvent(event, context.canvas);
     const brushPoint = newPoint(point, event.pressure);
-
-    if (!this.isPointerDown) {
-      this.stabilizer.addPoint(
-        brushPoint,
-        context.settings.brushConfigurations.getCurrentPreset().brushSettings
-      );
-    }
-
-    this.isPointerDown = true;
-  }
-
-  pointerLeave(context: ToolContext, event: PointerEvent): void {
-    const config = context.settings.brushConfigurations.getCurrentPreset();
-    this.setAppropiateStabilizer(config);
-
-    this.stabilizer.reset();
-    this.isPointerDown = false;
+    this.stabilizer.addPoint(
+      brushPoint,
+      context.settings.brushConfigurations.getCurrentPreset().brushSettings
+    );
   }
 
   private setAppropiateStabilizer(brushConfig: BrushConfiguration) {

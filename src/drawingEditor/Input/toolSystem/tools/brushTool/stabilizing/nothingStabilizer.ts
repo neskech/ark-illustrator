@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import { Stabilizer } from './stabilizer';
+import { IncrementalStabilizer } from './stabilizer';
 import { type BrushPoint } from '../brushTool';
 import { assert } from '~/util/general/contracts';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
@@ -24,7 +24,7 @@ export interface NothingStabilizerSettings {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export default class NothingStabilizer extends Stabilizer {
+export default class NothingStabilizer extends IncrementalStabilizer {
   private settings: NothingStabilizerSettings;
   private currentPoints: BrushPoint[];
 

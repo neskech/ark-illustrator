@@ -2,7 +2,6 @@ import { type BrushPoint, newPoint } from '../brushTool';
 import { CurveInterpolator } from 'curve-interpolator';
 import { Float32Vector2 } from 'matrixgl';
 import { Interpolator } from './interpolator';
-import { type BaseBrushSettings } from '../../../settings/brushSettings';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -44,9 +43,8 @@ export class SmoothedInterpolator extends Interpolator {
     );
   }
 
-  estimateWorstCaseLengthOfOutput(brushSettings: BaseBrushSettings): number {
-    const CANVAS_WIDTH = 2;
-    const at_interval_of_spacing = CANVAS_WIDTH / this.settings.spacing;
+  estimateOutputSize(inputPathLength: number): number {
+    const at_interval_of_spacing = inputPathLength / this.settings.spacing;
     return at_interval_of_spacing;
   }
 }

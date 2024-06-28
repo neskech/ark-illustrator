@@ -166,8 +166,8 @@ export default class Camera {
     logger(this.toString());
   }
 
-  mouseToWorld(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
-    const p = Camera.mouseToNDC(event, canvas);
+  mouseToWorld(position: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
+    const p = Camera.mouseToNDC(position, canvas);
 
     /**
      * Standard NDC coordinates put p in a [-1, 1] range with
@@ -189,6 +189,11 @@ export default class Camera {
     const projected = this.mulVecByProjection(rotated);
 
     return projected;
+  }
+
+  mouseToWorldByEvent(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
+    const position = new Float32Vector2(event.clientX, event.clientY);
+    return this.mouseToWorld(position, canvas);
   }
 
   getAspRatio(): number {
@@ -231,12 +236,12 @@ export default class Camera {
   }
 
   static mouseToNormalizedWithEvent(
-    event: PointerEvent | MouseEvent,
+    position: Float32Vector2,
     canvas: HTMLCanvasElement
   ): Float32Vector2 {
     const rect = canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / canvas.clientWidth;
-    const y = (event.clientY - rect.top) / canvas.clientHeight;
+    const x = (position.x - rect.left) / canvas.clientWidth;
+    const y = (position.y - rect.top) / canvas.clientHeight;
     return new Float32Vector2(x, 1.0 - y);
   }
 
@@ -247,8 +252,8 @@ export default class Camera {
     return new Float32Vector2(x, 1.0 - y);
   }
 
-  static mouseToNDC(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
-    const p = Camera.mouseToNormalizedWithEvent(event, canvas);
+  static mouseToNDC(position: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
+    const p = Camera.mouseToNormalizedWithEvent(position, canvas);
     p.x = (p.x - 0.5) * 2.0;
     p.y = (p.y - 0.5) * 2.0;
     return p;

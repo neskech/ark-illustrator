@@ -8,7 +8,7 @@ import ZoomGesture from './gestures/zoomGesture';
 import ClearScreenGesture from './gestures/clearScreenGesture';
 import OpenSettingsGesture from './gestures/openSettingsGesture';
 import EyeDropperGesture from './gestures/EyeDropperGesture';
-import EventHandler from '../toolSystem/eventHandler';
+import { EventHandler } from '../toolSystem/eventHandler';
 
 export default class GestureHandler extends EventHandler<GestureContext> {
   private pointerPositions: PointerPos[];

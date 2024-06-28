@@ -1,7 +1,8 @@
 import { type Float32Vector2 } from 'matrixgl';
 import { assertNotNull } from '../../../../util/general/contracts';
-import { Tool, type HandleEventArgs } from '../tool';
-import EventManager from '~/util/eventSystem/eventManager';
+import { Tool, type ToolUpdateContext } from '../tool';
+import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
+import { type PointerType } from '../inputState';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -11,7 +12,19 @@ import EventManager from '~/util/eventSystem/eventManager';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const MIDDLE_MOUSE = 1;
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+type RectangleState = {
+  anchorPosition: Float32Vector2;
+  oppositePosition: Float32Vector2;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -23,97 +36,71 @@ const MIDDLE_MOUSE = 1;
 
 export class RectangleTool extends Tool {
   private isDrawingRectangle: boolean;
-  private anchorPosition: Float32Vector2 | null;
+  private targetPointer: PointerType | null;
+  private rectangleState: RectangleState | null;
 
   constructor() {
     super();
     this.isDrawingRectangle = false;
-    this.anchorPosition = null;
+    this.targetPointer = null;
+    this.rectangleState = null;
   }
 
-  handleEvent(args: HandleEventArgs) {
-    if (!(args.event instanceof PointerEvent)) return;
+  updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void {
+    this.handleRectangleStart(context);
 
-    const evType = args.eventString;
-    const event = args.event;
+    if (!this.isDrawingRectangle) return;
 
-    if (event.pointerType == 'mouse' && event.button == MIDDLE_MOUSE) return;
+    assertNotNull(this.rectangleState);
+    assertNotNull(this.targetPointer);
 
-    switch (evType) {
-      case 'pointermove':
-        this.pointerMovedHandler(args, event);
-        return;
-      case 'pointerup':
-        this.pointerUpHandler(args, event);
-        return;
-      case 'pointerdown':
-        this.pointerDownHandler(args, event);
-        return;
-      case 'pointerleave':
-        this.pointerLeaveHandler();
-        return;
+    const renderer = toolRenderers.getRectangleToolRenderer();
+
+    const pos = context.camera.mouseToWorld(
+      context.inputState.getPointerPositionClient(this.targetPointer),
+      context.canvas
+    );
+    this.rectangleState.oppositePosition = pos;
+
+    if (!context.inputState.isPointerDown(this.targetPointer)) {
+      renderer.renderRectangleContinued({
+        anchorPosition: this.rectangleState.anchorPosition,
+        otherPosition: this.rectangleState.oppositePosition,
+        ...context,
+      });
+    } else {
+      renderer.renderRectangleFinished({
+        anchorPosition: this.rectangleState.anchorPosition,
+        otherPosition: this.rectangleState.oppositePosition,
+        ...context,
+      });
     }
   }
 
-  update(_: number): void {
-    return;
-  }
-
-  private pointerMovedHandler(args: HandleEventArgs, event: MouseEvent) {
-    if (!this.isDrawingRectangle) return;
-
-    assertNotNull(this.anchorPosition);
-
-    const point = args.appState.canvasState.camera.mouseToWorld(
-      event,
-      args.appState.canvasState.canvas
-    );
-
-    EventManager.invoke('rectangleContinued', {
-      anchorPosition: this.anchorPosition,
-      otherPosition: point,
-    });
-  }
-
-  pointerUpHandler(args: HandleEventArgs, event: MouseEvent) {
-    if (!this.isDrawingRectangle) return;
-
-    assertNotNull(this.anchorPosition);
-
-    const point = args.appState.canvasState.camera.mouseToWorld(
-      event,
-      args.appState.canvasState.canvas
-    );
-
-    EventManager.invoke('rectangleFinished', {
-      anchorPosition: this.anchorPosition,
-      otherPosition: point,
-    });
-    this.isDrawingRectangle = false;
-  }
-
-  private pointerDownHandler(args: HandleEventArgs, event: MouseEvent) {
+  handleRectangleStart(context: ToolUpdateContext) {
     if (this.isDrawingRectangle) return;
-
-    const point = args.appState.canvasState.camera.mouseToWorld(
-      event,
-      args.appState.canvasState.canvas
-    );
-    this.anchorPosition = point;
-
-    EventManager.invoke('rectangleContinued', {
-      anchorPosition: this.anchorPosition,
-      otherPosition: point,
-    });
     this.isDrawingRectangle = true;
+
+    const pointerTypes: PointerType[] = ['mouse', 'pen', 'finger'];
+    for (const type of pointerTypes) {
+      if (context.inputState.isPointerDown(type)) {
+        this.targetPointer = type;
+        break;
+      }
+    }
+
+    assertNotNull(this.targetPointer);
+
+    const pos = context.camera.mouseToWorld(
+      context.inputState.getPointerPositionClient(this.targetPointer),
+      context.canvas
+    );
+    this.rectangleState = {
+      anchorPosition: pos,
+      oppositePosition: pos,
+    };
   }
 
-  private pointerLeaveHandler() {
-    if (!this.isDrawingRectangle) return;
-
-    EventManager.invokeVoid('rectangleCanceled');
-    this.isDrawingRectangle = false;
-  }
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

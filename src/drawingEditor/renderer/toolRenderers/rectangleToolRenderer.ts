@@ -49,6 +49,8 @@ type RectangleRendererContext = {
   otherPosition: Float32Vector2;
 } & RenderContext;
 
+type RectangleRendererCanceledContext = RenderContext;
+
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +103,7 @@ export default class RectangleToolRenderer {
     );
     clearFramebuffer(context.overlayFramebuffer);
   }
-  public renderRectangleCancled(context: RectangleRendererContext) {
+  public renderRectangleCancled(context: RectangleRendererCanceledContext) {
     clearFramebuffer(context.overlayFramebuffer);
   }
 

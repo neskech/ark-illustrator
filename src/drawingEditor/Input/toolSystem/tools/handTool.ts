@@ -1,5 +1,5 @@
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
-import { Tool } from '../tool';
+import { Tool, type ToolUpdateContext } from '../tool';
 import { type RenderContext } from '~/drawingEditor/renderer/renderer';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -16,11 +16,8 @@ export class HandTool extends Tool {
     super();
   }
 
-  update(deltaTime: number): void {
-    throw new Error('Method not implemented.');
-  }
-  acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void {
-    throw new Error('Method not implemented.');
+  updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void {
+    return;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

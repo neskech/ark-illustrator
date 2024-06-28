@@ -8,7 +8,7 @@ import {
   type CanvasEvent,
   type EventTypeName,
   type ToolContext,
-  Tool,
+  type Tool,
 } from './tool';
 import { BrushTool } from './tools/brushTool/brushTool';
 import { CircleTool } from './tools/circleTool';
@@ -19,10 +19,12 @@ import { type RenderContext } from '~/drawingEditor/renderer/renderer';
 import type Camera from '~/drawingEditor/renderer/camera';
 import type LayerManager from '../../canvas/layerManager';
 import { type GestureContext } from '../gesturesAndShortcuts/gestures/gesture';
+import InputState from './inputState';
 
 export class InputManager {
   private toolMap: ToolMap;
   private settings: AllToolSettings;
+  private inputState: InputState;
   private currentTool: ToolType;
   private gestures: GestureHandler;
   private shortcuts: ShortcutHandler;
@@ -36,6 +38,7 @@ export class InputManager {
       circle: new CircleTool(),
       brush: new BrushTool(this.settings),
     };
+    this.inputState = new InputState();
     this.currentTool = defaultTool;
 
     this.gestures = new GestureHandler();
@@ -51,9 +54,13 @@ export class InputManager {
     const tool = this.toolMap[this.currentTool];
     const eventType = event.type as EventTypeName;
 
+    this.inputState.update()
+    this.inputState.callAppropiateEventFunction(eventType, event);
+
     const toolContext: ToolContext = {
       camera,
       settings: this.settings,
+      inputState: this.inputState,
       eventType,
       canvas,
     };
@@ -79,12 +86,22 @@ export class InputManager {
 
   handleUpdate(
     deltaTime: number,
-    camera: Camera,
     settings: AllToolSettings,
-    canvas: HTMLCanvasElement
+    canvas: HTMLCanvasElement,
+    renderers: ToolRenderers,
+    renderContext: RenderContext
   ) {
     const tool: Tool = this.toolMap[this.currentTool];
-    tool.update({ camera, settings, canvas }, deltaTime);
+    tool.updateAndRender(
+      {
+        deltaTime,
+        inputState: this.inputState,
+        settings,
+        canvas,
+        ...renderContext,
+      },
+      renderers
+    );
   }
 
   handleRender(renderers: ToolRenderers, renderContext: RenderContext) {

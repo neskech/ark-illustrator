@@ -7,6 +7,7 @@ import ToolRenderers from './toolRenderers/toolRendererList';
 import PrimaryRenderers, { type PrimaryRendererContext } from './primaryRenderers/primaryRenderers';
 import UtilityRenderers from './utilityRenderers.ts/utilityRenderers';
 import type LayerManager from '../canvas/layerManager';
+import { type AllToolSettings } from '../Input/toolSystem/settings';
 
 export type RenderContext = {
   assetManager: AssetManager;
@@ -23,7 +24,7 @@ export default class Renderer {
   private overlayFramebuffer: FrameBuffer;
   private camera: Camera;
 
-  constructor(canvas: HTMLCanvasElement, assetManager: AssetManager) {
+  constructor(canvas: HTMLCanvasElement, settings: AllToolSettings, assetManager: AssetManager) {
     this.initGLFlags(canvas);
     this.overlayFramebuffer = new FrameBuffer({
       type: 'no texture',
@@ -45,7 +46,7 @@ export default class Renderer {
 
     this.primaryRenderers = new PrimaryRenderers(assetManager, this.camera, canvas);
     this.utilityRenderers = new UtilityRenderers(assetManager);
-    this.toolRenderers = new ToolRenderers(assetManager);
+    this.toolRenderers = new ToolRenderers(assetManager, settings);
   }
 
   public render(renderContext: PrimaryRendererContext) {

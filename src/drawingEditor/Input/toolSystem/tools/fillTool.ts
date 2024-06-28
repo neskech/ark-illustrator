@@ -15,12 +15,8 @@ export class FillTool extends Tool {
     super();
   }
 
-  update(context: ToolUpdateContext, deltaTime: number): void {
-    return;
-  }
-
-  acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void {
-    throw new Error('Method not implemented.');
+  updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void {
+    return
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

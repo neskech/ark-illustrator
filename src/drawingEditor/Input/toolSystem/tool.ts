@@ -8,7 +8,8 @@ import { type BrushTool } from './tools/brushTool/brushTool';
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
 import { type RenderContext } from '~/drawingEditor/renderer/renderer';
 import type Camera from '~/drawingEditor/renderer/camera';
-import EventHandler from './eventHandler';
+import type InputState from './inputState';
+import { EventHandler } from './eventHandler';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,7 @@ export type CanvasEvent = GlobalEventHandlersEventMap[EventTypeName];
 export type ToolType = keyof ToolMap;
 
 export type ToolContext = {
+  inputState: InputState;
   camera: Camera;
   settings: AllToolSettings;
   eventType: EventTypeName;
@@ -47,10 +49,11 @@ export type ToolContext = {
 };
 
 export type ToolUpdateContext = {
-  camera: Camera;
+  deltaTime: number;
+  inputState: InputState;
   settings: AllToolSettings;
   canvas: HTMLCanvasElement;
-};
+} & RenderContext;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +64,5 @@ export type ToolUpdateContext = {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export abstract class Tool extends EventHandler<ToolContext> {
-  abstract update(context: ToolUpdateContext, deltaTime: number): void;
-  abstract acceptRenderer(renderers: ToolRenderers, renderContext: RenderContext): void;
+  abstract updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void;
 }

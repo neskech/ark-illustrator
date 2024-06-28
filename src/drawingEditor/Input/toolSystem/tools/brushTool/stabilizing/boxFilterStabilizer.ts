@@ -1,11 +1,8 @@
 import { type BrushPoint, newPoint } from '../brushTool';
 import { assert, requires } from '~/util/general/contracts';
-import { add, copy, scale, sub } from '~/util/webglWrapper/vector';
+import { add, copy, distance, scale } from '~/util/webglWrapper/vector';
 import { Float32Vector2 } from 'matrixgl';
-import { allowLimitedStrokeLength } from '~/components/editors/basicEditor/settings';
-import EventManager from '~/util/eventSystem/eventManager';
-import Benchmarker, { incrementalLog } from '../../../../../../util/general/benchmarking';
-import { Stabilizer } from './stabilizer';
+import { BatchedStabilizer } from './stabilizer';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
 import { Interpolator, type InterpolatorSettings } from '../interpolator/interpolator';
 
@@ -62,18 +59,7 @@ const DISTANCE_TO_STROKE_END_FIXING = 10;
  * from an endpoint
  */
 const UNIFORMITY_DECAY_EXPONENT = 4;
-/**
- * The fraction of elements to delete off the front of the list
- * when our 'current points' list overflows
- *
- * We want to maintain a small current points list in order to
- * maintain a small computation time for our stabilizing functions
- */
-const DELETE_FACTOR = 0.935;
 
-const LOOK_AHEAD = 5;
-
-const OPACITY_COMPRESSION = 0.000001;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -89,13 +75,6 @@ export interface BoxFilterStabilizerSettings {
   interpolatorSettings: InterpolatorSettings;
 }
 
-interface Cache {
-  weightsCache: number[];
-  cachedSmoothing: number;
-  runningSumPointCache: Float32Vector2[];
-  previousRawCurveLength: number;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -104,28 +83,20 @@ interface Cache {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export default class BoxFilterStabilizer extends Stabilizer {
+export default class BoxFilterStabilizer extends BatchedStabilizer {
   private currentPoints: BrushPoint[];
-  private numPoints: number;
-  private cache: Cache;
-  private maxSize: number;
+  private context: BrushPoint[];
   private settings: BoxFilterStabilizerSettings;
+  private pathLength: number;
   private interpolator: Interpolator;
 
   constructor(settings: BoxFilterStabilizerSettings, brushSettings: BaseBrushSettings) {
     super('box');
 
-    this.maxSize = 300; //Math.floor(MAX_SIZE_RAW_BRUSH_POINT_ARRAY(brushSettings) * 0.5);
-    this.currentPoints = new Array(this.maxSize).map((_) => newPoint(new Float32Vector2(0, 0), 0));
-    this.numPoints = 0;
+    this.currentPoints = [];
+    this.context = [];
     this.settings = settings;
-
-    this.cache = {
-      weightsCache: [],
-      cachedSmoothing: -1,
-      runningSumPointCache: new Array(this.maxSize).map((_) => new Float32Vector2(0, 0)),
-      previousRawCurveLength: 0,
-    };
+    this.pathLength = 0;
 
     this.interpolator = Interpolator.getInterpolatorOfAppropiateType(
       settings.interpolatorSettings,
@@ -133,95 +104,93 @@ export default class BoxFilterStabilizer extends Stabilizer {
     );
   }
 
-  addPoint(p: BrushPoint, brushSettings: BaseBrushSettings) {
-    this.currentPoints[this.numPoints] = p;
-    this.numPoints += 1;
-    if (this.numPoints == this.maxSize) this.handleOverflow(brushSettings);
+  addPoint(point: BrushPoint) {
+    this.currentPoints.push(point);
+
+    if (this.currentPoints.length > 1) {
+      const before = this.currentPoints[this.currentPoints.length - 2];
+      const after = this.currentPoints[this.currentPoints.length - 1];
+      const dist = distance(before.position, after.position);
+      this.pathLength += dist;
+    }
+  }
+
+  predictSizeOfOutput(): number {
+    const upper_bound_factor = 2;
+    return this.interpolator.estimateOutputSize(this.pathLength * upper_bound_factor);
+  }
+
+  partitionStroke(brushSettings: BaseBrushSettings, maxStrokeSize: number): BrushPoint[] {
+    let outputSize = this.predictSizeOfOutput();
+    this.context = [];
+
+    let leftEdge = 0;
+    while (outputSize > maxStrokeSize && leftEdge < this.currentPoints.length - 1) {
+      const before = this.currentPoints[leftEdge];
+      const after = this.currentPoints[leftEdge + 1];
+      const dist = distance(before.position, after.position);
+      this.pathLength -= dist;
+
+      outputSize = this.predictSizeOfOutput();
+      leftEdge += 1;
+    }
+
+    if (outputSize > maxStrokeSize) assert(false, 'max stroke size is too small');
+
+    const newContext = this.currentPoints.splice(0, leftEdge);
+    const processed = this.getProcessedCurveWithData(this.currentPoints, newContext, brushSettings);
+    this.context = newContext;
+    return processed;
   }
 
   getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[] {
-    requires(this.maxSize > this.settings.stabilization * 2 + 1);
-    const processed = process_(
-      this.currentPoints,
-      this.numPoints,
-      brushSettings,
-      this.cache
-    ) as BrushPoint[];
-    this.assertValid();
+    const processed = process(this.currentPoints, this.context, this.settings);
+    return this.interpolator.process(processed, brushSettings);
+  }
 
+  getProcessedCurveWithData(
+    points: BrushPoint[],
+    context: BrushPoint[],
+    brushSettings: BaseBrushSettings
+  ): BrushPoint[] {
+    const processed = process(points, context, this.settings);
     return this.interpolator.process(processed, brushSettings);
   }
 
   reset() {
-    this.numPoints = 0;
-    this.cache.previousRawCurveLength = 0;
-  }
-
-  private handleOverflow(brushSettings: BaseBrushSettings) {
-    if (!allowLimitedStrokeLength) {
-      this.numPoints = 0;
-      return;
-    }
-
-    updateCache(this.cache, this.cache.cachedSmoothing, this.currentPoints, this.numPoints);
-
-    const numDeleted = getNumDeletedElementsFromDeleteFactor(DELETE_FACTOR, this.maxSize);
-
-    const shavedOff = this.currentPoints.slice(0, this.numPoints);
-    const processed = process(shavedOff, this.numPoints, this.settings, brushSettings, this.cache);
-    EventManager.invoke('brushStrokCutoff', {
-      pointData: processed,
-      currentSettings: brushSettings,
-    });
-
-    shiftDeleteElements(this.currentPoints, DELETE_FACTOR, this.maxSize);
-    this.numPoints -= numDeleted;
-
-    const sumOfAll = this.cache.runningSumPointCache[numDeleted - 1];
-    shiftDeleteElements(this.cache.runningSumPointCache, DELETE_FACTOR, this.maxSize);
-
-    for (let i = 0; i < this.numPoints; i++) sub(this.cache.runningSumPointCache[i], sumOfAll);
-  }
-
-  private assertValid() {
-    assert(true);
+    this.currentPoints = [];
+    this.context = [];
+    this.pathLength = 0;
   }
 }
 
 function process(
   rawCurve: BrushPoint[],
-  rawCurveLength: number,
-  settings: BoxFilterStabilizerSettings,
-  brushSettings: BaseBrushSettings,
-  cache: Cache
+  context: BrushPoint[],
+  settings: BoxFilterStabilizerSettings
 ): BrushPoint[] {
-  if (rawCurveLength <= 2) return rawCurve.slice(0, rawCurveLength);
+  if (rawCurve.length <= 2) return rawCurve;
 
   const smoothing = getSmoothingValueFromStabilization(settings.stabilization);
-  updateCache(cache, smoothing, rawCurve, rawCurveLength);
 
   let boxed = rawCurve;
   for (let i = 0; i < NUM_BOX_FILTERS; i++) {
     boxed = boxFilterExpwa(
       boxed,
-      cache,
-      i == 0 ? rawCurveLength : boxed.length,
+      context,
       smoothing,
       POINT_IMPORTANCE_FACTOR,
       DISTANCE_TO_STROKE_END_FIXING
     );
-    smoothEndpoints(boxed, rawCurve[0], boxed[boxed.length - 1]);
+    smoothEndpoints(
+      boxed,
+      context.length > 0 ? context[context.length - 1] : rawCurve[0],
+      boxed[boxed.length - 1]
+    );
   }
 
   return boxed;
 }
-
-const process_ = Benchmarker.trackRuntime(process, {
-  name: 'process',
-  logFrequency: incrementalLog(500),
-  tenPercentHigh: true,
-  tenPercentLow: true,
-});
 
 /**
  * The box filter (or blur) in image processing is a method of averaging over a range of pixels. In particular, given an
@@ -271,18 +240,19 @@ const process_ = Benchmarker.trackRuntime(process, {
  */
 function boxFilterExpwa(
   curve: BrushPoint[],
-  cache: Cache,
-  curveLength: number,
+  context: BrushPoint[],
   radius: number,
   decayFactor: number,
   distFromEnd: number
 ): BrushPoint[] {
   if (curve.length <= 1) return curve;
 
+  const sampleContextIfOut = (index: number) =>
+    index > 0 ? curve[index] : context[context.length + index];
   const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(n, min));
 
   function weight(n: number, r: number): number {
-    const distFromEndpoint = Math.min(n, curveLength - 1 - n);
+    const distFromEndpoint = Math.min(n, curve.length - 1 - n);
 
     if (distFromEndpoint <= distFromEnd)
       return calcFactorExp(distFromEndpoint, r, decayFactor, radius, distFromEnd); //sampleExpWeight(cache, distFromEndpoint, r)
@@ -292,17 +262,16 @@ function boxFilterExpwa(
   }
 
   const newPoints = [];
-  for (let i = 0; i < curveLength - 1; i++) {
+  for (let i = 0; i < curve.length - 1; i++) {
     const p = curve[i];
 
     const avg = scale(copy(p.position), weight(i, 0));
 
     for (let r = 1; r <= radius; r++) {
-      const lIdx = clamp(i - r, 0, curveLength - 1);
-      const rIdx = clamp(i + r, 0, curveLength - 1);
+      const rIdx = clamp(i + r, 0, curve.length - 1);
 
       const scaling = weight(i, r);
-      const left = scale(copy(curve[lIdx].position), scaling);
+      const left = scale(copy(sampleContextIfOut(i - r).position), scaling);
       const right = scale(copy(curve[rIdx].position), scaling);
 
       add(avg, left);
@@ -330,6 +299,7 @@ function calcFactorExp(i: number, d: number, k: number, r: number, e: number) {
 
 function smoothEndpoints(boxedCurve: BrushPoint[], ogStart: BrushPoint, ogEnd: BrushPoint) {
   boxedCurve.push(ogEnd);
+  boxedCurve.unshift(ogStart);
 
   if (boxedCurve.length >= 3) {
     const start = carmullRom2D(boxedCurve[0], boxedCurve[0], boxedCurve[1], boxedCurve[2], 10);
@@ -396,101 +366,19 @@ function carmullRom2D(
   return results;
 }
 
-function updateCache(
-  weightsCache: Cache,
-  newSmoothing: number,
-  rawCurve: BrushPoint[],
-  rawCurveLength: number
-) {
-  if (weightsCache.cachedSmoothing != newSmoothing) {
-    weightsCache.cachedSmoothing = newSmoothing;
-    weightsCache.weightsCache = [];
-
-    for (let i = 0; i <= DISTANCE_TO_STROKE_END_FIXING; i++) {
-      for (let d = 0; d <= newSmoothing; d++) {
-        weightsCache.weightsCache.push(
-          calcFactorExp(i, d, POINT_IMPORTANCE_FACTOR, newSmoothing, DISTANCE_TO_STROKE_END_FIXING)
-        );
-      }
-    }
+function getPathLength(curve: BrushPoint[]): number {
+  let pathLength = 0;
+  for (let i = 0; i < curve.length - 1; i++) {
+    const before = curve[i];
+    const after = curve[i + 1];
+    const dist = distance(before.position, after.position);
+    pathLength += dist;
   }
-
-  let runningSum =
-    weightsCache.previousRawCurveLength > 0
-      ? weightsCache.runningSumPointCache[weightsCache.previousRawCurveLength - 1]
-      : new Float32Vector2(0, 0);
-
-  for (let i = weightsCache.previousRawCurveLength; i < rawCurveLength; i++) {
-    runningSum = add(copy(runningSum), rawCurve[i].position);
-    weightsCache.runningSumPointCache[i] = runningSum;
-  }
-
-  weightsCache.previousRawCurveLength = rawCurveLength;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function sampleExpWeight(cache: Cache, i: number, d: number): number {
-  return cache.weightsCache[i * (cache.cachedSmoothing + 1) + d];
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function sampleAvgWeight(cache: Cache, i: number): Float32Vector2 {
-  const n = cache.previousRawCurveLength;
-
-  const hi = Math.min(i + cache.cachedSmoothing, cache.previousRawCurveLength);
-  const lo = Math.max(0, i - cache.cachedSmoothing);
-  const sum = sub(copy(cache.runningSumPointCache[hi]), cache.runningSumPointCache[lo]);
-
-  const overflowHi = Math.max(i + cache.cachedSmoothing - (n - 1), 0);
-  const overflowLo = -Math.min(0, i - cache.cachedSmoothing);
-
-  if (overflowHi > 0) {
-    let valueOfLastPoint: Float32Vector2;
-    if (n == 1) valueOfLastPoint = copy(cache.runningSumPointCache[0]);
-    else
-      valueOfLastPoint = sub(
-        copy(cache.runningSumPointCache[n - 1]),
-        cache.runningSumPointCache[n - 2]
-      );
-
-    add(sum, scale(valueOfLastPoint, overflowHi));
-  }
-
-  if (overflowLo > 0) {
-    const valueOfFirstPoint = copy(cache.runningSumPointCache[0]);
-    add(sum, scale(valueOfFirstPoint, overflowLo));
-  }
-
-  return scale(sum, 1 / (2 * cache.cachedSmoothing + 1));
+  return pathLength;
 }
 
 function getSmoothingValueFromStabilization(stabilization: number): number {
   requires(0 <= stabilization && stabilization <= 1);
   const range = MAX_SMOOTHING - MIN_SMOOTHING;
   return MIN_SMOOTHING + range * stabilization;
-}
-
-// const BRUSH_SIZE_SPACING_FACTOR = (settings: BaseBrushSettings) =>
-//   getSpacingFromBrushSettings(settings) / (settings.size * settings.maxSize);
-// const MAX_SIZE_RAW_BRUSH_POINT_ARRAY = (settings: BaseBrushSettings) =>
-//   Math.floor(MAX_POINTS_PER_FRAME * BRUSH_SIZE_SPACING_FACTOR(settings));
-
-// const getSpacingFromBrushSettings = (settings: BaseBrushSettings): number => {
-//   return settings.spacing;
-// };
-
-function getNumDeletedElementsFromDeleteFactor(deleteFactor: number, maxSize: number): number {
-  return Math.floor(maxSize * deleteFactor);
-}
-
-function shiftDeleteElements<A>(array: A[], deleteFactor: number, maxSize: number) {
-  requires(array.length == maxSize);
-
-  const numToShaveOff = getNumDeletedElementsFromDeleteFactor(deleteFactor, maxSize);
-
-  const remaining = maxSize - numToShaveOff;
-
-  for (let i = 0; i < remaining; i++) {
-    array[i] = array[i + numToShaveOff];
-  }
 }

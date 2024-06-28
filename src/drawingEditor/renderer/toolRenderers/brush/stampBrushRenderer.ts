@@ -1,25 +1,28 @@
+import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
+import {
+  BrushImplementationRenderer,
+  type BrushRendererContext,
+} from './brushImplementationRenderer';
+import type AssetManager from '../../util/assetManager';
+import { type BrushPoint } from '~/drawingEditor/Input/toolSystem/tools/brushTool/brushTool';
+import { clearFramebuffer } from '../../util/renderUtils';
+import { QuadilateralFactory } from '../../geometry/quadFactory';
+import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
+import type Shader from '~/util/webglWrapper/shader';
+import Buffer from '~/util/webglWrapper/buffer';
 import {
   type GetAttributesType,
   VertexAttributes,
   VertexAttributeType,
 } from '~/util/webglWrapper/vertexAttributes';
-import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
-import type Shader from '~/util/webglWrapper/shader';
-import Buffer from '~/util/webglWrapper/buffer';
-import { Float32Vector3 } from 'matrixgl';
-import { type BrushPoint } from '~/drawingEditor/Input/toolSystem/tools/brushTool/brushTool';
-import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
-import { angle, displacement } from '~/util/webglWrapper/vector';
-import Texture from '~/util/webglWrapper/texture';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
-import type AssetManager from '../util/assetManager';
-import { QuadilateralFactory } from '../geometry/quadFactory';
+import Texture from '~/util/webglWrapper/texture';
 import { gl } from '~/drawingEditor/application';
-import { QuadTransform } from '../geometry/transform';
-import { QuadPositioner } from '../geometry/positioner';
-import { QuadRotator } from '../geometry/rotator';
-import { type RenderContext } from '../renderer';
-import { clearFramebuffer } from '../util/renderUtils';
+import { Float32Vector3 } from 'matrixgl';
+import { angle, displacement } from '~/util/webglWrapper/vector';
+import { QuadTransform } from '../../geometry/transform';
+import { QuadPositioner } from '../../geometry/positioner';
+import { QuadRotator } from '../../geometry/rotator';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -52,11 +55,6 @@ const strokeVertexAttributes = new VertexAttributes({
 });
 type StrokeAttribsType = GetAttributesType<typeof strokeVertexAttributes>;
 
-export type BrushRendererContext = {
-  pointData: BrushPoint[];
-  brushSettings: BrushSettings;
-} & RenderContext;
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -64,14 +62,16 @@ export type BrushRendererContext = {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-
-export default class BrushToolRenderer {
+export default class StampBrushRenderer extends BrushImplementationRenderer {
   private vertexArray: VertexArrayObject<StrokeAttribsType>;
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<StrokeAttribsType>;
   private shader: Shader;
+  private brushSettings: StampBrushSettings;
 
-  constructor(assetManager: AssetManager) {
+  constructor(assetManager: AssetManager, brushSettings: StampBrushSettings) {
+    super('stamp');
+    this.brushSettings = brushSettings;
     this.vertexArray = new VertexArrayObject(strokeVertexAttributes);
     this.vertexBuffer = new Buffer({
       btype: 'VertexBuffer',
@@ -95,18 +95,22 @@ export default class BrushToolRenderer {
     this.initBuffer();
   }
 
-  public renderBrushStrokeContinued(context: BrushRendererContext) {
-    clearFramebuffer(context.overlayFramebuffer)
+  renderBatchedStrokeContinued(context: BrushRendererContext): void {
+    clearFramebuffer(context.overlayFramebuffer);
     this.renderStrokeToOverlay(context);
   }
 
-  public renderBrushStrokeFinished(context: BrushRendererContext) {
-    clearFramebuffer(context.overlayFramebuffer)
+  renderBatchedStrokeFinished(context: BrushRendererContext): void {
+    clearFramebuffer(context.overlayFramebuffer);
     this.renderStrokeToCanvas(context);
   }
 
-  public renderBrushStrokeCutoff(context: BrushRendererContext) {
-    clearFramebuffer(context.overlayFramebuffer)
+  renderBatchedStrokePartitioned(context: BrushRendererContext): void {
+    clearFramebuffer(context.overlayFramebuffer);
+    this.renderStrokeToCanvas(context);
+  }
+
+  renderIncrementalStroke(context: BrushRendererContext): void {
     this.renderStrokeToCanvas(context);
   }
 
@@ -121,33 +125,31 @@ export default class BrushToolRenderer {
     this.vertexBuffer.unBind();
   }
 
-  private renderStroke(
-    points: BrushPoint[],
-    brushSettings: BrushSettings,
-    framebuffer: FrameBuffer
-  ) {
+  private renderStroke(points: BrushPoint[], framebuffer: FrameBuffer) {
     framebuffer.bind();
     this.vertexArray.bind();
     this.vertexBuffer.bind();
     this.shader.bind();
 
     Texture.activateUnit(0);
-    brushSettings.texture.unwrap().bind();
+    this.brushSettings.texture.unwrap().bind();
 
-    if (brushSettings.isEraser) gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    if (this.brushSettings.isEraser) gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
-    this.shader.uploadFloat('flow', brushSettings.flow);
-    this.shader.uploadTexture('tex', brushSettings.texture.unwrap(), 0);
+    this.shader.uploadFloat('flow', this.brushSettings.flow);
+    this.shader.uploadTexture('tex', this.brushSettings.texture.unwrap(), 0);
 
     const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY;
     const buf = new Float32Array(bufSize);
 
     let i = 0;
     for (const [j, p] of points.enumerate()) {
-      const opacity_ = brushSettings.getOpacityGivenPressure(p.pressure);
-      const opacity = brushSettings.isEraser ? 1 - opacity_ : opacity_;
-      const color = brushSettings.isEraser ? new Float32Vector3(1, 1, 1) : brushSettings.color;
+      const opacity_ = this.brushSettings.getOpacityGivenPressure(p.pressure);
+      const opacity = this.brushSettings.isEraser ? 1 - opacity_ : opacity_;
+      const color = this.brushSettings.isEraser
+        ? new Float32Vector3(1, 1, 1)
+        : this.brushSettings.color;
 
       let ang = 0;
 
@@ -157,7 +159,7 @@ export default class BrushToolRenderer {
       }
 
       i = this.quadFactory.emplaceSquare({
-        size: brushSettings.getSizeGivenPressure(p.pressure),
+        size: this.brushSettings.getSizeGivenPressure(p.pressure),
         transform: QuadTransform.builder()
           .position(QuadPositioner.center(p.position))
           .rotate(QuadRotator.center(ang + Math.PI / 2))
@@ -178,21 +180,17 @@ export default class BrushToolRenderer {
     this.shader.unBind();
     this.vertexArray.unBind();
     this.vertexBuffer.unBind();
-    brushSettings.texture.unwrap().unBind();
+    this.brushSettings.texture.unwrap().unBind();
     framebuffer.unBind();
   }
 
   private renderStrokeToOverlay(context: BrushRendererContext) {
     if (context.pointData.length == 0) return;
-    this.renderStroke(context.pointData, context.brushSettings, context.overlayFramebuffer);
+    this.renderStroke(context.pointData, context.overlayFramebuffer);
   }
 
   private renderStrokeToCanvas(context: BrushRendererContext) {
     if (context.pointData.length == 0) return;
-    this.renderStroke(
-      context.pointData,
-      context.brushSettings,
-      context.layerManager.getCanvasFramebuffer()
-    );
+    this.renderStroke(context.pointData, context.layerManager.getCanvasFramebuffer());
   }
 }
