@@ -115,7 +115,7 @@ export class StampBrushSettings extends BaseBrushSettings {
     });
 
     return new StampBrushSettings({
-      size: 0.08,
+      size: 0.025,
       opacity: 0.15,
       minSize: 0.3,
       maxSize: 1.0,

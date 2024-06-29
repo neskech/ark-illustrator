@@ -137,9 +137,9 @@ export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
         <Slider
           aria-label="Opacity"
           value={opacity}
-          min={0}
-          max={1}
-          step={0.01}
+          min={0.005}
+          max={0.3}
+          step={0.001}
           onChange={(e, val) => setOpacity(e, val as number)}
         />
       </Stack>
@@ -173,9 +173,9 @@ export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
         <Slider
           aria-label="Flow"
           value={flow}
-          min={0}
-          max={1}
-          step={0.01}
+          min={0.005}
+          max={0.3}
+          step={0.001}
           onChange={(e, val) => setFlow(e, val as number)}
         />
       </Stack>

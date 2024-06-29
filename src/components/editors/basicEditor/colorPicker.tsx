@@ -37,10 +37,10 @@ function ColorPicker(props: ColorPickerProps) {
   const innerSquareSize = Math.floor(props.size * 0.56);
 
   const [isOuterHeld, setOuterHeld] = useState(false);
-  const [degree, setDegree] = useState(0);
+  const [degree, setDegree] = useState(-105);
 
   const [isInnerHeld, setInnerHeld] = useState(false);
-  const [innerPos, setInnerPos] = useState<Position>({ x: 0, y: 0 });
+  const [innerPos, setInnerPos] = useState<Position>({ x: -20, y: -20 });
 
   const outerCircle = useRef<HTMLDivElement>(null);
   const innerSquare = useRef<HTMLDivElement>(null);

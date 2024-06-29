@@ -17,6 +17,6 @@ void main() {
     float opac = (color.r + color.g + color.b) / 3.0; 
     color.rgb = vColor;
     color.a = opac * flow;
-   // color.a = min(vOpacity, opac * flow);
+    color.a = min(vOpacity, opac * flow);
     gl_FragColor = color;
 } 

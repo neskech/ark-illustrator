@@ -59,8 +59,8 @@ function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
         <Slider
           aria-label="Brush Size"
           value={size}
-          min={0}
-          max={0.5}
+          min={0.005}
+          max={0.1}
           step={0.001}
           className="absolute left-3"
           sx={{ width: '90%', color: '#3c69cf' }}
@@ -107,8 +107,8 @@ function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
         <Slider
           aria-label="Opacity"
           value={opacity}
-          min={0}
-          max={1}
+          min={0.005}
+          max={0.3}
           step={0.01}
           className="absolute left-3"
           sx={{ width: '90%', color: '#3c69cf' }}
@@ -155,9 +155,9 @@ function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
         <Slider
           aria-label="Flow"
           value={flow}
-          min={0.01}
-          max={0.1}
-          step={0.01}
+          min={0.005}
+          max={0.3}
+          step={0.001}
           className="absolute left-11"
           sx={{ color: '#3c69cf', width: '100%' }}
           onChange={(e, val) => setFlow(e, val as number)}
