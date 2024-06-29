@@ -43,6 +43,14 @@ export class SmoothedInterpolator extends Interpolator {
     );
   }
 
+  processWithSingularContext(points: BrushPoint[], context: BrushPoint): BrushPoint[] {
+    points.unshift(context);
+    const processed = this.process(points);
+    processed.shift();
+    points.shift();
+    return processed;
+  }
+
   estimateOutputSize(inputPathLength: number): number {
     const at_interval_of_spacing = inputPathLength / this.settings.spacing;
     return at_interval_of_spacing;

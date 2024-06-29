@@ -12,7 +12,6 @@ import { type PointerType } from '../inputState';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +61,7 @@ export class RectangleTool extends Tool {
     );
     this.rectangleState.oppositePosition = pos;
 
-    if (!context.inputState.isPointerDown(this.targetPointer)) {
+    if (context.inputState.isPointerDown(this.targetPointer)) {
       renderer.renderRectangleContinued({
         anchorPosition: this.rectangleState.anchorPosition,
         otherPosition: this.rectangleState.oppositePosition,
@@ -74,12 +73,14 @@ export class RectangleTool extends Tool {
         otherPosition: this.rectangleState.oppositePosition,
         ...context,
       });
+      this.rectangleState = null;
+      this.targetPointer = null;
+      this.isDrawingRectangle = false;
     }
   }
 
   handleRectangleStart(context: ToolUpdateContext) {
     if (this.isDrawingRectangle) return;
-    this.isDrawingRectangle = true;
 
     const pointerTypes: PointerType[] = ['mouse', 'pen', 'finger'];
     for (const type of pointerTypes) {
@@ -89,7 +90,8 @@ export class RectangleTool extends Tool {
       }
     }
 
-    assertNotNull(this.targetPointer);
+    if (this.targetPointer == null) return;
+    this.isDrawingRectangle = true;
 
     const pos = context.camera.mouseToWorld(
       context.inputState.getPointerPositionClient(this.targetPointer),
@@ -100,7 +102,6 @@ export class RectangleTool extends Tool {
       oppositePosition: pos,
     };
   }
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

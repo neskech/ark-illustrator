@@ -24,9 +24,8 @@ export default class PrimaryRenderers {
   }
 
   render(renderContext: PrimaryRendererContext) {
-    this.layerRenderer.renderOntoOverlayFramebuffer(renderContext);
-    const finalResult = renderContext.overlayFramebuffer;
-    clearFramebuffer(finalResult)
+    const finalResult = this.layerRenderer.renderAndGetFinalFramebuffer(renderContext);
     this.canvasRenderer.render({ canvasFramebuffer: finalResult, ...renderContext });
+    renderContext.layerManager.resetMutation();
   }
 }

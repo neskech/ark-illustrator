@@ -27,6 +27,11 @@ export abstract class Interpolator {
   }
 
   abstract process(points: BrushPoint[], brushSettings: BaseBrushSettings): BrushPoint[];
+  abstract processWithSingularContext(
+    points: BrushPoint[],
+    context: BrushPoint,
+    brushSettings: BaseBrushSettings
+  ): BrushPoint[];
   abstract estimateOutputSize(inputPathLength: number): number;
 
   public isOfType(stabilizerType: InterpolatorType): boolean {

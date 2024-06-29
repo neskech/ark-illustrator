@@ -6,21 +6,21 @@ import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import { Box, Button } from '@mui/material';
 import { useState } from 'react';
-import {
-  type InputManager,
-  type ToolType as ToolType_,
-} from '../../../drawingEditor/Input/toolSystem/inputManager';
+import { type InputManager } from '../../../drawingEditor/Input/toolSystem/inputManager';
+import { type ToolTypeName } from '~/drawingEditor/Input/toolSystem/tool';
+import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
 export interface LeftBarProps {
   inputManager: InputManager;
 }
-type ToolType = ToolType_ | 'Eraser';
+type ToolType = ToolTypeName | 'Eraser';
 
 const SELECTED_OPACITY = 0.3;
 
 function LeftBar({ inputManager }: LeftBarProps) {
   const [toolType, setToolType] = useState<ToolType>(inputManager.getCurrentTool());
-  const brushSettings = inputManager.getSettings().brushConfigurations.getCurrentPreset();
+  const brushSettings = inputManager.getSettings().brushConfigurations.getCurrentPreset()
+    .brushSettings as StampBrushSettings;
 
   function setType(type: ToolType) {
     if (type == 'Eraser') {
@@ -53,7 +53,10 @@ function LeftBar({ inputManager }: LeftBarProps) {
         sx={{
           color: '#1c3e8a',
           filter: `brightness(${
-            inputManager.getSettings().brushConfigurations.getCurrentPreset().isEraser
+            (
+              inputManager.getSettings().brushConfigurations.getCurrentPreset()
+                .brushSettings as StampBrushSettings
+            ).isEraser
               ? SELECTED_OPACITY
               : 1
           })`,

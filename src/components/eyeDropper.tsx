@@ -42,7 +42,10 @@ function EyeDropper() {
     pointerUp = () => {
       if (!isVisible) return;
       setIsVisible(false);
-      EventManager.invoke('colorChanged', new Float32Vector3(color.x, color.y, color.z));
+      EventManager.invoke(
+        'colorChanged',
+        new Float32Vector3(color.x / 255, color.y / 255, color.z / 255)
+      );
     };
     document.addEventListener('pointerup', pointerUp);
     document.addEventListener('pointercancel', pointerUp);
@@ -73,7 +76,9 @@ function EyeDropper() {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    setColor(new Int32Vector3(pixels.at(0)!, pixels.at(1)!, pixels.at(2)!));
+    const c = new Int32Vector3(pixels.at(0)!, pixels.at(1)!, pixels.at(2)!);
+    setColor(c);
+    EventManager.invoke('colorChanged', new Float32Vector3(c.x / 255, c.y / 255, c.z / 255));
   }, [position, isVisible]);
 
   return (

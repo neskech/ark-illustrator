@@ -73,7 +73,7 @@ export abstract class BaseBrushSettings {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const DEFAULT_TEXTURE =
-  'https://cdn.discordapp.com/attachments/760962934217244702/1255650605792366612/mmorgan_240612_17778.jpg?ex=66808a41&is=667f38c1&hm=d7f8a1e1fb789240258e022ccc9b9f5f3267fd6ac22643dc54a5afbd6ce8a44f&';
+  'https://static.vecteezy.com/system/resources/previews/001/311/130/non_2x/abstract-black-splat-grunge-brush-texture-free-vector.jpg';
 interface StampBrushSettingsArgs extends BaseBrushSettingsArgs {
   flow: number;
   stabilization: number;
@@ -116,11 +116,11 @@ export class StampBrushSettings extends BaseBrushSettings {
 
     return new StampBrushSettings({
       size: 0.08,
-      opacity: 1.0,
+      opacity: 0.15,
       minSize: 0.3,
       maxSize: 1.0,
-      minOpacity: 0.2,
-      maxOpacity: 0.9,
+      minOpacity: 0.1,
+      maxOpacity: 0.2,
       flow: 0.02,
       stabilization: 0.25,
       pressureSizeSettings: BezierFunction.getLinearBezier(),

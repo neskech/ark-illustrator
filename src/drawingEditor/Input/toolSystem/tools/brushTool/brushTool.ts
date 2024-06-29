@@ -128,8 +128,13 @@ export class BrushTool extends Tool {
     this.stabilizer.addPoint(brushPoint, config.brushSettings);
   }
 
-  pointerUp(context: ToolContext): void {
+  pointerUp(context: ToolContext, event: PointerEvent): void {
     if (this.strokeState != 'drawing') return;
+
+    if (event.pointerType == 'mouse') {
+      const button = context.inputState.mouseButtonToString(event.button);
+      if (button == 'middle' || button == 'right') return;
+    }
 
     const config = context.settings.brushConfigurations.getCurrentPreset();
     this.setAppropiateStabilizer(config);
@@ -140,6 +145,11 @@ export class BrushTool extends Tool {
   pointerDown(context: ToolContext, event: PointerEvent): void {
     if (this.strokeState != 'notDrawing') return;
 
+    if (event.pointerType == 'mouse') {
+      const button = context.inputState.mouseButtonToString(event.button);
+      if (button == 'middle' || button == 'right') return;
+    }
+
     const config = context.settings.brushConfigurations.getCurrentPreset();
     this.setAppropiateStabilizer(config);
 
@@ -149,6 +159,8 @@ export class BrushTool extends Tool {
       brushPoint,
       context.settings.brushConfigurations.getCurrentPreset().brushSettings
     );
+
+    this.strokeState = 'drawing';
   }
 
   private setAppropiateStabilizer(brushConfig: BrushConfiguration) {

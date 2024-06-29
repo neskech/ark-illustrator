@@ -37,7 +37,7 @@ export default class Renderer {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
-    clearFramebuffer(this.overlayFramebuffer, 1, 1, 1, 1);
+    clearFramebuffer(this.overlayFramebuffer, 1, 1, 1, 0);
 
     const canvasAspectRatio = canvas.width / canvas.height;
     const screenAspRation = canvas.clientWidth / canvas.clientHeight;

@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Float32Vector2 } from 'matrixgl';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
 import { newPoint, type BrushPoint } from '../brushTool';
 import { IncrementalStabilizer } from './stabilizer';
 import { assert } from '~/util/general/contracts';
 import { add, copy } from '~/util/webglWrapper/vector';
+import { Interpolator } from '../interpolator/interpolator';
+import InterpolatorFactory, { InterpolatorSettings } from '../interpolator/interpolatorFactory';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -17,6 +20,7 @@ export interface SpringStabilizerSettings {
   type: 'spring';
   springConstant: number;
   friction: number;
+  interpolatorSettings: InterpolatorSettings;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -32,25 +36,55 @@ export default class SpringStabilizer extends IncrementalStabilizer {
   private head: BrushPoint | null;
   private velocity: Float32Vector2;
   private accumulatedPoints: BrushPoint[];
+  private interpolator: Interpolator;
+  private lastAddPointTime: number | null;
 
-  constructor(settings: SpringStabilizerSettings, _: BaseBrushSettings) {
+  constructor(settings: SpringStabilizerSettings, brushSettings: BaseBrushSettings) {
     super('spring');
     this.settings = settings;
     this.head = null;
     this.velocity = new Float32Vector2(0, 0);
     this.accumulatedPoints = [];
+    this.interpolator = InterpolatorFactory.getInterpolatorOfAppropiateType(
+      settings.interpolatorSettings,
+      brushSettings
+    );
+    this.lastAddPointTime = null;
   }
 
   addPoint(point: BrushPoint): void {
     if (this.head == null) {
       this.accumulatedPoints = [point];
+      this.head = point;
+      this.lastAddPointTime = performance.now();
     }
 
-    this.head = point
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const deltaTime = (performance.now() - this.lastAddPointTime!) / 1000;
+    const last = this.accumulatedPoints[this.accumulatedPoints.length - 1];
+    this.velocity.x +=
+      (this.head.position.x - last.position.x) * this.settings.springConstant * deltaTime;
+    this.velocity.y +=
+      (this.head.position.y - last.position.y) * this.settings.springConstant * deltaTime;
+    this.velocity.x *= this.settings.friction;
+    this.velocity.y *= this.settings.friction;
+    const newPosition = add(copy(last.position), this.velocity);
+    this.accumulatedPoints.push(newPoint(newPosition, this.head.pressure));
+
+    this.head = point;
+    this.lastAddPointTime = performance.now();
   }
 
-  getProcessedCurve(): BrushPoint[] {
-    throw new Error('Method not implemented.');
+  getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[] {
+    if (this.head == null || this.accumulatedPoints.length == 0) return [];
+
+    const points = this.interpolator.processWithSingularContext(
+      this.accumulatedPoints,
+      this.accumulatedPoints.at(-1)!,
+      brushSettings
+    );
+    this.accumulatedPoints = [this.accumulatedPoints.pop()!];
+    return points;
   }
 
   getRawCurve(): BrushPoint[] {
@@ -61,19 +95,24 @@ export default class SpringStabilizer extends IncrementalStabilizer {
     this.head = null;
     this.velocity = new Float32Vector2(0, 0);
     this.accumulatedPoints = [];
+    this.lastAddPointTime = null;
   }
 
-  update(deltaTime: number): void {
-    if (this.head == null) return;
+  update(): void {
+    if (this.head == null || this.accumulatedPoints.length == 0) return;
 
-    assert(this.accumulatedPoints.length > 0);
+    const deltaTime = (performance.now() - this.lastAddPointTime!) / 1000;
 
     const last = this.accumulatedPoints[this.accumulatedPoints.length - 1];
-    this.velocity.x += (last.position.x - this.head.position.x) * this.settings.springConstant * deltaTime;
-    this.velocity.y += (last.position.y - this.head.position.y) * this.settings.springConstant * deltaTime;
-    this.velocity.x *= this.settings.friction
-    this.velocity.y *= this.settings.friction
-    const newPosition = add(copy(last.position), this.velocity)
-    this.accumulatedPoints.push(newPoint(newPosition, this.head.pressure))
+    this.velocity.x +=
+      (this.head.position.x - last.position.x) * this.settings.springConstant * deltaTime;
+    this.velocity.y +=
+      (this.head.position.y - last.position.y) * this.settings.springConstant * deltaTime;
+    this.velocity.x *= this.settings.friction;
+    this.velocity.y *= this.settings.friction;
+    const newPosition = add(copy(last.position), this.velocity);
+    this.accumulatedPoints.push(newPoint(newPosition, this.head.pressure));
+
+    this.lastAddPointTime = performance.now();
   }
 }

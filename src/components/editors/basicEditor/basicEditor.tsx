@@ -6,6 +6,7 @@ import { SettingsDialog } from './settings';
 import RightBar from './rightBar';
 import EyeDropper from '~/components/eyeDropper';
 import { type EditorProps } from '~/components/editorWrapper';
+import { StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
 export function BasicEditor({ inputManager }: EditorProps) {
   const [showSettings, setShowSettings] = useState(false);
@@ -29,13 +30,12 @@ export function BasicEditor({ inputManager }: EditorProps) {
       </Box>
 
       <EyeDropper
-        brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset()}
       />
 
       {showSettings ? (
         <SettingsDialog
           open={showSettings}
-          brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset()}
+          brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset().brushSettings as StampBrushSettings}
           onClose={() => setShowSettings(false)}
         />
       ) : (

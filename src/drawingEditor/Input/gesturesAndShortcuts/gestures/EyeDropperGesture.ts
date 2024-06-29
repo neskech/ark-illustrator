@@ -8,7 +8,7 @@ export default class EyeDropperGesture extends Gesture {
   private downPointerId: Option<number>;
 
   constructor() {
-    super()
+    super();
     this.downPointerId = None();
   }
 
@@ -28,7 +28,7 @@ export default class EyeDropperGesture extends Gesture {
       if (this.downPointerId.isNone()) return;
       EventManager.invoke('toggleEyeDropper', {
         canvas: context.canvas,
-        canvasFramebuffer: context.layerManager.getCanvasFramebuffer(),
+        canvasFramebuffer: context.layerManager.getCanvasFramebufferForMutation(),
         originPosition: Some(positions[0].pos),
       });
     }, EYEDROPPER_DELAY_MILLIS);

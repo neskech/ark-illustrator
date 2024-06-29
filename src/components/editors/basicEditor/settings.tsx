@@ -12,10 +12,9 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import Draggable from 'react-draggable';
-import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
+import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 import CheckIcon from '@mui/icons-material/Check';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { getSpacingFromBrushSettings } from '../../../drawingEditor/Input/toolSystem/tools/brushTool/stabilizing/stabilizer';
 
 const PaperComponent = (props: PaperProps) => {
   return (
@@ -27,7 +26,7 @@ const PaperComponent = (props: PaperProps) => {
 
 interface Props {
   open: boolean;
-  brushSettings: BrushSettings;
+  brushSettings: StampBrushSettings;
   onClose: () => void;
 }
 
@@ -83,12 +82,6 @@ export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
     setSmoothing_(val);
   };
 
-  const [spacing, setSpacing_] = useState<number>(getSpacingFromBrushSettings(brushSettings));
-  const setSpacing = (e: Event, val: number) => {
-    brushSettings.spacing = val;
-    setSpacing_(val);
-  };
-
   const [limitStrokeLength, setLimitStrokeLength_] = useState<'yes' | 'no'>(
     allowLimitedStrokeLength ? 'yes' : 'no'
   );
@@ -108,9 +101,9 @@ export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
         <Slider
           aria-label="Brush Size"
           value={size}
-          min={0.01}
-          max={2.5}
-          step={0.01}
+          min={0.005}
+          max={0.1}
+          step={0.001}
           onChange={(e, val) => setSize(e, val as number)}
         />
       </Stack>
@@ -196,18 +189,6 @@ export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
           max={1}
           step={0.01}
           onChange={(e, val) => setSmoothing(e, val as number)}
-        />
-      </Stack>
-
-      <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-        <Typography> Spacing </Typography>
-        <Slider
-          aria-label="Spacing"
-          value={spacing}
-          min={0.0005}
-          max={1}
-          step={0.0001}
-          onChange={(e, val) => setSpacing(e, val as number)}
         />
       </Stack>
 

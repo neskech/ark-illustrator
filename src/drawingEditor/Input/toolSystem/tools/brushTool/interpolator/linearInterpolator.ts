@@ -2,6 +2,7 @@ import { type BrushPoint, newPoint } from '../brushTool';
 import { add, copy, scale, sub } from '~/util/webglWrapper/vector';
 import { normalize } from '../../../../../../util/webglWrapper/vector';
 import { Interpolator } from './interpolator';
+import { BaseBrushSettings } from '../../../settings/brushSettings';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -36,13 +37,21 @@ export class LinearInterpolator extends Interpolator {
     return addPointsLinearInterpolation(points, this.settings.spacing);
   }
 
+  processWithSingularContext(points: BrushPoint[], context: BrushPoint): BrushPoint[] {
+    points.unshift(context);
+    const processed = this.process(points);
+    processed.shift();
+    points.shift();
+    return processed;
+  }
+
   /*
     Output = InputLength / spacing
     InputLength = Output * spacing
   */
   estimateOutputSize(inputPathLength: number): number {
-      const at_interval_of_spacing = inputPathLength / this.settings.spacing
-      return at_interval_of_spacing
+    const at_interval_of_spacing = inputPathLength / this.settings.spacing;
+    return at_interval_of_spacing;
   }
 }
 

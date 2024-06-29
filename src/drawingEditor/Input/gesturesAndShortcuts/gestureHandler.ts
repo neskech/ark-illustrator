@@ -28,7 +28,9 @@ export default class GestureHandler extends EventHandler<GestureContext> {
   }
 
   pointerDown(context: GestureContext, event: PointerEvent): void {
+    if (event.pointerType != 'touch') return;
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
+
     this.pointerPositions.push({
       pos: new Float32Vector2(event.clientX, event.clientY),
       id: event.pointerId,
@@ -38,6 +40,8 @@ export default class GestureHandler extends EventHandler<GestureContext> {
   }
 
   pointerMove(context: GestureContext, event: PointerEvent): void {
+    if (event.pointerType != 'touch') return;
+
     find(this.pointerPositions, (p) => p.id == event.pointerId).map((p) => {
       p.pos.x = event.clientX;
       p.pos.y = event.clientY;
@@ -47,6 +51,8 @@ export default class GestureHandler extends EventHandler<GestureContext> {
   }
 
   pointerUp(context: GestureContext, event: PointerEvent): void {
+    if (event.pointerType != 'touch') return;
+
     const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;

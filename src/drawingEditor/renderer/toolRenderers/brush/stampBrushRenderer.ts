@@ -134,10 +134,10 @@ export default class StampBrushRenderer extends BrushImplementationRenderer {
     Texture.activateUnit(0);
     this.brushSettings.texture.unwrap().bind();
 
-    if (this.brushSettings.isEraser) gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    if (this.brushSettings.isEraser) gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ZERO, gl.ONE, gl.ZERO)
     else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
-    this.shader.uploadFloat('flow', this.brushSettings.flow);
+    this.shader.uploadFloat('flow', this.brushSettings.isEraser ? 0 : this.brushSettings.flow);
     this.shader.uploadTexture('tex', this.brushSettings.texture.unwrap(), 0);
 
     const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY;
@@ -145,12 +145,8 @@ export default class StampBrushRenderer extends BrushImplementationRenderer {
 
     let i = 0;
     for (const [j, p] of points.enumerate()) {
-      const opacity_ = this.brushSettings.getOpacityGivenPressure(p.pressure);
-      const opacity = this.brushSettings.isEraser ? 1 - opacity_ : opacity_;
-      const color = this.brushSettings.isEraser
-        ? new Float32Vector3(1, 1, 1)
-        : this.brushSettings.color;
-
+      const opacity = this.brushSettings.getOpacityGivenPressure(p.pressure);
+      const color = this.brushSettings.color;
       let ang = 0;
 
       if (points.length >= 2) {
@@ -162,7 +158,7 @@ export default class StampBrushRenderer extends BrushImplementationRenderer {
         size: this.brushSettings.getSizeGivenPressure(p.pressure),
         transform: QuadTransform.builder()
           .position(QuadPositioner.center(p.position))
-          .rotate(QuadRotator.center(ang + Math.PI / 2))
+          .rotate(QuadRotator.center(0))
           .build(),
         buffer: buf,
         offset: i,
@@ -191,6 +187,6 @@ export default class StampBrushRenderer extends BrushImplementationRenderer {
 
   private renderStrokeToCanvas(context: BrushRendererContext) {
     if (context.pointData.length == 0) return;
-    this.renderStroke(context.pointData, context.layerManager.getCanvasFramebuffer());
+    this.renderStroke(context.pointData, context.layerManager.getCanvasFramebufferForMutation());
   }
 }

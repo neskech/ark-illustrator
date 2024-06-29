@@ -125,10 +125,9 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
     }
 
     if (keyEvent.key == 'i') {
-      alert('he')
       EventManager.invoke('toggleEyeDropper', {
         canvas: context.canvas,
-        canvasFramebuffer: context.layerManager.getCanvasFramebuffer(),
+        canvasFramebuffer: context.layerManager.getCanvasFramebufferForMutation(),
         originPosition: None<Float32Vector2>(),
       });
     }

@@ -1,5 +1,6 @@
 import type Texture from '../../util/webglWrapper/texture';
 import { TextureCreator } from '../../util/webglWrapper/texture';
+import { clearFramebuffer } from '../renderer/util/renderUtils';
 
 export default class Layer {
   private imageData: Texture;

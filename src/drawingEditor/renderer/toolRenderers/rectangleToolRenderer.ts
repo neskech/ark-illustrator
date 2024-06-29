@@ -76,6 +76,7 @@ export default class RectangleToolRenderer {
     this.shader = assetManager.getShader('rectangle');
     this.color = new Float32Vector3(0, 0, 0);
     this.initBuffer();
+    this.setupEvents()
   }
 
   private initBuffer() {
@@ -97,12 +98,13 @@ export default class RectangleToolRenderer {
 
   public renderRectangleFinished(context: RectangleRendererContext) {
     this.renderRectangle(
-      context.layerManager.getCanvasFramebuffer(),
+      context.layerManager.getCanvasFramebufferForMutation(),
       context.anchorPosition,
       context.otherPosition
     );
     clearFramebuffer(context.overlayFramebuffer);
   }
+
   public renderRectangleCancled(context: RectangleRendererCanceledContext) {
     clearFramebuffer(context.overlayFramebuffer);
   }
@@ -141,7 +143,6 @@ export default class RectangleToolRenderer {
 
   private setupEvents() {
     EventManager.subscribe('colorChanged', (color) => {
-      console.log('YEAHHHHH');
       this.color = color;
     });
   }

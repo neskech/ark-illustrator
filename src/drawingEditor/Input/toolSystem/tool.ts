@@ -38,7 +38,7 @@ export type ToolMap = {
 export type EventTypeName = keyof GlobalEventHandlersEventMap;
 export type CanvasEvent = GlobalEventHandlersEventMap[EventTypeName];
 
-export type ToolType = keyof ToolMap;
+export type ToolTypeName = keyof ToolMap;
 
 export type ToolContext = {
   inputState: InputState;

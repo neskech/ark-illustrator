@@ -169,6 +169,6 @@ export default class LineBrushRenderer extends BrushImplementationRenderer {
 
   private renderStrokeToCanvas(context: BrushRendererContext) {
     if (context.pointData.length == 0) return;
-    this.renderStroke(context.pointData, context.layerManager.getCanvasFramebuffer());
+    this.renderStroke(context.pointData, context.layerManager.getCanvasFramebufferForMutation());
   }
 }

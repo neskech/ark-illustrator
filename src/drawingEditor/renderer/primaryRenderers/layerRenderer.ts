@@ -22,21 +22,24 @@ export default class LayerRenderer {
       minFilter: 'Nearest',
       format: 'RGBA',
     });
+    clearFramebuffer(this.cacheFramebuffer, 1, 1, 1, 1);
   }
 
-  public renderOntoOverlayFramebuffer(context: PrimaryRendererContext) {
+  public renderAndGetFinalFramebuffer(context: PrimaryRendererContext): FrameBuffer {
     const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
+    clearFramebuffer(this.cacheFramebuffer, 1, 1, 1, 1);
 
-    if (context.layerManager.hasLayerBeenMutated()) {
-      clearFramebuffer(this.cacheFramebuffer);
+    if (context.layerManager.hasLayerBeenMutated() || true) {
       for (const layer of context.layerManager.getLayers()) {
         overlayRenderer.renderTextureOntoFramebuffer(layer.getTexture(), this.cacheFramebuffer);
       }
     }
 
     overlayRenderer.renderTextureOntoFramebuffer(
-      this.cacheFramebuffer.getTextureAttachment(),
-      context.overlayFramebuffer
+      context.overlayFramebuffer.getTextureAttachment(),
+      this.cacheFramebuffer
     );
+
+    return this.cacheFramebuffer;
   }
 }

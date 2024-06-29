@@ -71,7 +71,7 @@ export default class OverlayRenderer {
 
   renderTextureOntoFramebuffer(texture: Texture, framebuffer: FrameBuffer) {
     framebuffer.bind();
-    gl.blendFunc(gl.ONE, gl.ZERO);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
     this.vertexArray.bind();
     this.vertexBuffer.bind();

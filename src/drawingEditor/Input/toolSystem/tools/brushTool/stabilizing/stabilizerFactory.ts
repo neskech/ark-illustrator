@@ -29,5 +29,10 @@ export default class StabilizerFactory {
 }
 
 export function getDefaultStabilizerSettings(): StabilizerSettings {
-  return { type: 'spring', springConstant: 0.3, friction: 0.5 };
+  return {
+    type: 'spring',
+    springConstant: 2.0,
+    friction: 0.9,
+    interpolatorSettings: { type: 'smoothed', spacing: 0.0007, alpha: 0.2, tension: 0.5 },
+  };
 }

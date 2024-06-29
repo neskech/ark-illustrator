@@ -2,6 +2,7 @@ import { requires } from '~/util/general/contracts';
 import Layer from './layer';
 import { todo } from '~/util/general/funUtils';
 import FrameBuffer from '~/util/webglWrapper/frameBuffer';
+import { clearFramebuffer } from '../renderer/util/renderUtils';
 
 export default class LayerManager {
   private layerStack: Layer[];
@@ -21,6 +22,7 @@ export default class LayerManager {
       target: 'Regular',
       texture: this.getCurrentLayer().getTexture(),
     });
+    clearFramebuffer(this.canvasFramebuffer, 1, 1, 1, 1)
     this.hasBeenMutated = false;
     //this.setupEvents();
   }
@@ -31,7 +33,7 @@ export default class LayerManager {
   }
 
   public getCurrentLayerIndex(): number {
-    return this.currentLayer
+    return this.currentLayer;
   }
 
   public switchToLayer(layerIndex: number) {
@@ -53,12 +55,13 @@ export default class LayerManager {
     this.hasBeenMutated = false;
   }
 
-  public getCanvasFramebuffer() {
+  public getCanvasFramebufferForMutation() {
+    this.hasBeenMutated = true;
     return this.canvasFramebuffer;
   }
 
   public getLayers(): Iterable<Layer> {
-    return this.layerStack
+    return this.layerStack;
   }
 
   private setupEvents() {

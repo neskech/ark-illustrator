@@ -4,7 +4,7 @@ import ShortcutHandler, { type ShortcutContext } from '../gesturesAndShortcuts/s
 import { type AllToolSettings } from './settings';
 import {
   type ToolMap,
-  type ToolType,
+  type ToolTypeName,
   type CanvasEvent,
   type EventTypeName,
   type ToolContext,
@@ -25,12 +25,12 @@ export class InputManager {
   private toolMap: ToolMap;
   private settings: AllToolSettings;
   private inputState: InputState;
-  private currentTool: ToolType;
+  private currentTool: ToolTypeName;
   private gestures: GestureHandler;
   private shortcuts: ShortcutHandler;
 
-  constructor(settings: AllToolSettings, defaultTool: ToolType = 'brush') {
-    this.settings = settings
+  constructor(settings: AllToolSettings, defaultTool: ToolTypeName = 'brush') {
+    this.settings = settings;
     this.toolMap = {
       fillBucket: new FillTool(),
       hand: new HandTool(),
@@ -54,7 +54,7 @@ export class InputManager {
     const tool = this.toolMap[this.currentTool];
     const eventType = event.type as EventTypeName;
 
-    this.inputState.update()
+    this.inputState.update();
     this.inputState.callAppropiateEventFunction(eventType, event);
 
     const toolContext: ToolContext = {
@@ -112,7 +112,7 @@ export class InputManager {
     return this.settings;
   }
 
-  setCurrentTool(tool: ToolType) {
+  setCurrentTool(tool: ToolTypeName) {
     this.currentTool = tool;
   }
 }

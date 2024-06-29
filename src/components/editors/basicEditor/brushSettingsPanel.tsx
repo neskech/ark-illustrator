@@ -1,9 +1,9 @@
 import { Box, Slider, Typography } from '@mui/material';
 import { useState } from 'react';
-import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
+import { StampBrushSettings} from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
 export interface BrushSettingsProps {
-  brushSettings: BrushSettings;
+  brushSettings: StampBrushSettings;
   height: number;
 }
 
@@ -61,7 +61,7 @@ function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
           value={size}
           min={0}
           max={0.5}
-          step={0.01}
+          step={0.001}
           className="absolute left-3"
           sx={{ width: '90%', color: '#3c69cf' }}
           onChange={(e, val) => setSize(e, val as number)}

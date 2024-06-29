@@ -121,30 +121,41 @@ export default class BoxFilterStabilizer extends BatchedStabilizer {
   }
 
   partitionStroke(brushSettings: BaseBrushSettings, maxStrokeSize: number): BrushPoint[] {
+    console.log('FUCK');
     let outputSize = this.predictSizeOfOutput();
-    this.context = [];
-
-    let leftEdge = 0;
-    while (outputSize > maxStrokeSize && leftEdge < this.currentPoints.length - 1) {
-      const before = this.currentPoints[leftEdge];
-      const after = this.currentPoints[leftEdge + 1];
+    const newPoints = [];
+    while (outputSize > maxStrokeSize && this.currentPoints.length > 1) {
+      const before = this.currentPoints[this.currentPoints.length - 2];
+      const after = this.currentPoints[this.currentPoints.length - 1];
       const dist = distance(before.position, after.position);
       this.pathLength -= dist;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newPoints.push(this.currentPoints.pop()!);
 
       outputSize = this.predictSizeOfOutput();
-      leftEdge += 1;
     }
 
     if (outputSize > maxStrokeSize) assert(false, 'max stroke size is too small');
 
-    const newContext = this.currentPoints.splice(0, leftEdge);
-    const processed = this.getProcessedCurveWithData(this.currentPoints, newContext, brushSettings);
-    this.context = newContext;
+    const processed = this.getProcessedCurveWithData(
+      this.currentPoints,
+      this.context,
+      brushSettings
+    );
+    this.context = this.currentPoints;
+    this.currentPoints = newPoints.reverse();
+    this.pathLength = getPathLength(this.currentPoints);
     return processed;
   }
 
   getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[] {
     const processed = process(this.currentPoints, this.context, this.settings);
+
+    if (this.context.length > 0) {
+      const endpoint = this.context[this.context.length - 1];
+      return this.interpolator.processWithSingularContext(processed, endpoint, brushSettings);
+    }
+    
     return this.interpolator.process(processed, brushSettings);
   }
 
@@ -154,6 +165,12 @@ export default class BoxFilterStabilizer extends BatchedStabilizer {
     brushSettings: BaseBrushSettings
   ): BrushPoint[] {
     const processed = process(points, context, this.settings);
+
+    if (context.length > 0) {
+      const endpoint = context[context.length - 1];
+      return this.interpolator.processWithSingularContext(processed, endpoint, brushSettings);
+    }
+
     return this.interpolator.process(processed, brushSettings);
   }
 
@@ -172,6 +189,7 @@ function process(
   if (rawCurve.length <= 2) return rawCurve;
 
   const smoothing = getSmoothingValueFromStabilization(settings.stabilization);
+  const contextCopy = [...context]
 
   let boxed = rawCurve;
   for (let i = 0; i < NUM_BOX_FILTERS; i++) {
@@ -182,11 +200,11 @@ function process(
       POINT_IMPORTANCE_FACTOR,
       DISTANCE_TO_STROKE_END_FIXING
     );
-    smoothEndpoints(
-      boxed,
-      context.length > 0 ? context[context.length - 1] : rawCurve[0],
-      boxed[boxed.length - 1]
-    );
+    // smoothEndpoints(
+    //   boxed,
+    //   context.length > 0 ? context[context.length - 1] : rawCurve[0],
+    //   boxed[boxed.length - 1]
+    // );
   }
 
   return boxed;
@@ -247,8 +265,11 @@ function boxFilterExpwa(
 ): BrushPoint[] {
   if (curve.length <= 1) return curve;
 
-  const sampleContextIfOut = (index: number) =>
-    index > 0 ? curve[index] : context[context.length + index];
+  const sampleContextIfOut = (index: number, min: number, max: number) => {
+    if (index < 0 && 0 <= context.length + index && context.length + index < context.length)
+      return context[context.length + index];
+    return curve[clamp(index, min, max)];
+  };
   const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(n, min));
 
   function weight(n: number, r: number): number {
@@ -271,7 +292,7 @@ function boxFilterExpwa(
       const rIdx = clamp(i + r, 0, curve.length - 1);
 
       const scaling = weight(i, r);
-      const left = scale(copy(sampleContextIfOut(i - r).position), scaling);
+      const left = scale(copy(sampleContextIfOut(i - r, 0, curve.length - 1).position), scaling);
       const right = scale(copy(curve[rIdx].position), scaling);
 
       add(avg, left);
