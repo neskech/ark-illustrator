@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "npm run manifest && next build",
+    "build": "next build",
     "dev": "npm run manifest && next dev",
     "manifest": "ts-node ./scripts/assetManifester.ts",
     "lint": "next lint",
