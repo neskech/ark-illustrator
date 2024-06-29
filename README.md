@@ -6,6 +6,8 @@
 
 Built entirely with Typescript and Webgl
 
+![apple](apple.png)
+
 ---
 - ### Features
   - Textured Brushes via image url
