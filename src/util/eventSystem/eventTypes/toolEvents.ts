@@ -1,7 +1,8 @@
-import { type BrushPoint } from '~/drawingEditor/Input/toolSystem/tools/brush';
+
 import type { Func } from '~/util/general/utilTypes';
-import { type BrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 import { type Float32Vector2 } from 'matrixgl';
+import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
+import { type BrushPoint } from '~/drawingEditor/Input/toolSystem/tools/brushTool/brushTool';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +14,7 @@ import { type Float32Vector2 } from 'matrixgl';
 
 export interface BrushEventArgs {
   pointData: BrushPoint[];
-  currentSettings: BrushSettings;
+  currentSettings: StampBrushSettings;
 }
 
 interface BrushStrokeEnd {

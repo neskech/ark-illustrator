@@ -1,4 +1,4 @@
-import { type ToolType } from '~/drawingEditor/Input/toolSystem/inputManager';
+import { type ToolTypeName } from '~/drawingEditor/Input/toolSystem/tool';
 import type { Func } from '~/util/general/utilTypes';
 
 interface OpenSettings {
@@ -6,7 +6,7 @@ interface OpenSettings {
 }
 
 interface ToolChanged {
-  toolType: ToolType;
+  toolType: ToolTypeName;
 }
 
 type AppEventTypes = [OpenSettings, ToolChanged];

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/ban-types */
 import { assert } from '../general/contracts';
@@ -72,10 +73,10 @@ export default class EventManager {
     const funcs = this.getInstance().eventMapping[event] ?? [];
 
     const priority = find(funcs, (o) => o.hasPriority);
-    priority.map((o) => o.fn());
+    priority.map((o) => (o.fn as () => void)());
 
     for (const { fn } of funcs) {
-      if (priority.map((o) => o.fn != fn).unwrapOrDefault(true)) fn();
+      if (priority.map((o) => o.fn != fn).unwrapOrDefault(true)) (fn as () => void)();
     }
   }
 
