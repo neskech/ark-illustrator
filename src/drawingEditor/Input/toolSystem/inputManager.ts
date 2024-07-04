@@ -52,6 +52,9 @@ export class InputManager {
     layerManager: LayerManager,
     canvas: HTMLCanvasElement
   ) {
+
+    if (eventType == 'pointermove')
+      
     const tool = this.toolMap[this.currentTool];
 
     this.inputState.update();
