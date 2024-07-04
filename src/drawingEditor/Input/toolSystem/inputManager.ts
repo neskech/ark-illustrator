@@ -47,12 +47,12 @@ export class InputManager {
 
   handleEvent(
     event: CanvasEvent,
+    eventType: EventTypeName,
     camera: Camera,
     layerManager: LayerManager,
     canvas: HTMLCanvasElement
   ) {
     const tool = this.toolMap[this.currentTool];
-    const eventType = event.type as EventTypeName;
 
     this.inputState.update();
     this.inputState.callAppropiateEventFunction(eventType, event);

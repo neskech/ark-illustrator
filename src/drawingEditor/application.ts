@@ -5,6 +5,7 @@ import Renderer from './renderer/renderer';
 import { fetchWebGLContext, type GL } from '../util/webglWrapper/glUtils';
 import LayerManager from './canvas/layerManager';
 import { getDefaultSettings } from './Input/toolSystem/settings';
+import { type EventTypeName } from './Input/toolSystem/tool';
 
 export interface AppState {
   layerManager: LayerManager;
@@ -77,7 +78,7 @@ export default class EditorApplication {
   }
 
   private initEventListeners(canvas: HTMLCanvasElement) {
-    const canvasEvents: (keyof HTMLElementEventMap)[] = [
+    const canvasEvents: EventTypeName[] = [
       'pointerdown',
       'pointermove',
       'pointerup',
@@ -94,6 +95,7 @@ export default class EditorApplication {
       canvas.addEventListener(e, (ev) => {
         this.appState.inputManager.handleEvent(
           ev,
+          e,
           this.appState.renderer.getCamera(),
           this.appState.layerManager,
           this.appState.canvas
@@ -101,12 +103,13 @@ export default class EditorApplication {
       });
     });
 
-    const globalEvents: (keyof HTMLElementEventMap)[] = ['keydown', 'keypress', 'keyup'];
+    const globalEvents: EventTypeName[] = ['keydown', 'keypress', 'keyup'];
 
     globalEvents.forEach((e) => {
       document.addEventListener(e, (ev) => {
         this.appState.inputManager.handleEvent(
           ev,
+          e,
           this.appState.renderer.getCamera(),
           this.appState.layerManager,
           this.appState.canvas
