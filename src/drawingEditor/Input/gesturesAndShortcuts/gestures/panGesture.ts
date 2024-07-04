@@ -48,7 +48,6 @@ export default class PanGesture extends Gesture {
       copy(this.originCameraPos),
       scale(deltaVector, -PAN_FACTOR * context.camera.getCameraWidth())
     );
-    alert(newPos)
     context.camera.setPosition(newPos);
   }
 
