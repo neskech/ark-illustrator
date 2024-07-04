@@ -32,7 +32,7 @@ export default class UndoGesture extends Gesture {
     const now = new Date().getTime();
     if (now - this.lastTapTime <= TAP_DELAY_MILLIS) {
       this.tapCount += 1;
-      if (this.tapCount == 2) {
+      if (this.tapCount == 1) {
         EventManager.invokeVoid('undo');
         this.tapCount = 0;
       }
