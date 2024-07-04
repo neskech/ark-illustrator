@@ -133,11 +133,11 @@ export default class StampBrushRenderer extends BrushImplementationRenderer {
 
     Texture.activateUnit(0);
     this.brushSettings.texture.unwrap().bind();
+    console.log(this.brushSettings.flow)
+    if (this.brushSettings.isEraser) gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ZERO, gl.SRC_ALPHA, gl.ZERO)
+    else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE);
 
-    if (this.brushSettings.isEraser) gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ZERO, gl.ONE, gl.ZERO)
-    else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
-
-    this.shader.uploadFloat('flow', this.brushSettings.isEraser ? 0 : this.brushSettings.flow);
+    this.shader.uploadFloat('flow', this.brushSettings.flow);
     this.shader.uploadTexture('tex', this.brushSettings.texture.unwrap(), 0);
 
     const bufSize = points.length * NUM_VERTICES_QUAD * VERTEX_SIZE_POS_COLOR_TEX_OPACITY;

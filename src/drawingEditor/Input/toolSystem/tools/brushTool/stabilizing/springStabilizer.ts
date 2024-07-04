@@ -3,10 +3,9 @@ import { Float32Vector2 } from 'matrixgl';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
 import { newPoint, type BrushPoint } from '../brushTool';
 import { IncrementalStabilizer } from './stabilizer';
-import { assert } from '~/util/general/contracts';
 import { add, copy } from '~/util/webglWrapper/vector';
-import { Interpolator } from '../interpolator/interpolator';
-import InterpolatorFactory, { InterpolatorSettings } from '../interpolator/interpolatorFactory';
+import { type Interpolator } from '../interpolator/interpolator';
+import InterpolatorFactory, { type InterpolatorSettings } from '../interpolator/interpolatorFactory';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +31,7 @@ export interface SpringStabilizerSettings {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export default class SpringStabilizer extends IncrementalStabilizer {
-  settings: SpringStabilizerSettings;
+  private settings: SpringStabilizerSettings;
   private head: BrushPoint | null;
   private velocity: Float32Vector2;
   private accumulatedPoints: BrushPoint[];

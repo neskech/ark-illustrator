@@ -1,8 +1,8 @@
 import { requires } from '~/util/general/contracts';
 import Layer from './layer';
-import { todo } from '~/util/general/funUtils';
 import FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { clearFramebuffer } from '../renderer/util/renderUtils';
+import EventManager from '~/util/eventSystem/eventManager';
 
 export default class LayerManager {
   private layerStack: Layer[];
@@ -22,9 +22,9 @@ export default class LayerManager {
       target: 'Regular',
       texture: this.getCurrentLayer().getTexture(),
     });
-    clearFramebuffer(this.canvasFramebuffer, 1, 1, 1, 1)
+    clearFramebuffer(this.canvasFramebuffer, 1, 1, 1, 0);
     this.hasBeenMutated = false;
-    //this.setupEvents();
+    this.setupEvents();
   }
 
   public getCurrentLayer(): Layer {
@@ -65,6 +65,8 @@ export default class LayerManager {
   }
 
   private setupEvents() {
-    todo();
+    EventManager.subscribe('clearCanvas', () => {
+      clearFramebuffer(this.canvasFramebuffer, 1, 1, 1, 1);
+    });
   }
 }

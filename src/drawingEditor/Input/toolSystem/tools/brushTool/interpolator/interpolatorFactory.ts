@@ -20,8 +20,8 @@ export default class InterpolatorFactory {
         return unreachable();
     }
   }
-}
 
-export function getDefaultInterpolatorSettings(): InterpolatorSettings {
-  return { type: 'linear', spacing: 0.5 };
+  public static default(): InterpolatorSettings {
+    return { type: 'linear', spacing: 0.5 };
+  }
 }

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import { IncrementalStabilizer } from './stabilizer';
 import { type BrushPoint } from '../brushTool';
-import { assert } from '~/util/general/contracts';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +57,4 @@ export default class NothingStabilizer extends IncrementalStabilizer {
     this.currentPoints = [];
   }
 
-  private assertValid() {
-    assert(true);
-  }
 }
