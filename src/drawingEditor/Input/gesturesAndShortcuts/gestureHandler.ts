@@ -29,7 +29,6 @@ export default class GestureHandler extends EventHandler<GestureContext> {
 
   override pointerDown(context: GestureContext, event: PointerEvent): void {
     if (event.pointerType != 'touch') return;
-    alert('here down');
 
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
 
@@ -43,7 +42,6 @@ export default class GestureHandler extends EventHandler<GestureContext> {
 
   override pointerMove(context: GestureContext, event: PointerEvent): void {
     if (event.pointerType != 'touch') return;
-    alert('here move');
 
     find(this.pointerPositions, (p) => p.id == event.pointerId).map((p) => {
       p.pos.x = event.clientX;
@@ -55,7 +53,7 @@ export default class GestureHandler extends EventHandler<GestureContext> {
 
   override pointerUp(context: GestureContext, event: PointerEvent): void {
     if (event.pointerType != 'touch') return;
-    alert('here uip');
+
     const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;

@@ -52,7 +52,20 @@ export class InputManager {
     layerManager: LayerManager,
     canvas: HTMLCanvasElement
   ) {
-    if (eventType == 'pointermove') alert('YASSSSSSSS');
+    const tool = this.toolMap[this.currentTool];
+
+    this.inputState.update();
+    this.inputState.callAppropiateEventFunction(eventType, event);
+
+    // const toolContext: ToolContext = {
+    //   camera,
+    //   settings: this.settings,
+    //   inputState: this.inputState,
+    //   eventType,
+    //   canvas,
+    // };
+    // tool.handleEvent(toolContext, event);
+    // tool.callAppropiateEventFunction(toolContext, event);
 
     const gestureContext: GestureContext = {
       camera,
@@ -61,20 +74,6 @@ export class InputManager {
       layerManager,
     };
     this.gestures.callAppropiateEventFunction(gestureContext, event);
-    const tool = this.toolMap[this.currentTool];
-
-    this.inputState.update();
-    this.inputState.callAppropiateEventFunction(eventType, event);
-
-    const toolContext: ToolContext = {
-      camera,
-      settings: this.settings,
-      inputState: this.inputState,
-      eventType,
-      canvas,
-    };
-    tool.handleEvent(toolContext, event);
-    tool.callAppropiateEventFunction(toolContext, event);
 
     const shortcutContext: ShortcutContext = {
       camera,

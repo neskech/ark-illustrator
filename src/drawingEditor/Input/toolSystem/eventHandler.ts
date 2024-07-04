@@ -43,8 +43,6 @@ export class EventHandler<EventContext extends BaseEventContext> {
   ////////////////////////////////////////////////////////////////////////////////////////
 
   callAppropiateEventFunction(context: EventContext, event: CanvasEvent) {
-    if (context.eventType.includes('pointer') || context.eventType == 'pointermove')
-        alert('in HEREEEE WITH ' + context.eventType)
     switch (context.eventType) {
       case 'abort': {
         this.abort(context, event as UIEvent);
@@ -352,8 +350,6 @@ export class EventHandler<EventContext extends BaseEventContext> {
       }
 
       case 'pointerdown': {
-        alert("DOWN FUCKEWR 1") 
-        alert("DOWN FUCKEWR " + (event as PointerEvent).pointerType)
         this.pointerDown(context, event as PointerEvent);
         break;
       }
@@ -369,8 +365,6 @@ export class EventHandler<EventContext extends BaseEventContext> {
       }
 
       case 'pointermove': {
-        alert("MOVE FUCKEWR 1") 
-        alert("MOVEEE FUCKEWR " + (event as PointerEvent).pointerType)
         this.pointerMove(context, event as PointerEvent);
         break;
       }
@@ -386,8 +380,6 @@ export class EventHandler<EventContext extends BaseEventContext> {
       }
 
       case 'pointerup': {
-        alert("UIP FUCKEWR 1") 
-        alert("UP FUCKEWR " + (event as PointerEvent).pointerType)
         this.pointerUp(context, event as PointerEvent);
         break;
       }
