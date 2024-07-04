@@ -44,6 +44,10 @@ export default class EyeDropperGesture extends Gesture {
     if (contained) this.downPointerId = None();
   }
 
+  fingerMoved(): void {
+      return
+  }
+
   private tryInitialize() {
     this.downPointerId = None();
   }

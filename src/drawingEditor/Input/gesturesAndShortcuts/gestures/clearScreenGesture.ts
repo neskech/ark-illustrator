@@ -40,6 +40,14 @@ export default class ClearScreenGesture extends Gesture {
     }
   }
 
+  fingerMoved(): void {
+      return
+  }
+
+  fingerReleased(): void {
+      return
+  }
+
   private tryInitialize(positions: PointerPos[]) {
     if (positions.length == 2) {
       this.tapCount = 0;

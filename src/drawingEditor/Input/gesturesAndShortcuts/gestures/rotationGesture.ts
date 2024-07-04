@@ -42,6 +42,10 @@ export default class RotationGesture extends Gesture {
       this.deInitialize();
   }
 
+  fingerTapped(): void {
+    return;
+  }
+
   private tryInitialize(camera: Camera, positions: PointerPos[]) {
     if (positions.length == 2) {
       this.pointerId1 = positions[0].id;

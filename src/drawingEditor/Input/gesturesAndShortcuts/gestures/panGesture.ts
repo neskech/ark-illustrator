@@ -48,6 +48,7 @@ export default class PanGesture extends Gesture {
       copy(this.originCameraPos),
       scale(deltaVector, -PAN_FACTOR * context.camera.getCameraWidth())
     );
+    alert(newPos)
     context.camera.setPosition(newPos);
   }
 
@@ -55,6 +56,10 @@ export default class PanGesture extends Gesture {
     if ([this.pointerId1, this.pointerId2].some((id) => removedIds.includes(id)))
       this.deInitialize();
     return;
+  }
+
+  fingerTapped(): void {
+      return
   }
 
   private tryInitialize(camera: Camera, positions: PointerPos[]) {

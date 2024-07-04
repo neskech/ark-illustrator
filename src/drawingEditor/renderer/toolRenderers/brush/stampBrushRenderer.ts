@@ -133,7 +133,6 @@ export default class StampBrushRenderer extends BrushImplementationRenderer {
 
     Texture.activateUnit(0);
     this.brushSettings.texture.unwrap().bind();
-    console.log(this.brushSettings.flow)
     if (this.brushSettings.isEraser) gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ZERO, gl.SRC_ALPHA, gl.ZERO)
     else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE);
 

@@ -28,7 +28,7 @@ export default class GestureHandler extends EventHandler<GestureContext> {
   }
 
   pointerDown(context: GestureContext, event: PointerEvent): void {
-    //if (event.pointerType != 'touch') return;
+    if (event.pointerType != 'touch') return;
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
 
     this.pointerPositions.push({
@@ -40,7 +40,7 @@ export default class GestureHandler extends EventHandler<GestureContext> {
   }
 
   pointerMove(context: GestureContext, event: PointerEvent): void {
-    //if (event.pointerType != 'touch') return;
+    if (event.pointerType != 'touch') return;
 
     find(this.pointerPositions, (p) => p.id == event.pointerId).map((p) => {
       p.pos.x = event.clientX;
@@ -51,7 +51,7 @@ export default class GestureHandler extends EventHandler<GestureContext> {
   }
 
   pointerUp(context: GestureContext, event: PointerEvent): void {
-    //if (event.pointerType != 'touch') return;
+    if (event.pointerType != 'touch') return;
 
     const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
@@ -63,5 +63,17 @@ export default class GestureHandler extends EventHandler<GestureContext> {
     }
 
     for (const gesture of this.gestures) gesture.fingerReleased(context, removedIds);
+  }
+
+  pointerLeave(context: GestureContext, event: PointerEvent): void {
+    this.pointerUp(context, event);
+  }
+
+  pointerCancel(context: GestureContext, event: PointerEvent): void {
+    this.pointerUp(context, event);
+  }
+
+  pointerOut(context: GestureContext, event: PointerEvent): void {
+    this.pointerUp(context, event);
   }
 }

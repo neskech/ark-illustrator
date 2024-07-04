@@ -33,17 +33,11 @@ export interface PointerPos {
 
 export abstract class Gesture {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  fingerMoved(context: GestureContext, positions: PointerPos[]) {
-    return;
-  }
+  abstract fingerMoved(context: GestureContext, positions: PointerPos[]): void;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  fingerTapped(context: GestureContext, positions: PointerPos[]) {
-    return;
-  }
+  abstract fingerTapped(context: GestureContext, positions: PointerPos[]): void;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  fingerReleased(context: GestureContext, removedIds: number[]) {
-    return;
-  }
+  abstract fingerReleased(context: GestureContext, removedIds: number[]): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,14 @@ export default class OpenSettingsGesture extends Gesture {
     }
   }
 
+  fingerMoved(): void {
+      return
+  }
+
+  fingerReleased(): void {
+      return
+  }
+
   private tryInitialize(positions: PointerPos[]) {
     if (positions.length == 4) {
       this.tapCount = 0;
