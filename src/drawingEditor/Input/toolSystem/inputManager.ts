@@ -54,18 +54,18 @@ export class InputManager {
   ) {
     const tool = this.toolMap[this.currentTool];
 
-    // this.inputState.update();
-    // this.inputState.callAppropiateEventFunction(eventType, event);
+    this.inputState.update();
+    this.inputState.callAppropiateEventFunction(eventType, event);
 
-    // const toolContext: ToolContext = {
-    //   camera,
-    //   settings: this.settings,
-    //   inputState: this.inputState,
-    //   eventType,
-    //   canvas,
-    // };
-    // tool.handleEvent(toolContext, event);
-    // tool.callAppropiateEventFunction(toolContext, event);
+    const toolContext: ToolContext = {
+      camera,
+      settings: this.settings,
+      inputState: this.inputState,
+      eventType,
+      canvas,
+    };
+    tool.handleEvent(toolContext, event);
+    tool.callAppropiateEventFunction(toolContext, event);
 
     const gestureContext: GestureContext = {
       camera,

@@ -87,7 +87,7 @@ function pointerTypeToIndex(p: string): number {
       return 0;
     case 'pen':
       return 1;
-    case 'finger':
+    case 'touch':
       return 2;
     default:
       return unreachable();
