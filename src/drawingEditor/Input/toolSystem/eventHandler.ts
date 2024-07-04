@@ -350,6 +350,7 @@ export class EventHandler<EventContext extends BaseEventContext> {
       }
 
       case 'pointerdown': {
+        alert("MOVEEE FUCKEWR " + (event as PointerEvent).pointerType)
         this.pointerDown(context, event as PointerEvent);
         break;
       }
@@ -381,6 +382,7 @@ export class EventHandler<EventContext extends BaseEventContext> {
       }
 
       case 'pointerup': {
+        alert("UP FUCKEWR " + (event as PointerEvent).pointerType)
         this.pointerUp(context, event as PointerEvent);
         break;
       }
