@@ -54,7 +54,7 @@ export class InputManager {
   ) {
 
     if (eventType == 'pointermove')
-      
+      alert("YASSSSSSSS")
     const tool = this.toolMap[this.currentTool];
 
     this.inputState.update();
