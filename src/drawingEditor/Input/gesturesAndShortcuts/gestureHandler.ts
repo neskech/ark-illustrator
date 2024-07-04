@@ -9,6 +9,7 @@ import ClearScreenGesture from './gestures/clearScreenGesture';
 import OpenSettingsGesture from './gestures/openSettingsGesture';
 import EyeDropperGesture from './gestures/EyeDropperGesture';
 import { EventHandler } from '../toolSystem/eventHandler';
+import UndoGesture from './gestures/undoGesture';
 
 export default class GestureHandler extends EventHandler<GestureContext> {
   private pointerPositions: PointerPos[];
@@ -24,6 +25,7 @@ export default class GestureHandler extends EventHandler<GestureContext> {
       new ClearScreenGesture(),
       new OpenSettingsGesture(),
       new EyeDropperGesture(),
+      new UndoGesture(),
     ];
   }
 

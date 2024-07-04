@@ -57,7 +57,13 @@ export default class LayerManager {
 
   public getCanvasFramebufferForMutation() {
     this.hasBeenMutated = true;
+    this.getCurrentLayer().registerMutation();
     return this.canvasFramebuffer;
+  }
+
+  public undo() {
+    this.getCurrentLayer().revertToPreviousState();
+    this.canvasFramebuffer.swapTexture(this.getCurrentLayer().getTexture());
   }
 
   public getLayers(): Iterable<Layer> {
@@ -68,5 +74,6 @@ export default class LayerManager {
     EventManager.subscribe('clearCanvas', () => {
       clearFramebuffer(this.canvasFramebuffer, 1, 1, 1, 1);
     });
+    EventManager.subscribe('undo', () => this.undo());
   }
 }

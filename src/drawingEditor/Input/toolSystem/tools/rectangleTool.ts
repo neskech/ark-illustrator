@@ -82,7 +82,7 @@ export class RectangleTool extends Tool {
   handleRectangleStart(context: ToolUpdateContext) {
     if (this.isDrawingRectangle) return;
 
-    const pointerTypes: PointerType[] = ['mouse', 'pen', 'finger'];
+    const pointerTypes: PointerType[] = ['mouse', 'pen'];
     for (const type of pointerTypes) {
       if (context.inputState.isPointerDown(type)) {
         this.targetPointer = type;

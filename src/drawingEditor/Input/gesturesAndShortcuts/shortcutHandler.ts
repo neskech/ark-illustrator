@@ -131,6 +131,8 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
         originPosition: None<Float32Vector2>(),
       });
     }
+
+    if (keyEvent.key == 'z' && keyEvent.ctrlKey) EventManager.invokeVoid('undo');
   }
 
   keyUp(): void {

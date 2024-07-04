@@ -20,5 +20,9 @@ interface ColorChanged {
   colorChanged: Func<Float32Vector3>;
 }
 
-type CanvasEvents = [ClearCanvas, ToggleEyeDropper, ColorChanged];
+interface Undo {
+  undo: Func<void>;
+}
+
+type CanvasEvents = [ClearCanvas, ToggleEyeDropper, ColorChanged, Undo];
 export default CanvasEvents;
