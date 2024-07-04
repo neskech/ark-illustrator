@@ -75,7 +75,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
         ref={canvasRef}
         width={1000}
         height={1000}
-        className="absolute z-0 h-[100%] w-full touch-none select-none bg-black"
+        className="absolute z-0 h-[100%] w-full select-none bg-black"
       ></canvas>
     </Box>
   );
