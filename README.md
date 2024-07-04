@@ -24,6 +24,7 @@ Built entirely with Typescript and Webgl
     - Middle mouse click and draw :: Pan 
     - Scroll Wheel :: Zoom
     - Alt + mouse drag :: Rotate
+    - cltr z :: undo
     - c :: Clear Canvas
     - s :: Settings Menu
     - i :: EyeDropper
@@ -32,6 +33,7 @@ Built entirely with Typescript and Webgl
     - Finger Pinch :: Zoom
     - Finger Pan :: Pan
     - Finger Rotate :: Rotate
+    - Two Finger Double Tap :: Undo
     - Two Finger Triple Tap :: Clear Canvas
     - Four Finger Double Tap :: Settings Menu
     - One Finger Long Hold :: Eyedropper
