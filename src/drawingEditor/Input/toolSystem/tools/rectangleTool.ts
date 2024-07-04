@@ -91,6 +91,8 @@ export class RectangleTool extends Tool {
     }
 
     if (this.targetPointer == null) return;
+
+    context.layerManager.registerMutation();
     this.isDrawingRectangle = true;
 
     const pos = context.camera.mouseToWorld(

@@ -18,7 +18,7 @@ export default class Layer {
   }
 
   registerMutation() {
-    const buffer = new Uint8Array();
+    const buffer = new Uint8Array(this.imageData.getWidth() * this.imageData.getHeight() * 4);
     this.imageData.writePixelsToBuffer({
       lowerLeftX: 0,
       lowerLeftY: 0,

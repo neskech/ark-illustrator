@@ -61,6 +61,7 @@ export class InputManager {
       camera,
       settings: this.settings,
       inputState: this.inputState,
+      layerManager,
       eventType,
       canvas,
     };

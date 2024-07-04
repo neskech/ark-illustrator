@@ -118,7 +118,7 @@ export class BrushTool extends Tool {
   }
 
   pointerMove(context: ToolContext, event: PointerEvent): void {
-    if (event.pointerType == 'touch') return
+    if (event.pointerType == 'touch') return;
     if (this.strokeState != 'drawing') return;
 
     const config = context.settings.brushConfigurations.getCurrentPreset();
@@ -130,7 +130,7 @@ export class BrushTool extends Tool {
   }
 
   pointerUp(context: ToolContext, event: PointerEvent): void {
-    if (event.pointerType == 'touch') return
+    if (event.pointerType == 'touch') return;
     if (this.strokeState != 'drawing') return;
 
     if (event.pointerType == 'mouse') {
@@ -145,7 +145,7 @@ export class BrushTool extends Tool {
   }
 
   pointerDown(context: ToolContext, event: PointerEvent): void {
-    if (event.pointerType == 'touch') return
+    if (event.pointerType == 'touch') return;
     if (this.strokeState != 'notDrawing') return;
 
     if (event.pointerType == 'mouse') {
@@ -164,6 +164,7 @@ export class BrushTool extends Tool {
     );
 
     this.strokeState = 'drawing';
+    context.layerManager.registerMutation();
   }
 
   private setAppropiateStabilizer(brushConfig: BrushConfiguration) {

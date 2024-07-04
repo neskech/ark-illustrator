@@ -57,13 +57,22 @@ export default class LayerManager {
 
   public getCanvasFramebufferForMutation() {
     this.hasBeenMutated = true;
-    this.getCurrentLayer().registerMutation();
     return this.canvasFramebuffer;
+  }
+
+  public registerMutation() {
+    this.hasBeenMutated = true;
+    this.getCurrentLayer().registerMutation();
   }
 
   public undo() {
     this.getCurrentLayer().revertToPreviousState();
-    this.canvasFramebuffer.swapTexture(this.getCurrentLayer().getTexture());
+    this.canvasFramebuffer = new FrameBuffer({
+      type: 'with texture',
+      target: 'Regular',
+      texture: this.getCurrentLayer().getTexture(),
+    });
+    this.hasBeenMutated = true
   }
 
   public getLayers(): Iterable<Layer> {
