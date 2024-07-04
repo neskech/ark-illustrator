@@ -27,9 +27,9 @@ export default class GestureHandler extends EventHandler<GestureContext> {
     ];
   }
 
-  pointerDown(context: GestureContext, event: PointerEvent): void {
+  override pointerDown(context: GestureContext, event: PointerEvent): void {
     if (event.pointerType != 'touch') return;
-    alert('here down')
+    alert('here down');
 
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
 
@@ -41,9 +41,9 @@ export default class GestureHandler extends EventHandler<GestureContext> {
     for (const gesture of this.gestures) gesture.fingerTapped(context, this.pointerPositions);
   }
 
-  pointerMove(context: GestureContext, event: PointerEvent): void {
+  override pointerMove(context: GestureContext, event: PointerEvent): void {
     if (event.pointerType != 'touch') return;
-    alert('here move')
+    alert('here move');
 
     find(this.pointerPositions, (p) => p.id == event.pointerId).map((p) => {
       p.pos.x = event.clientX;
@@ -53,9 +53,9 @@ export default class GestureHandler extends EventHandler<GestureContext> {
     for (const gesture of this.gestures) gesture.fingerMoved(context, this.pointerPositions);
   }
 
-  pointerUp(context: GestureContext, event: PointerEvent): void {
+  override pointerUp(context: GestureContext, event: PointerEvent): void {
     if (event.pointerType != 'touch') return;
-    alert('here uip')
+    alert('here uip');
     const removedIds = [];
     for (let i = 0; i < this.pointerPositions.length; i++) {
       const id = this.pointerPositions[i].id;
@@ -68,15 +68,15 @@ export default class GestureHandler extends EventHandler<GestureContext> {
     for (const gesture of this.gestures) gesture.fingerReleased(context, removedIds);
   }
 
-  pointerLeave(context: GestureContext, event: PointerEvent): void {
+  override pointerLeave(context: GestureContext, event: PointerEvent): void {
     this.pointerUp(context, event);
   }
 
-  pointerCancel(context: GestureContext, event: PointerEvent): void {
+  override pointerCancel(context: GestureContext, event: PointerEvent): void {
     this.pointerUp(context, event);
   }
 
-  pointerOut(context: GestureContext, event: PointerEvent): void {
+  override pointerOut(context: GestureContext, event: PointerEvent): void {
     this.pointerUp(context, event);
   }
 }

@@ -365,6 +365,7 @@ export class EventHandler<EventContext extends BaseEventContext> {
       }
 
       case 'pointermove': {
+        alert("MOVEEE FUCKEWR " + (event as PointerEvent).pointerType)
         this.pointerMove(context, event as PointerEvent);
         break;
       }

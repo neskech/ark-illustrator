@@ -92,8 +92,6 @@ export default class EditorApplication {
 
     canvasEvents.forEach((e) => {
       canvas.addEventListener(e, (ev) => {
-        if (e == 'pointermove')
-          alert('moveeee')
         this.appState.inputManager.handleEvent(
           ev,
           this.appState.renderer.getCamera(),
