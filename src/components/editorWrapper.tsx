@@ -61,7 +61,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
   }, []);
 
   return (
-    <Box className="flex h-full w-full touch-none select-none flex-row">
+    <Box className="flex h-full w-full select-none flex-row">
       {state.type == 'loading' ? (
         <LoadingFallback />
       ) : state.type == 'error' ? (
