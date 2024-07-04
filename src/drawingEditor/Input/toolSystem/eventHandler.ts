@@ -43,7 +43,7 @@ export class EventHandler<EventContext extends BaseEventContext> {
   ////////////////////////////////////////////////////////////////////////////////////////
 
   callAppropiateEventFunction(context: EventContext, event: CanvasEvent) {
-    if (context.eventType.includes('pointer'))
+    if (context.eventType.includes('pointer') || context.eventType == 'pointermove')
         alert('in HEREEEE WITH ' + context.eventType)
     switch (context.eventType) {
       case 'abort': {
