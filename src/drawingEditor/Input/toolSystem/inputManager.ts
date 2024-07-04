@@ -54,8 +54,8 @@ export class InputManager {
   ) {
     const tool = this.toolMap[this.currentTool];
 
-    this.inputState.update();
-    this.inputState.callAppropiateEventFunction(eventType, event);
+    // this.inputState.update();
+    // this.inputState.callAppropiateEventFunction(eventType, event);
 
     // const toolContext: ToolContext = {
     //   camera,
