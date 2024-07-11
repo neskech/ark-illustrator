@@ -1,4 +1,4 @@
-import { Vector2 } from "matrixgl_fork";
+import { Vector2 } from 'matrixgl_fork';
 
 type Identity = {
   type: 'identity';
@@ -57,25 +57,27 @@ export class QuadRotator {
       case 'identity':
         return position;
       case 'bottomLeft':
-        return new Vector2(-halfWidth, -halfHeight)
-          .add(quadCenter)
-          .rotateAbout(position, this.rotationType.angle);
+        return position.rotateAbout(
+          new Vector2(-halfWidth, -halfHeight).add(quadCenter),
+          this.rotationType.angle
+        );
       case 'bottomRight':
-        return new Vector2(+halfWidth, -halfHeight)
-          .add(quadCenter)
-          .rotateAbout(position, this.rotationType.angle);
+        return position.rotateAbout(
+          new Vector2(+halfWidth, -halfHeight).add(quadCenter),
+          this.rotationType.angle
+        );
       case 'topLeft':
-        return new Vector2(-halfWidth, +halfHeight)
-          .add(quadCenter)
-          .rotateAbout(position, this.rotationType.angle);
+        return position.rotateAbout(
+          new Vector2(-halfWidth, +halfHeight).add(quadCenter),
+          this.rotationType.angle
+        );
       case 'topRight':
-        return new Vector2(+halfWidth, +halfHeight)
-          .add(quadCenter)
-          .rotateAbout(position, this.rotationType.angle);
+        return position.rotateAbout(
+          new Vector2(+halfWidth, +halfHeight).add(quadCenter),
+          this.rotationType.angle
+        );
       case 'center':
-        return new Vector2(0, 0)
-          .add(quadCenter)
-          .rotateAbout(position, this.rotationType.angle);
+        return position.rotateAbout(new Vector2(0, 0).add(quadCenter), this.rotationType.angle);
       case 'custom':
         return position.rotateAbout(this.rotationType.position, this.rotationType.angle);
     }

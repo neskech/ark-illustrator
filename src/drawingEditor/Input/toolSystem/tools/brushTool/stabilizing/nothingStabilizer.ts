@@ -56,5 +56,4 @@ export default class NothingStabilizer extends IncrementalStabilizer {
   reset() {
     this.currentPoints = [];
   }
-
 }

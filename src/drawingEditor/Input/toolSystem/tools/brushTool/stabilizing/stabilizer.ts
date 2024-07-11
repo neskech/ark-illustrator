@@ -31,10 +31,18 @@ export abstract class Stabilizer {
   public abstract getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[];
   public abstract reset(): void;
 
-  // Optiona override.
+  // Optional override.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public update(deltaTime: number, brushSettings: BaseBrushSettings) {
     return;
+  }
+
+  public addFirstPoint(point: BrushPoint, brushSettings: BaseBrushSettings) {
+    this.addPoint(point, brushSettings);
+  }
+
+  public addFinalPoint(point: BrushPoint, brushSettings: BaseBrushSettings) {
+    this.addPoint(point, brushSettings);
   }
 
   public isOfType(stabilizerType: StabilizerType): boolean {

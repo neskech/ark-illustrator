@@ -122,7 +122,6 @@ export default class BoxFilterStabilizer extends BatchedStabilizer {
   }
 
   partitionStroke(brushSettings: BaseBrushSettings, maxStrokeSize: number): BrushPoint[] {
-    console.log('FUCK');
     let outputSize = this.predictSizeOfOutput();
     const newPoints = [];
     while (outputSize > maxStrokeSize && this.currentPoints.length > 1) {

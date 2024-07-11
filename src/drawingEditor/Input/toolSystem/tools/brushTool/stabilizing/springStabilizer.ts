@@ -75,6 +75,10 @@ export default class SpringStabilizer extends IncrementalStabilizer {
     this.lastAddPointTime = performance.now();
   }
 
+  public addFinalPoint(point: BrushPoint): void {
+      //this.accumulatedPoints.push(point)
+  }
+
   getProcessedCurve(brushSettings: BaseBrushSettings): BrushPoint[] {
     if (this.head == null || this.accumulatedPoints.length == 0) return [];
 

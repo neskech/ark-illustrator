@@ -7,7 +7,7 @@ import InterpolatorFactory, {
   type InterpolatorSettings,
 } from '../interpolator/interpolatorFactory';
 import { type Interpolator } from '../interpolator/interpolator';
-import { Vector2 } from 'matrixgl_fork';
+import { type Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
