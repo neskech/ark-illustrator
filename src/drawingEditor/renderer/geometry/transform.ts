@@ -1,4 +1,4 @@
-import { Float32Vector2 } from 'matrixgl';
+import { Vector2 } from 'matrixgl_fork';
 import { QuadPositioner } from './positioner';
 import { QuadRotator } from './rotator';
 
@@ -11,8 +11,8 @@ export class QuadTransform {
     this.rotator = rotator;
   }
 
-  transformPoint(x: number, y: number, width: number, height: number): Float32Vector2 {
-    const pos = new Float32Vector2(x, y);
+  transformPoint(x: number, y: number, width: number, height: number): Vector2 {
+    const pos = new Vector2(x, y);
     const p1 = this.positioner.positionPoint(pos, width, height);
     const center = this.positioner.getCenter(width, height);
     const p2 = this.rotator.rotatePoint(p1, center, width, height);

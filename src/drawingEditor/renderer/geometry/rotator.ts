@@ -1,5 +1,4 @@
-import { Float32Vector2 } from 'matrixgl';
-import { add, rotateAbout } from '~/util/webglWrapper/vector';
+import { Vector2 } from "matrixgl_fork";
 
 type Identity = {
   type: 'identity';
@@ -32,7 +31,7 @@ type Center = {
 
 type Custom = {
   type: 'custom';
-  position: Float32Vector2;
+  position: Vector2;
   angle: number;
 };
 
@@ -46,11 +45,11 @@ export class QuadRotator {
   }
 
   public rotatePoint(
-    position: Float32Vector2,
-    quadCenter: Float32Vector2,
+    position: Vector2,
+    quadCenter: Vector2,
     width: number,
     height: number
-  ): Float32Vector2 {
+  ): Vector2 {
     const halfWidth = width / 2;
     const halfHeight = height / 2;
 
@@ -58,37 +57,27 @@ export class QuadRotator {
       case 'identity':
         return position;
       case 'bottomLeft':
-        return rotateAbout(
-          position,
-          add(new Float32Vector2(-halfWidth, -halfHeight), quadCenter),
-          this.rotationType.angle
-        );
+        return new Vector2(-halfWidth, -halfHeight)
+          .add(quadCenter)
+          .rotateAbout(position, this.rotationType.angle);
       case 'bottomRight':
-        return rotateAbout(
-          position,
-          add(new Float32Vector2(+halfWidth, -halfHeight), quadCenter),
-          this.rotationType.angle
-        );
+        return new Vector2(+halfWidth, -halfHeight)
+          .add(quadCenter)
+          .rotateAbout(position, this.rotationType.angle);
       case 'topLeft':
-        return rotateAbout(
-          position,
-          add(new Float32Vector2(-halfWidth, +halfHeight), quadCenter),
-          this.rotationType.angle
-        );
+        return new Vector2(-halfWidth, +halfHeight)
+          .add(quadCenter)
+          .rotateAbout(position, this.rotationType.angle);
       case 'topRight':
-        return rotateAbout(
-          position,
-          add(new Float32Vector2(+halfWidth, +halfHeight), quadCenter),
-          this.rotationType.angle
-        );
+        return new Vector2(+halfWidth, +halfHeight)
+          .add(quadCenter)
+          .rotateAbout(position, this.rotationType.angle);
       case 'center':
-        return rotateAbout(
-          position,
-          add(new Float32Vector2(0, 0), quadCenter),
-          this.rotationType.angle
-        );
+        return new Vector2(0, 0)
+          .add(quadCenter)
+          .rotateAbout(position, this.rotationType.angle);
       case 'custom':
-        return rotateAbout(position, this.rotationType.position, this.rotationType.angle);
+        return position.rotateAbout(this.rotationType.position, this.rotationType.angle);
     }
   }
 
@@ -116,7 +105,7 @@ export class QuadRotator {
     return new QuadRotator({ type: 'center', angle });
   }
 
-  static custom(position: Float32Vector2, angle: number): QuadRotator {
+  static custom(position: Vector2, angle: number): QuadRotator {
     return new QuadRotator({ type: 'custom', position, angle });
   }
 }

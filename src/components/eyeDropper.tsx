@@ -1,11 +1,10 @@
-import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { useEffect, useState } from 'react';
 import EventManager from '~/util/eventSystem/eventManager';
 import { rgbaToHsl, hslToHex } from '~/util/general/color';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
-import { Int32Vector3 } from '~/util/webglWrapper/vector';
 import Camera from '../drawingEditor/renderer/camera';
 import { type EyeDropperArgs } from '~/util/eventSystem/eventTypes/canvasEvents';
+import { Vector2, Vector3 } from 'matrixgl_fork';
 
 interface RenderObjects {
   canvasFramebuffer: FrameBuffer;
@@ -18,8 +17,8 @@ let pointerUp: (() => void) | null;
 
 function EyeDropper() {
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState<Float32Vector2>(new Float32Vector2(0, 0));
-  const [color, setColor] = useState<Int32Vector3>(new Int32Vector3(0, 0, 0));
+  const [position, setPosition] = useState<Vector2>(new Vector2(0, 0));
+  const [color, setColor] = useState<Vector3>(new Vector3(0, 0, 0));
 
   useEffect(() => {
     removeEvents();
@@ -35,17 +34,14 @@ function EyeDropper() {
     EventManager.subscribe('toggleEyeDropper', toggle);
 
     pointerMove = (e: MouseEvent) => {
-      setPosition(new Float32Vector2(e.clientX, e.clientY));
+      setPosition(new Vector2(e.clientX, e.clientY));
     };
     document.addEventListener('pointermove', pointerMove);
 
     pointerUp = () => {
       if (!isVisible) return;
       setIsVisible(false);
-      EventManager.invoke(
-        'colorChanged',
-        new Float32Vector3(color.x / 255, color.y / 255, color.z / 255)
-      );
+      EventManager.invoke('colorChanged', new Vector3(color.x / 255, color.y / 255, color.z / 255));
     };
     document.addEventListener('pointerup', pointerUp);
     document.addEventListener('pointercancel', pointerUp);
@@ -60,7 +56,7 @@ function EyeDropper() {
 
     if (norm.x < 0 || norm.x > 1 || norm.y < 0 || norm.y > 1) return;
 
-    const unorm = new Float32Vector2(
+    const unorm = new Vector2(
       norm.x * renderObjects.canvasFramebuffer.getWidth(),
       norm.y * renderObjects.canvasFramebuffer.getHeight()
     );
@@ -76,9 +72,9 @@ function EyeDropper() {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const c = new Int32Vector3(pixels.at(0)!, pixels.at(1)!, pixels.at(2)!);
+    const c = new Vector3(pixels.at(0)!, pixels.at(1)!, pixels.at(2)!).floor();
     setColor(c);
-    EventManager.invoke('colorChanged', new Float32Vector3(c.x / 255, c.y / 255, c.z / 255));
+    EventManager.invoke('colorChanged', new Vector3(c.x / 255, c.y / 255, c.z / 255));
   }, [position, isVisible]);
 
   return (
@@ -94,7 +90,8 @@ function EyeDropper() {
   );
 }
 
-function getHslhex(color: Int32Vector3): string {
+function getHslhex(color: Vector3): string {
+  color = color.floor();
   const hsl = rgbaToHsl(color.x, color.y, color.z);
   hsl.x = Math.floor(hsl.x * 360);
   hsl.y = Math.floor(hsl.y * 100);

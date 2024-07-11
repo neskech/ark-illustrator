@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Float32Vector2 } from 'matrixgl';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
 import { newPoint, type BrushPoint } from '../brushTool';
 import { IncrementalStabilizer } from './stabilizer';
-import { add, copy } from '~/util/webglWrapper/vector';
 import { type Interpolator } from '../interpolator/interpolator';
-import InterpolatorFactory, { type InterpolatorSettings } from '../interpolator/interpolatorFactory';
+import InterpolatorFactory, {
+  type InterpolatorSettings,
+} from '../interpolator/interpolatorFactory';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +34,7 @@ export interface SpringStabilizerSettings {
 export default class SpringStabilizer extends IncrementalStabilizer {
   private settings: SpringStabilizerSettings;
   private head: BrushPoint | null;
-  private velocity: Float32Vector2;
+  private velocity: Vector2;
   private accumulatedPoints: BrushPoint[];
   private interpolator: Interpolator;
   private lastAddPointTime: number | null;
@@ -42,7 +43,7 @@ export default class SpringStabilizer extends IncrementalStabilizer {
     super('spring');
     this.settings = settings;
     this.head = null;
-    this.velocity = new Float32Vector2(0, 0);
+    this.velocity = new Vector2(0, 0);
     this.accumulatedPoints = [];
     this.interpolator = InterpolatorFactory.getInterpolatorOfAppropiateType(
       settings.interpolatorSettings,
@@ -67,7 +68,7 @@ export default class SpringStabilizer extends IncrementalStabilizer {
       (this.head.position.y - last.position.y) * this.settings.springConstant * deltaTime;
     this.velocity.x *= this.settings.friction;
     this.velocity.y *= this.settings.friction;
-    const newPosition = add(copy(last.position), this.velocity);
+    const newPosition = last.position.add(this.velocity);
     this.accumulatedPoints.push(newPoint(newPosition, this.head.pressure));
 
     this.head = point;
@@ -92,7 +93,7 @@ export default class SpringStabilizer extends IncrementalStabilizer {
 
   reset(): void {
     this.head = null;
-    this.velocity = new Float32Vector2(0, 0);
+    this.velocity = new Vector2(0, 0);
     this.accumulatedPoints = [];
     this.lastAddPointTime = null;
   }
@@ -109,7 +110,7 @@ export default class SpringStabilizer extends IncrementalStabilizer {
       (this.head.position.y - last.position.y) * this.settings.springConstant * deltaTime;
     this.velocity.x *= this.settings.friction;
     this.velocity.y *= this.settings.friction;
-    const newPosition = add(copy(last.position), this.velocity);
+    const newPosition = last.position.add(this.velocity);
     this.accumulatedPoints.push(newPoint(newPosition, this.head.pressure));
 
     this.lastAddPointTime = performance.now();

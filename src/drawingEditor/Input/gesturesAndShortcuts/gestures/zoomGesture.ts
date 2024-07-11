@@ -1,8 +1,8 @@
 import { type PointerPos, Gesture, areValidPointerIDs, type GestureContext } from './gesture';
-import { distance } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
 import type Camera from '~/drawingEditor/renderer/camera';
+import { Vector2 } from 'matrixgl_fork';
 
 const ZOOM_FACTOR = 1 / 300;
 
@@ -31,7 +31,7 @@ export default class ZoomGesture extends Gesture {
       return;
     }
 
-    const newDistance = distance(positions[0].pos, positions[1].pos);
+    const newDistance = Vector2.distance(positions[0].pos, positions[1].pos);
     const deltaDistance = this.originalDistance - newDistance;
     context.camera.setZoom(this.originalZoom + deltaDistance * ZOOM_FACTOR);
   }
@@ -49,7 +49,7 @@ export default class ZoomGesture extends Gesture {
     if (positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
-      this.originalDistance = distance(positions[0].pos, positions[1].pos);
+      this.originalDistance = Vector2.distance(positions[0].pos, positions[1].pos);
       this.originalZoom = camera.getZoomLevel();
       assert(this.isInitialized());
     }

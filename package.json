@@ -7,7 +7,8 @@
     "dev": "npm run manifest && next dev",
     "manifest": "ts-node ./scripts/assetManifester.ts",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -20,9 +21,11 @@
     "@t3-oss/env-nextjs": "^0.3.1",
     "curve-interpolator": "^3.1.1",
     "fs-promise": "^2.0.3",
+    "gl-matrix": "^3.4.3",
     "jimp": "^0.22.8",
-    "matrixgl": "^2.0.0",
+    "matrixgl_fork": "^2.0.3",
     "next": "^13.4.2",
+    "patch-package": "^8.0.0",
     "react": "experimental",
     "react-dom": "experimental",
     "react-draggable": "^4.4.6",

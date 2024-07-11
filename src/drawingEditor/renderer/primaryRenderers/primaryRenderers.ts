@@ -5,7 +5,6 @@ import type LayerManager from '~/drawingEditor/canvas/layerManager';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import LayerRenderer from './layerRenderer';
 import type UtilityRenderers from '../utilityRenderers.ts/utilityRenderers';
-import { clearFramebuffer } from '../util/renderUtils';
 
 export type PrimaryRendererContext = {
   camera: Camera;

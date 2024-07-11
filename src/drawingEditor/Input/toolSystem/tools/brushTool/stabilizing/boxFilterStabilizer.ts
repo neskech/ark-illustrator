@@ -1,11 +1,12 @@
 import { type BrushPoint, newPoint } from '../brushTool';
 import { assert, requires } from '~/util/general/contracts';
-import { add, copy, distance, scale } from '~/util/webglWrapper/vector';
-import { Float32Vector2 } from 'matrixgl';
 import { BatchedStabilizer } from './stabilizer';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
-import { Interpolator } from '../interpolator/interpolator';
-import InterpolatorFactory, { InterpolatorSettings } from '../interpolator/interpolatorFactory';
+import { type Interpolator } from '../interpolator/interpolator';
+import InterpolatorFactory, {
+  type InterpolatorSettings,
+} from '../interpolator/interpolatorFactory';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +111,7 @@ export default class BoxFilterStabilizer extends BatchedStabilizer {
     if (this.currentPoints.length > 1) {
       const before = this.currentPoints[this.currentPoints.length - 2];
       const after = this.currentPoints[this.currentPoints.length - 1];
-      const dist = distance(before.position, after.position);
+      const dist = Vector2.distance(before.position, after.position);
       this.pathLength += dist;
     }
   }
@@ -127,7 +128,7 @@ export default class BoxFilterStabilizer extends BatchedStabilizer {
     while (outputSize > maxStrokeSize && this.currentPoints.length > 1) {
       const before = this.currentPoints[this.currentPoints.length - 2];
       const after = this.currentPoints[this.currentPoints.length - 1];
-      const dist = distance(before.position, after.position);
+      const dist = Vector2.distance(before.position, after.position);
       this.pathLength -= dist;
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       newPoints.push(this.currentPoints.pop()!);
@@ -155,7 +156,7 @@ export default class BoxFilterStabilizer extends BatchedStabilizer {
       const endpoint = this.context[this.context.length - 1];
       return this.interpolator.processWithSingularContext(processed, endpoint, brushSettings);
     }
-    
+
     return this.interpolator.process(processed, brushSettings);
   }
 
@@ -189,7 +190,7 @@ function process(
   if (rawCurve.length <= 2) return rawCurve;
 
   const smoothing = getSmoothingValueFromStabilization(settings.stabilization);
-  const contextCopy = [...context]
+  const contextCopy = [...context];
 
   let boxed = rawCurve;
   for (let i = 0; i < NUM_BOX_FILTERS; i++) {
@@ -286,17 +287,16 @@ function boxFilterExpwa(
   for (let i = 0; i < curve.length - 1; i++) {
     const p = curve[i];
 
-    const avg = scale(copy(p.position), weight(i, 0));
+    let avg = p.position.mult(weight(i, 0));
 
     for (let r = 1; r <= radius; r++) {
       const rIdx = clamp(i + r, 0, curve.length - 1);
 
       const scaling = weight(i, r);
-      const left = scale(copy(sampleContextIfOut(i - r, 0, curve.length - 1).position), scaling);
-      const right = scale(copy(curve[rIdx].position), scaling);
+      const left = sampleContextIfOut(i - r, 0, curve.length - 1).position.mult(scaling);
+      const right = curve[rIdx].position.mult(scaling);
 
-      add(avg, left);
-      add(avg, right);
+      avg = avg.add(left).add(right);
     }
 
     newPoints.push(newPoint(avg, curve[i].pressure));
@@ -377,10 +377,7 @@ function carmullRom2D(
     const t = (i + 1) / (samples + 1);
     const t2 = t * t;
     const t3 = t2 * t;
-    const pos = new Float32Vector2(
-      x1 + x2 * t + x3 * t2 + x4 * t3,
-      y1 + y2 * t + y3 * t2 + y4 * t3
-    );
+    const pos = new Vector2(x1 + x2 * t + x3 * t2 + x4 * t3, y1 + y2 * t + y3 * t2 + y4 * t3);
     const pressure = pp1 + pp2 * t + pp3 * t2 + pp4 * t3;
     results.push(newPoint(pos, pressure));
   }
@@ -392,7 +389,7 @@ function getPathLength(curve: BrushPoint[]): number {
   for (let i = 0; i < curve.length - 1; i++) {
     const before = curve[i];
     const after = curve[i + 1];
-    const dist = distance(before.position, after.position);
+    const dist = Vector2.distance(before.position, after.position);
     pathLength += dist;
   }
   return pathLength;

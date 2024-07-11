@@ -1,13 +1,5 @@
+import { Matrix2x2, Matrix4, type Matrix4x4, Vector2, Vector3, Vector4 } from 'matrixgl_fork';
 import { requires } from '../../util/general/contracts';
-import {
-  Float32Vector2,
-  Float32Vector3,
-  Float32Vector4,
-  Matrix2x2,
-  Matrix4,
-  type Matrix4x4,
-} from 'matrixgl';
-import { Int32Vector2, add, copy } from '../../util/webglWrapper/vector';
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.05;
@@ -16,7 +8,7 @@ const MAX_ZOOM = 10;
 const CANVAS_HEIGHT = 1.0;
 
 export default class Camera {
-  private position: Float32Vector3;
+  private position: Vector3;
   private rotation: number;
   private fovY: number;
   private fovX: number;
@@ -56,7 +48,7 @@ export default class Camera {
     this.fovX = Math.atan2(screenAspectRatio / 2, DEFAULT_ZOOM) * 2;
 
     this.rotation = 0;
-    this.position = new Float32Vector3(0, 0, DEFAULT_ZOOM + 0.5);
+    this.position = new Vector3(0, 0, DEFAULT_ZOOM + 0.5);
     this.screenAspectRatio = screenAspectRatio;
     this.canvasAspectRatio = canvasAspectRatio;
 
@@ -83,12 +75,13 @@ export default class Camera {
     this.translateRotation(theta);
   }
 
-  translatePosition(translation: Float32Vector2) {
+  translatePosition(translation: Vector2) {
     const rotated = this.rotateVectorToBasis(translation);
-    add(this.position, rotated);
+    this.position.x += rotated.x;
+    this.position.y += rotated.y;
   }
 
-  setPosition(position: Float32Vector2) {
+  setPosition(position: Vector2) {
     this.position.x = position.x;
     this.position.y = position.y;
   }
@@ -104,9 +97,9 @@ export default class Camera {
   }
 
   getViewMatrix(): Matrix4x4 {
-    const lookAtPos = new Float32Vector3(this.position.x, this.position.y, 0);
+    const lookAtPos = new Vector3(this.position.x, this.position.y, 0);
     const theta = deg2Rads(this.rotation);
-    const upVector = new Float32Vector3(-Math.sin(theta), Math.cos(theta), 0);
+    const upVector = new Vector3(-Math.sin(theta), Math.cos(theta), 0);
 
     return Matrix4.lookAt(this.position, lookAtPos, upVector);
   }
@@ -135,11 +128,11 @@ export default class Camera {
     return new Matrix2x2(Math.cos(theta), -Math.sin(theta), Math.sin(theta), Math.cos(theta));
   }
 
-  rotateVectorToBasis(v: Float32Vector2): Float32Vector2 {
+  rotateVectorToBasis(v: Vector2): Vector2 {
     const mat = this.getRotationMatrix();
     const x = v.x * mat.values[0] + v.y * mat.values[1];
     const y = v.x * mat.values[2] + v.y * mat.values[3];
-    return new Float32Vector2(x, y);
+    return new Vector2(x, y);
   }
 
   getCameraWidth(): number {
@@ -166,7 +159,7 @@ export default class Camera {
     logger(this.toString());
   }
 
-  mouseToWorld(position: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
+  mouseToWorld(position: Vector2, canvas: HTMLCanvasElement): Vector2 {
     const p = Camera.mouseToNDC(position, canvas);
 
     /**
@@ -188,11 +181,11 @@ export default class Camera {
     rotated.y += this.position.y;
     const projected = this.mulVecByProjection(rotated);
 
-    return projected;
+    return new Vector2(projected.x, projected.y);
   }
 
-  mouseToWorldByEvent(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Float32Vector2 {
-    const position = new Float32Vector2(event.clientX, event.clientY);
+  mouseToWorldByEvent(event: PointerEvent | MouseEvent, canvas: HTMLCanvasElement): Vector2 {
+    const position = new Vector2(event.clientX, event.clientY);
     return this.mouseToWorld(position, canvas);
   }
 
@@ -204,20 +197,20 @@ export default class Camera {
     return this.getProjectionMatrix().mulByMatrix4(this.getViewMatrix());
   }
 
-  mulVecByMV(v: Float32Vector2): Float32Vector2 {
-    return matMult(this.getMV(), new Float32Vector4(v.x, v.y, 0, 0));
+  mulVecByMV(v: Vector2): Vector4 {
+    return matMult(this.getMV(), new Vector4(v.x, v.y, 0, 0));
   }
 
-  mulVecByTransform(v: Float32Vector2): Float32Vector2 {
-    return matMult(this.getTransformMatrixWithRotation(), new Float32Vector4(v.x, v.y, 0, 0));
+  mulVecByTransform(v: Vector2): Vector4 {
+    return matMult(this.getTransformMatrixWithRotation(), new Vector4(v.x, v.y, 0, 0));
   }
 
-  mulVecByProjection(v: Float32Vector2): Float32Vector2 {
-    return matMult(this.getProjectionMatrix(), new Float32Vector4(v.x, v.y, 0, 0));
+  mulVecByProjection(v: Vector2): Vector4 {
+    return matMult(this.getProjectionMatrix(), new Vector4(v.x, v.y, 0, 0));
   }
 
-  getPosition(): Float32Vector2 {
-    return copy(this.position);
+  getPosition(): Vector3 {
+    return this.position;
   }
 
   getZoomLevel(): number {
@@ -228,31 +221,28 @@ export default class Camera {
     return this.rotation;
   }
 
-  static mouseToCanvas(event: MouseEvent, canvas: HTMLCanvasElement): Int32Vector2 {
+  static mouseToCanvas(event: MouseEvent, canvas: HTMLCanvasElement): Vector2 {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    return new Int32Vector2(x, y);
+    return new Vector2(x, y);
   }
 
-  static mouseToNormalizedWithEvent(
-    event: PointerEvent,
-    canvas: HTMLCanvasElement
-  ): Float32Vector2 {
+  static mouseToNormalizedWithEvent(event: PointerEvent, canvas: HTMLCanvasElement): Vector2 {
     const rect = canvas.getBoundingClientRect();
     const x = (event.clientX - rect.left) / canvas.clientWidth;
     const y = (event.clientY - rect.top) / canvas.clientHeight;
-    return new Float32Vector2(x, 1.0 - y);
+    return new Vector2(x, 1.0 - y);
   }
 
-  static mouseToNormalized(mousePos: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
+  static mouseToNormalized(mousePos: Vector2, canvas: HTMLCanvasElement): Vector2 {
     const rect = canvas.getBoundingClientRect();
     const x = (mousePos.x - rect.left) / canvas.clientWidth;
     const y = (mousePos.y - rect.top) / canvas.clientHeight;
-    return new Float32Vector2(x, 1.0 - y);
+    return new Vector2(x, 1.0 - y);
   }
 
-  static mouseToNDC(position: Float32Vector2, canvas: HTMLCanvasElement): Float32Vector2 {
+  static mouseToNDC(position: Vector2, canvas: HTMLCanvasElement): Vector2 {
     const p = Camera.mouseToNormalized(position, canvas);
     p.x = (p.x - 0.5) * 2.0;
     p.y = (p.y - 0.5) * 2.0;
@@ -260,8 +250,8 @@ export default class Camera {
   }
 }
 
-function matMult(m: Matrix4x4, v: Float32Vector4): Float32Vector4 {
-  const b = new Float32Vector4(0, 0, 0, 0);
+function matMult(m: Matrix4x4, v: Vector4): Vector4 {
+  const b = new Vector4(0, 0, 0, 0);
   for (let r = 0; r < 4; r++) {
     let val = 0;
     for (let c = 0; c < 4; c++) val += m.values[r * 4 + c] * v.values[c];

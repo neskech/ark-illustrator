@@ -18,11 +18,10 @@ import {
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import Texture from '~/util/webglWrapper/texture';
 import { gl } from '~/drawingEditor/application';
-import { Float32Vector3 } from 'matrixgl';
-import { angle, displacement } from '~/util/webglWrapper/vector';
 import { QuadTransform } from '../../geometry/transform';
 import { QuadPositioner } from '../../geometry/positioner';
 import { QuadRotator } from '../../geometry/rotator';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +150,7 @@ export default class StampBrushRenderer extends BrushImplementationRenderer {
 
       if (points.length >= 2) {
         const after = j < points.length - 1 ? points[j + 1] : points[j - 1];
-        ang = angle(displacement(p.position, after.position));
+        ang = Vector2.displacement(p.position, after.position).angle();
       }
 
       i = this.quadFactory.emplaceSquare({

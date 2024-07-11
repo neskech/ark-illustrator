@@ -1,4 +1,3 @@
-import { Float32Vector2 } from 'matrixgl';
 import { find } from '~/util/general/arrayUtils';
 import { requires } from '~/util/general/contracts';
 import { type PointerPos, type Gesture, type GestureContext } from './gestures/gesture';
@@ -10,6 +9,7 @@ import OpenSettingsGesture from './gestures/openSettingsGesture';
 import EyeDropperGesture from './gestures/EyeDropperGesture';
 import { EventHandler } from '../toolSystem/eventHandler';
 import UndoGesture from './gestures/undoGesture';
+import { Vector2 } from 'matrixgl_fork';
 
 export default class GestureHandler extends EventHandler<GestureContext> {
   private pointerPositions: PointerPos[];
@@ -35,7 +35,7 @@ export default class GestureHandler extends EventHandler<GestureContext> {
     requires(!this.pointerPositions.some((p) => p.id == event.pointerId));
 
     this.pointerPositions.push({
-      pos: new Float32Vector2(event.clientX, event.clientY),
+      pos: new Vector2(event.clientX, event.clientY),
       id: event.pointerId,
     });
 

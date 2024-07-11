@@ -1,8 +1,8 @@
-import { type Float32Vector2 } from 'matrixgl';
 import { assertNotNull } from '../../../../util/general/contracts';
 import { Tool, type ToolUpdateContext } from '../tool';
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
 import { type PointerType } from '../inputState';
+import { type Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -21,8 +21,8 @@ import { type PointerType } from '../inputState';
 ////////////////////////////////////////////////////////////////////////////////////////
 
 type RectangleState = {
-  anchorPosition: Float32Vector2;
-  oppositePosition: Float32Vector2;
+  anchorPosition: Vector2;
+  oppositePosition: Vector2;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////

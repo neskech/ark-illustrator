@@ -8,8 +8,6 @@ import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
 import type Shader from '~/util/webglWrapper/shader';
 import EventManager from '~/util/eventSystem/eventManager';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
-import { type Float32Vector2, Float32Vector3 } from 'matrixgl';
-import { midpoint } from '~/util/webglWrapper/vector';
 import type AssetManager from '../util/assetManager';
 import { QuadTransform } from '../geometry/transform';
 import { QuadPositioner } from '../geometry/positioner';
@@ -18,6 +16,7 @@ import { clearFramebuffer } from '../util/renderUtils';
 import { gl } from '~/drawingEditor/application';
 import { QuadilateralFactory } from '../geometry/quadFactory';
 import { type RenderContext } from '../renderer';
+import { Vector2, Vector3 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -45,8 +44,8 @@ const vertexAttributes = new VertexAttributes({
 type AttribsType = GetAttributesType<typeof vertexAttributes>;
 
 type RectangleRendererContext = {
-  anchorPosition: Float32Vector2;
-  otherPosition: Float32Vector2;
+  anchorPosition: Vector2;
+  otherPosition: Vector2;
 } & RenderContext;
 
 type RectangleRendererCanceledContext = RenderContext;
@@ -64,7 +63,7 @@ export default class RectangleToolRenderer {
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<AttribsType>;
   private shader: Shader;
-  private color: Float32Vector3;
+  private color: Vector3;
 
   constructor(assetManager: AssetManager) {
     this.vertexArray = new VertexArrayObject(vertexAttributes);
@@ -74,9 +73,9 @@ export default class RectangleToolRenderer {
     });
     this.quadFactory = new QuadilateralFactory(vertexAttributes);
     this.shader = assetManager.getShader('rectangle');
-    this.color = new Float32Vector3(0, 0, 0);
+    this.color = new Vector3(0, 0, 0);
     this.initBuffer();
-    this.setupEvents()
+    this.setupEvents();
   }
 
   private initBuffer() {
@@ -109,7 +108,7 @@ export default class RectangleToolRenderer {
     clearFramebuffer(context.overlayFramebuffer);
   }
 
-  private renderRectangle(framebuffer: FrameBuffer, anchor: Float32Vector2, other: Float32Vector2) {
+  private renderRectangle(framebuffer: FrameBuffer, anchor: Vector2, other: Vector2) {
     framebuffer.bind();
     this.vertexArray.bind();
     this.vertexBuffer.bind();
@@ -124,7 +123,7 @@ export default class RectangleToolRenderer {
       buffer: buf,
       offset: 0,
       transform: QuadTransform.builder()
-        .position(QuadPositioner.center(midpoint(anchor, other)))
+        .position(QuadPositioner.center(Vector2.midpoint(anchor, other)))
         .rotate(QuadRotator.identity())
         .build(),
       attributes: {},

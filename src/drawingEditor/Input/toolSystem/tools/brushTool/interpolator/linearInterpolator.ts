@@ -1,8 +1,6 @@
+import { Vector2 } from 'matrixgl_fork';
 import { type BrushPoint, newPoint } from '../brushTool';
-import { add, copy, scale, sub } from '~/util/webglWrapper/vector';
-import { normalize } from '../../../../../../util/webglWrapper/vector';
 import { Interpolator } from './interpolator';
-import { BaseBrushSettings } from '../../../settings/brushSettings';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -63,15 +61,13 @@ function addPointsLinearInterpolation(rawCurve: BrushPoint[], spacing: number): 
     const start = rawCurve[i];
     const end = rawCurve[i + 1];
 
-    const displacement = sub(copy(end.position), start.position);
-    const distance = displacement.magnitude;
-    const direction = normalize(displacement);
+    const distance = Vector2.distance(start.position, end.position);
     const numPointsAlong = Math.ceil(distance / spacing);
 
     newPoints.push(start);
     for (let j = 0; j < numPointsAlong - 1; j++) {
       const dist = spacing * (j + 1);
-      const along = add(scale(copy(direction), dist), start.position);
+      const along = Vector2.lerpByDistance(start.position, end.position, dist);
       const pressure = linearInterpolate(start.pressure, end.pressure, j / numPointsAlong);
       newPoints.push(newPoint(along, pressure));
     }

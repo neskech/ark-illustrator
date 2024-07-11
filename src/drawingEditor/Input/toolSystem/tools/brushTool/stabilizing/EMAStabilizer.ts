@@ -7,8 +7,7 @@ import InterpolatorFactory, {
   type InterpolatorSettings,
 } from '../interpolator/interpolatorFactory';
 import { type Interpolator } from '../interpolator/interpolator';
-import { Float32Vector2 } from 'matrixgl';
-import { add, copy, scale } from '~/util/webglWrapper/vector';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +34,7 @@ export interface EMAStabilizerSettings {
 export class EMAStabilizer extends IncrementalStabilizer {
   private settings: EMAStabilizerSettings;
   private outputPoints: BrushPoint[];
-  private currentAvg: Float32Vector2 | null;
+  private currentAvg: Vector2 | null;
   private lastOutputPoint: BrushPoint | null;
   private interpolator: Interpolator;
 
@@ -52,12 +51,11 @@ export class EMAStabilizer extends IncrementalStabilizer {
   }
 
   addPoint(p: BrushPoint) {
-    if (this.currentAvg == null)
-      this.currentAvg = copy(p.position);
+    if (this.currentAvg == null) this.currentAvg = p.position.clone();
 
     const old = this.currentAvg;
     const a = this.settings.alpha;
-    this.currentAvg = add(scale(copy(old), 1 - a), scale(copy(p.position), a));
+    this.currentAvg = old.mult(1 - a).add(p.position.mult(a));
     this.outputPoints.push(newPoint(this.currentAvg, p.pressure));
   }
 

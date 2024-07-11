@@ -1,9 +1,9 @@
-import { Float32Vector3 } from 'matrixgl';
 import BezierFunction from '~/util/general/bezierFunction';
 import type Texture from '~/util/webglWrapper/texture';
 import { TextureCreator } from '~/util/webglWrapper/texture';
 import { type Option, Some } from '~/util/general/option';
 import EventManager from '~/util/eventSystem/eventManager';
+import { Vector3 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -77,14 +77,14 @@ const DEFAULT_TEXTURE =
 interface StampBrushSettingsArgs extends BaseBrushSettingsArgs {
   flow: number;
   stabilization: number;
-  color: Float32Vector3;
+  color: Vector3;
   texture: Option<Texture>;
 }
 
 export class StampBrushSettings extends BaseBrushSettings {
   public flow: number;
   public stabilization: number;
-  public color: Float32Vector3;
+  public color: Vector3;
   public texture: Option<Texture>;
 
   constructor(args: StampBrushSettingsArgs) {
@@ -125,7 +125,7 @@ export class StampBrushSettings extends BaseBrushSettings {
       stabilization: 0.25,
       pressureSizeSettings: BezierFunction.getLinearBezier(),
       pressureOpacitySettings: BezierFunction.getLinearBezier(),
-      color: new Float32Vector3(0, 0, 0),
+      color: new Vector3(0, 0, 0),
       isEraser: false,
       texture: Some(brushTexture.unwrap()),
     });
@@ -143,12 +143,12 @@ export class StampBrushSettings extends BaseBrushSettings {
 interface LineBrushSettingsArgs extends BaseBrushSettingsArgs {
   flow: number;
   diff: number;
-  color: Float32Vector3;
+  color: Vector3;
 }
 
 export class LineBrushSettings extends BaseBrushSettings {
   public flow: number;
-  public color: Float32Vector3;
+  public color: Vector3;
   public diff: number;
 
   constructor(args: LineBrushSettingsArgs) {
@@ -176,7 +176,7 @@ export class LineBrushSettings extends BaseBrushSettings {
       flow: 0.02,
       pressureSizeSettings: BezierFunction.getLinearBezier(),
       pressureOpacitySettings: BezierFunction.getLinearBezier(),
-      color: new Float32Vector3(0, 0, 0),
+      color: new Vector3(0, 0, 0),
       isEraser: false,
       diff: 0.5,
     });

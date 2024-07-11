@@ -1,11 +1,12 @@
-import { type Float32Vector2 } from 'matrixgl';
+
 import { type AllToolSettings } from '../../settings';
 import { Tool, type ToolUpdateContext, type ToolContext } from '../../tool';
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
 import { type BrushConfiguration } from '../../settings/brushConfig';
-import { Stabilizer } from './stabilizing/stabilizer';
+import { type Stabilizer } from './stabilizing/stabilizer';
 import { MAX_POINTS_PER_FRAME } from '~/drawingEditor/renderer/toolRenderers/brush/stampBrushRenderer';
 import StabilizerFactory from './stabilizing/stabilizerFactory';
+import { type Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -24,11 +25,11 @@ import StabilizerFactory from './stabilizing/stabilizerFactory';
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export interface BrushPoint {
-  position: Float32Vector2;
+  position: Vector2;
   pressure: number;
 }
 
-export const newPoint = (pos: Float32Vector2, pressure: number): BrushPoint => ({
+export const newPoint = (pos: Vector2, pressure: number): BrushPoint => ({
   position: pos,
   pressure,
 });

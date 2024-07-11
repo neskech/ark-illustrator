@@ -1,7 +1,7 @@
 import { type BrushPoint, newPoint } from '../brushTool';
 import { CurveInterpolator } from 'curve-interpolator';
-import { Float32Vector2 } from 'matrixgl';
 import { Interpolator } from './interpolator';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ function addPointsCartmollInterpolation(
   for (let i = 0; i < numSteps; i++) {
     const parameter = Math.min(1, (spacing * i) / curveDist);
     const point = interpolator.getPointAt(parameter);
-    output.push(newPoint(new Float32Vector2(point[0], point[1]), 1));
+    output.push(newPoint(new Vector2(point[0], point[1]), 1));
   }
 
   return output;

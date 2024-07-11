@@ -1,7 +1,7 @@
-import { Float32Vector2 } from 'matrixgl';
 import Camera from '~/drawingEditor/renderer/camera';
 import { type EventTypeName } from '../../toolSystem/tool';
 import type LayerManager from '~/drawingEditor/canvas/layerManager';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +19,7 @@ export type GestureContext = {
 };
 
 export interface PointerPos {
-  pos: Float32Vector2;
+  pos: Vector2;
   id: number;
 }
 
@@ -48,15 +48,15 @@ export abstract class Gesture {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-export function isValidPosition(pos: Float32Vector2): boolean {
+export function isValidPosition(pos: Vector2): boolean {
   return pos.x != -1 && pos.y != -1;
 }
 
-export function areValidPositions(...positions: Float32Vector2[]): boolean {
+export function areValidPositions(...positions: Vector2[]): boolean {
   return positions.every(isValidPosition);
 }
 
-export function isValidPositionsList(positions: Float32Vector2[]): boolean {
+export function isValidPositionsList(positions: Vector2[]): boolean {
   return positions.every(isValidPosition);
 }
 
@@ -72,16 +72,12 @@ export function isValidPointerIDList(...ids: number[]): boolean {
   return ids.every(isValidPointerID);
 }
 
-export function getFingerDelta(
-  a: Float32Vector2,
-  b: Float32Vector2,
-  canvas: HTMLCanvasElement
-): Float32Vector2 {
+export function getFingerDelta(a: Vector2, b: Vector2, canvas: HTMLCanvasElement): Vector2 {
   const aNorm = Camera.mouseToNormalized(a, canvas);
   const bNorm = Camera.mouseToNormalized(b, canvas);
 
   const deltaX = aNorm.x - bNorm.x;
   const deltaY = aNorm.y - bNorm.y;
 
-  return new Float32Vector2(deltaX, deltaY);
+  return new Vector2(deltaX, deltaY);
 }

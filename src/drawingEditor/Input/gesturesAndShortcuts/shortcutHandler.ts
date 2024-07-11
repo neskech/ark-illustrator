@@ -1,11 +1,10 @@
 import { type EventTypeName } from '../toolSystem/tool';
-import { Float32Vector2 } from 'matrixgl';
-import { dot, scale } from '~/util/webglWrapper/vector';
 import EventManager from '~/util/eventSystem/eventManager';
 import { None } from '~/util/general/option';
 import Camera from '~/drawingEditor/renderer/camera';
 import type LayerManager from '~/drawingEditor/canvas/layerManager';
 import { EventHandler } from '../toolSystem/eventHandler';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +51,7 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
   private isRightMouseHeldDown: number;
   private isLeftMouseHeldDown: number;
   private isAltKeyDown: boolean;
-  private mousePosition: Float32Vector2;
+  private mousePosition: Vector2;
 
   constructor() {
     super();
@@ -60,7 +59,7 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
     this.isRightMouseHeldDown = 0;
     this.isLeftMouseHeldDown = 0;
     this.isAltKeyDown = false;
-    this.mousePosition = new Float32Vector2(-1, -1);
+    this.mousePosition = new Vector2(-1, -1);
   }
 
   wheel(context: ShortcutContext, wheelEvent: WheelEvent): void {
@@ -72,14 +71,14 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
     const isCurrPositionValid = isValidMousePos(this.mousePosition);
 
     if (isCurrPositionValid && this.isMiddleMouseHeldDown > 0) {
-      const delta = getMouseDeltaFromEvent(this.mousePosition, mouseEvent, context.canvas);
-      scale(delta, -PAN_SCALING * context.camera.getCameraWidth());
+      let delta = getMouseDeltaFromEvent(this.mousePosition, mouseEvent, context.canvas);
+      delta = delta.mult(-PAN_SCALING * context.camera.getCameraWidth());
       context.camera.translatePosition(delta);
     } else if (isCurrPositionValid && this.isAltKeyDown) {
       const delta = getMouseDeltaFromEvent(this.mousePosition, mouseEvent, context.canvas);
 
-      const xAlignment = dot(new Float32Vector2(1, 0), delta);
-      const yAlignment = dot(new Float32Vector2(0, 1), delta);
+      const xAlignment = delta.dotProductWith(new Vector2(1, 0));
+      const yAlignment = delta.dotProductWith(new Vector2(0, 1));
 
       const rotation_factor = (xAlignment + yAlignment) * ROTATION_SCALING;
       context.camera.translateRotation(rotation_factor);
@@ -128,7 +127,7 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
       EventManager.invoke('toggleEyeDropper', {
         canvas: context.canvas,
         canvasFramebuffer: context.layerManager.getCanvasFramebufferForMutation(),
-        originPosition: None<Float32Vector2>(),
+        originPosition: None<Vector2>(),
       });
     }
 
@@ -140,20 +139,20 @@ export default class ShortcutHandler extends EventHandler<ShortcutContext> {
   }
 }
 
-function isValidMousePos(pos: Float32Vector2): boolean {
+function isValidMousePos(pos: Vector2): boolean {
   return pos.x != -1 && pos.y != -1;
 }
 
 function getMouseDeltaFromEvent(
-  mouse: Float32Vector2,
+  mouse: Vector2,
   event: MouseEvent,
   canvas: HTMLCanvasElement
-): Float32Vector2 {
+): Vector2 {
   const normCurrPos = Camera.mouseToNormalized(mouse, canvas);
   const normEventPos = Camera.mouseToNormalizedWithEvent(event as PointerEvent, canvas);
 
   const deltaX = normEventPos.x - normCurrPos.x;
   const deltaY = normEventPos.y - normCurrPos.y;
 
-  return new Float32Vector2(deltaX, deltaY);
+  return new Vector2(deltaX, deltaY);
 }

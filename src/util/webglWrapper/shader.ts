@@ -1,17 +1,9 @@
-import {
-  type Float32Vector2,
-  type Float32Vector3,
-  type Float32Vector4,
-  type Matrix2x2,
-  type Matrix3x3,
-  type Matrix4x4,
-} from 'matrixgl';
 import { Option } from '../general/option';
 import { Err, Ok, Result, unit, type Unit } from '../general/result';
 import { GLObject } from './glUtils';
 import type Texture from './texture';
-import { type Int32Vector2, type Int32Vector3, type Int32Vector4 } from './vector';
 import { gl } from '../../drawingEditor/application';
+import { type Matrix2x2, type Matrix3x3, type Matrix4x4, type Vector2, type Vector3, type Vector4 } from 'matrixgl_fork';
 
 export default class Shader {
   private vertexShaderId: GLObject<WebGLShader>;
@@ -150,12 +142,12 @@ export default class Shader {
     gl.uniform1fv(loc, vals);
   }
 
-  uploadFloatVec2(location: string, val: Float32Vector2) {
+  uploadFloatVec2(location: string, val: Vector2) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2f(loc, val.x, val.y);
   }
 
-  uploadFloatVec2Array(location: string, vals: Float32Vector2[]) {
+  uploadFloatVec2Array(location: string, vals: Vector2[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2fv(
       loc,
@@ -163,12 +155,12 @@ export default class Shader {
     );
   }
 
-  uploadFloatVec3(location: string, val: Float32Vector3) {
+  uploadFloatVec3(location: string, val: Vector3) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3f(loc, val.x, val.y, val.z);
   }
 
-  uploadFloatVec3Array(location: string, vals: Float32Vector3[]) {
+  uploadFloatVec3Array(location: string, vals: Vector3[]) {
     ``;
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3fv(
@@ -177,12 +169,12 @@ export default class Shader {
     );
   }
 
-  uploadFloatVec4(location: string, val: Float32Vector4) {
+  uploadFloatVec4(location: string, val: Vector4) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform4f(loc, val.x, val.y, val.z, val.w);
   }
 
-  uploadFloatVec4Array(location: string, vals: Float32Vector4[]) {
+  uploadFloatVec4Array(location: string, vals: Vector4[]) {
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3fv(
       loc,
@@ -200,12 +192,14 @@ export default class Shader {
     gl.uniform1iv(loc, vals);
   }
 
-  uploadIntVec2(location: string, val: Int32Vector2) {
+  uploadIntVec2(location: string, val: Vector2) {
+    val = val.floor();
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2i(loc, val.x, val.y);
   }
 
-  uploadIntVec2Array(location: string, vals: Int32Vector2[]) {
+  uploadIntVec2Array(location: string, vals: Vector2[]) {
+    vals.mapInPlace((t) => t.floor());
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform2iv(
       loc,
@@ -213,12 +207,14 @@ export default class Shader {
     );
   }
 
-  uploadInttVec3(location: string, val: Int32Vector3) {
+  uploadInttVec3(location: string, val: Vector3) {
+    val = val.floor();
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3i(loc, val.x, val.y, val.z);
   }
 
-  uploadIntVec3Array(location: string, vals: Int32Vector3[]) {
+  uploadIntVec3Array(location: string, vals: Vector3[]) {
+    vals.mapInPlace((t) => t.floor());
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform3iv(
       loc,
@@ -226,12 +222,14 @@ export default class Shader {
     );
   }
 
-  uploadIntVec4(location: string, val: Int32Vector4) {
+  uploadIntVec4(location: string, val: Vector4) {
+    val = val.floor();
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform4i(loc, val.x, val.y, val.z, val.w);
   }
 
-  uploadIntVec4Array(location: string, vals: Int32Vector4[]) {
+  uploadIntVec4Array(location: string, vals: Vector4[]) {
+    vals.mapInPlace((t) => t.floor());
     const loc = gl.getUniformLocation(this.programId.innerId(), location);
     gl.uniform4iv(
       loc,

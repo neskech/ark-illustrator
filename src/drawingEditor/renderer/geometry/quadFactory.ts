@@ -5,10 +5,9 @@ import {
   type VertexAttributesObject,
 } from '../../../util/webglWrapper/vertexAttributes';
 import { QuadPositioner } from './positioner';
-import { type Float32Vector2 } from 'matrixgl';
 import { QuadTransform } from './transform';
-import { add, angle, displacement, normalize, scale } from '~/util/webglWrapper/vector';
 import { QuadRotator } from './rotator';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -33,10 +32,10 @@ type PartialAttribSet<Attributes> = {
 };
 
 type Positions = {
-  bottomLeft: Float32Vector2;
-  bottomRight: Float32Vector2;
-  topRight: Float32Vector2;
-  topLeft: Float32Vector2;
+  bottomLeft: Vector2;
+  bottomRight: Vector2;
+  topRight: Vector2;
+  topLeft: Vector2;
 };
 
 type RectangleArgs<T extends AttributesObject> = {
@@ -58,8 +57,8 @@ type QuadilateralArgs<T extends AttributesObject> = {
 };
 
 type LineArgs<T extends AttributesObject> = {
-  start: Float32Vector2;
-  end: Float32Vector2;
+  start: Vector2;
+  end: Vector2;
   thickness: number;
   attributes?: PartialAttributes<T>;
 };
@@ -91,8 +90,8 @@ type EmplaceQuadilateralArgs<T extends AttributesObject> = {
 type EmplaceLineArgs<T extends AttributesObject> = {
   buffer: Float32Array;
   offset: number;
-  start: Float32Vector2;
-  end: Float32Vector2;
+  start: Vector2;
+  end: Vector2;
   thickness: number;
   attributes?: PartialAttributes<T>;
 };
@@ -230,10 +229,10 @@ export class QuadilateralFactory<T extends AttributesObject> {
   }
 
   makeLine(args: LineArgs<T>): number[] {
-    const disp = displacement(args.start, args.end);
+    const disp = Vector2.displacement(args.start, args.end);
     const height = disp.magnitude / 2;
-    const center = add(args.start, scale(normalize(disp), height));
-    const theta = angle(disp);
+    const center = args.start.add(disp.mult(height));
+    const theta = disp.angle();
     const width = args.thickness;
 
     const transform = QuadTransform.builder()
@@ -347,10 +346,10 @@ export class QuadilateralFactory<T extends AttributesObject> {
   }
 
   emplaceLine(args: EmplaceLineArgs<T>): number {
-    const disp = displacement(args.start, args.end);
+    const disp = Vector2.displacement(args.start, args.end);
     const height = disp.magnitude / 2;
-    const center = add(args.start, scale(normalize(disp), height));
-    const theta = angle(disp);
+    const center = args.start.add(disp.mult(height));
+    const theta = disp.angle();
     const width = args.thickness;
 
     const transform = QuadTransform.builder()
@@ -381,7 +380,7 @@ export class QuadilateralFactory<T extends AttributesObject> {
 
 function makeFullAttributes<T extends AttributesObject>(
   a: Omit<VertexAttributesObject<T>, 'position'>,
-  pos: Float32Vector2
+  pos: Vector2
 ): VertexAttributesObject<T> {
   return {
     position: [pos.x, pos.y],

@@ -3,12 +3,11 @@ import { IncrementalStabilizer } from './stabilizer';
 import { newPoint, type BrushPoint } from '../brushTool';
 import { assert } from '~/util/general/contracts';
 import { type BaseBrushSettings } from '../../../settings/brushSettings';
-import { add, scale } from '~/util/webglWrapper/vector';
-import { Float32Vector2 } from 'matrixgl';
 import InterpolatorFactory, {
   type InterpolatorSettings,
 } from '../interpolator/interpolatorFactory';
 import { type Interpolator } from '../interpolator/interpolator';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +33,7 @@ export interface MovingAverageStabilizerSettings {
 
 export class MovingAverageStabilizer extends IncrementalStabilizer {
   private settings: MovingAverageStabilizerSettings;
-  private inputPoints: Float32Vector2[];
+  private inputPoints: Vector2[];
   private outputPoints: BrushPoint[];
   private lastOutputPoint: BrushPoint | null;
   private lastRealPoint: BrushPoint | null;
@@ -65,8 +64,8 @@ export class MovingAverageStabilizer extends IncrementalStabilizer {
     this.lastRealPoint = p;
     this.inputPoints.push(p.position);
 
-    const sum = this.inputPoints.reduce((prev, curr) => add(prev, curr), new Float32Vector2(0, 0));
-    const avg = scale(sum, 1 / this.inputPoints.length);
+    const sum = this.inputPoints.reduce((prev, curr) => prev.add(curr), new Vector2(0, 0));
+    const avg = sum.mult(1 / this.inputPoints.length);
     this.outputPoints.push(newPoint(avg, p.pressure));
   }
 

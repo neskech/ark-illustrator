@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { clamp } from 'curve-interpolator';
-import { type Float32Vector3 } from 'matrixgl';
+import { type Vector3 } from 'matrixgl_fork';
 import React, { useEffect, useRef, useState } from 'react';
 import EventManager from '~/util/eventSystem/eventManager';
 import { hslToHex, hslToRGBNormalized } from '~/util/general/color';
@@ -171,7 +171,7 @@ function getRGBFromParams(
   degree: number,
   boxPos: Position,
   innerSquareSize: number
-): Float32Vector3 {
+): Vector3 {
   const saturation = Math.floor(50 * (boxPos.x / innerSquareSize + 0.5)) + 50;
   const lightness = Math.floor(50 * (boxPos.y / innerSquareSize + 0.5));
   return hslToRGBNormalized(getDegree(degree), saturation, lightness);

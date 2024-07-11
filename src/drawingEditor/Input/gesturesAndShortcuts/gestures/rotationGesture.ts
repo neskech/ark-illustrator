@@ -1,9 +1,8 @@
 import { type PointerPos, Gesture, areValidPointerIDs, type GestureContext } from './gesture';
-import { angle } from '~/util/webglWrapper/vector';
 import { assert } from '~/util/general/contracts';
-import { displacement } from '../../../../util/webglWrapper/vector';
 import { equalsNoOrder } from '~/util/general/arrayUtils';
 import type Camera from '~/drawingEditor/renderer/camera';
+import { Vector2 } from 'matrixgl_fork';
 
 const ROTATION_FACTOR = 1;
 
@@ -32,7 +31,7 @@ export default class RotationGesture extends Gesture {
       return;
     }
 
-    const newAngle = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
+    const newAngle = rad2Deg(Vector2.displacement(positions[0].pos, positions[1].pos).angle());
     const rotation = newAngle - this.originalRotation;
     context.camera.setRotation(this.originalCameraRotation + rotation * ROTATION_FACTOR);
   }
@@ -50,7 +49,9 @@ export default class RotationGesture extends Gesture {
     if (positions.length == 2) {
       this.pointerId1 = positions[0].id;
       this.pointerId2 = positions[1].id;
-      this.originalRotation = rad2Deg(angle(displacement(positions[0].pos, positions[1].pos)));
+      this.originalRotation = rad2Deg(
+        Vector2.displacement(positions[0].pos, positions[1].pos).angle()
+      );
       this.originalCameraRotation = camera.getRotation();
       assert(this.isInitialized());
     }

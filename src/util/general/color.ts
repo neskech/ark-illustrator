@@ -1,5 +1,5 @@
-import { Float32Vector4, Float32Vector3 } from 'matrixgl';
-import { Int32Vector3 } from '../webglWrapper/vector';
+
+import { Vector3, Vector4 } from 'matrixgl_fork';
 import { requires } from './contracts';
 
 export function hslToHex(h: number, s: number, l: number) {
@@ -15,7 +15,7 @@ export function hslToHex(h: number, s: number, l: number) {
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
-export function hslToRGB(h: number, s: number, l: number): Int32Vector3 {
+export function hslToRGB(h: number, s: number, l: number): Vector3 {
   let r, g, b;
 
   if (s === 0) {
@@ -28,32 +28,32 @@ export function hslToRGB(h: number, s: number, l: number): Int32Vector3 {
     b = hueToRgb(p, q, h - 1 / 3);
   }
 
-  return new Int32Vector3(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
+  return new Vector3(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
 }
 
-export function hslToRGBUnormalizedFloat(h: number, s: number, l: number): Float32Vector3 {
+export function hslToRGBUnormalizedFloat(h: number, s: number, l: number): Vector3 {
   s /= 100;
   l /= 100;
   const k = (n: number) => (n + h / 30) % 12;
   const a = s * Math.min(l, 1 - l);
   const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-  return new Float32Vector3(255 * f(0), 255 * f(8), 255 * f(4));
+  return new Vector3(255 * f(0), 255 * f(8), 255 * f(4));
 }
 
-export function hslToRGBNormalized(h: number, s: number, l: number): Float32Vector3 {
+export function hslToRGBNormalized(h: number, s: number, l: number): Vector3 {
   const unorm = hslToRGBUnormalizedFloat(h, s, l);
   return rgbToNormalized(unorm);
 }
 
-export function hslAlphaToRGBA(h: number, s: number, l: number, alpha: number): Float32Vector4 {
+export function hslAlphaToRGBA(h: number, s: number, l: number, alpha: number): Vector4 {
   requires(0 <= alpha && alpha <= 1);
   const unorm = hslToRGBUnormalizedFloat(h, s, l);
   const norm = rgbToNormalized(unorm);
-  return new Float32Vector4(norm.x, norm.y, norm.z, alpha);
+  return new Vector4(norm.x, norm.y, norm.z, alpha);
 }
 
-export function rgbToNormalized(rgb: Int32Vector3 | Float32Vector3): Float32Vector3 {
-  return new Float32Vector3(rgb.x / 255, rgb.y / 255, rgb.z / 255);
+export function rgbToNormalized(rgb: Vector3): Vector3 {
+  return new Vector3(rgb.x / 255, rgb.y / 255, rgb.z / 255);
 }
 
 function hueToRgb(p: number, q: number, t: number): number {
@@ -65,7 +65,7 @@ function hueToRgb(p: number, q: number, t: number): number {
   return p;
 }
 
-export function rgbaToHsl(r: number, g: number, b: number): Float32Vector3 {
+export function rgbaToHsl(r: number, g: number, b: number): Vector3 {
   r = r / 255;
   g = g / 255;
   b = b / 255;
@@ -97,5 +97,5 @@ export function rgbaToHsl(r: number, g: number, b: number): Float32Vector3 {
     h /= 6;
   }
 
-  return new Float32Vector3(h, s, l);
+  return new Vector3(h, s, l).floor();
 }

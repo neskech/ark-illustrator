@@ -1,20 +1,19 @@
-import { Float32Vector2 } from 'matrixgl';
+import { Vector2 } from 'matrixgl_fork';
 import { assert, requires } from './contracts';
-import { add, copy, scale } from '../webglWrapper/vector';
 
 export default class BezierFunction {
-  private controlPoints: Float32Vector2[];
+  private controlPoints: Vector2[];
 
   constructor() {
     this.controlPoints = [];
   }
 
-  addPoint(point: Float32Vector2) {
+  addPoint(point: Vector2) {
     this.controlPoints.push(point);
     this.assertIsValid();
   }
 
-  removePoint(point: number | Float32Vector2) {
+  removePoint(point: number | Vector2) {
     if (typeof point == 'number') {
       requires(point >= 0 && point < this.controlPoints.length);
       this.controlPoints.splice(point, 1);
@@ -37,13 +36,13 @@ export default class BezierFunction {
     requires(this.controlPoints.length >= 2);
 
     const n = this.controlPoints.length;
-    const sum = new Float32Vector2(0, 0);
+    let sum = new Vector2(0, 0);
     for (let i = 0; i < n; i++) {
       const comb = combinations(n, i);
       const factor = pow(1 - t, n - i);
       const factor2 = pow(t, i);
-      const p = copy(this.controlPoints[i]);
-      add(sum, scale(p, comb * factor * factor2));
+      const p = this.controlPoints[i];
+      sum = sum.add(p.mult(comb * factor * factor2));
     }
 
     return sum;
@@ -54,13 +53,13 @@ export default class BezierFunction {
     requires(this.controlPoints.length >= 2);
 
     const n = this.controlPoints.length;
-    const sum = new Float32Vector2(0, 0);
+    let sum = new Vector2(0, 0);
     for (let i = 0; i < n; i++) {
       const comb = combinations(n, i);
       const factor = pow(1 - t, n - i);
       const factor2 = pow(t, i);
-      const p = copy(this.controlPoints[i]);
-      add(sum, scale(p, comb * factor * factor2));
+      const p = this.controlPoints[i];
+      sum = sum.add(p.mult(comb * factor * factor2));
     }
 
     return sum.y;
@@ -98,8 +97,8 @@ export default class BezierFunction {
 
   static getLinearBezier(): BezierFunction {
     const fn = new BezierFunction();
-    fn.addPoint(new Float32Vector2(0, 0));
-    fn.addPoint(new Float32Vector2(1, 1));
+    fn.addPoint(new Vector2(0, 0));
+    fn.addPoint(new Vector2(1, 1));
     return fn;
   }
 }

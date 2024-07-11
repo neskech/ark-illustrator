@@ -1,5 +1,4 @@
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
-import { Float32Vector2 } from 'matrixgl';
 import {
   type GetAttributesType,
   VertexAttributes,
@@ -17,6 +16,7 @@ import { gl } from '~/drawingEditor/application';
 import { clearScreen } from '../util/renderUtils';
 import type Camera from '../camera';
 import { type PrimaryRendererContext } from './primaryRenderers';
+import { Vector2 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ import { type PrimaryRendererContext } from './primaryRenderers';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const CANVAS_ORIGIN = new Float32Vector2(0, 0);
+const CANVAS_ORIGIN = new Vector2(0, 0);
 const SIZE_VERTEX = 4;
 const NUM_VERTEX_QUAD = 6;
 

@@ -1,8 +1,7 @@
 import { assert, requires } from '~/util/general/contracts';
 import { NoContextEventHandler } from './eventHandler';
-import { Float32Vector2, Float32Vector3 } from 'matrixgl';
 import { unreachable } from '~/util/general/funUtils';
-import { equals } from '~/util/webglWrapper/vector';
+import { Vector2, Vector3 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -33,32 +32,32 @@ type MouseButtonState = {
 };
 
 type MousePositionState = {
-  client: Float32Vector2;
-  previousClient: Float32Vector2;
-  layer: Float32Vector2;
-  page: Float32Vector2;
-  offset: Float32Vector2;
-  screen: Float32Vector2;
+  client: Vector2;
+  previousClient: Vector2;
+  layer: Vector2;
+  page: Vector2;
+  offset: Vector2;
+  screen: Vector2;
 };
 
 type PointerState = {
   isDown: boolean;
   hasMoved: boolean;
-  client: Float32Vector2;
-  previousClient: Float32Vector2;
-  layer: Float32Vector2;
-  page: Float32Vector2;
-  offset: Float32Vector2;
-  screen: Float32Vector2;
+  client: Vector2;
+  previousClient: Vector2;
+  layer: Vector2;
+  page: Vector2;
+  offset: Vector2;
+  screen: Vector2;
 };
 
 type ScrollWheelState = {
-  delta: Float32Vector3;
-  client: Float32Vector2;
-  layer: Float32Vector2;
-  page: Float32Vector2;
-  offset: Float32Vector2;
-  screen: Float32Vector2;
+  delta: Vector3;
+  client: Vector2;
+  layer: Vector2;
+  page: Vector2;
+  offset: Vector2;
+  screen: Vector2;
 };
 
 export type MouseButtonType = 'left' | 'right' | 'middle' | 'four' | 'five';
@@ -118,43 +117,40 @@ export default class InputState extends NoContextEventHandler {
       isControlPressed: false,
     }) as MouseButtonState[];
     this.mousePositionState = {
-      client: new Float32Vector2(0, 0),
-      previousClient: new Float32Vector2(0, 0),
-      layer: new Float32Vector2(0, 0),
-      page: new Float32Vector2(0, 0),
-      offset: new Float32Vector2(0, 0),
-      screen: new Float32Vector2(0, 0),
+      client: new Vector2(0, 0),
+      previousClient: new Vector2(0, 0),
+      layer: new Vector2(0, 0),
+      page: new Vector2(0, 0),
+      offset: new Vector2(0, 0),
+      screen: new Vector2(0, 0),
     };
     this.pointerState = new Array(NUM_POINTER_TYPES).fill({
       isDown: false,
-      client: new Float32Vector2(0, 0),
-      previousClient: new Float32Vector2(0, 0),
-      layer: new Float32Vector2(0, 0),
-      page: new Float32Vector2(0, 0),
-      offset: new Float32Vector2(0, 0),
-      screen: new Float32Vector2(0, 0),
+      client: new Vector2(0, 0),
+      previousClient: new Vector2(0, 0),
+      layer: new Vector2(0, 0),
+      page: new Vector2(0, 0),
+      offset: new Vector2(0, 0),
+      screen: new Vector2(0, 0),
       hasMoved: false,
     }) as PointerState[];
     this.keyState = new Map();
     this.scrollWheelState = {
-      delta: new Float32Vector3(0, 0, 0),
-      client: new Float32Vector2(0, 0),
-      layer: new Float32Vector2(0, 0),
-      page: new Float32Vector2(0, 0),
-      offset: new Float32Vector2(0, 0),
-      screen: new Float32Vector2(0, 0),
+      delta: new Vector3(0, 0, 0),
+      client: new Vector2(0, 0),
+      layer: new Vector2(0, 0),
+      page: new Vector2(0, 0),
+      offset: new Vector2(0, 0),
+      screen: new Vector2(0, 0),
     };
     this.mouseMoved = false;
   }
 
   public update() {
-    this.mouseMoved = !equals(
-      this.getMousePositionClient(),
-      this.mousePositionState.previousClient
-    );
+    this.mouseMoved = !this.getMousePositionClient().equals(this.mousePositionState.previousClient);
 
     for (const state of this.pointerState) {
-      state.hasMoved = !equals(state.client, state.previousClient);
+      state.hasMoved = state.client.equals(state.previousClient);
     }
   }
 
@@ -187,72 +183,72 @@ export default class InputState extends NoContextEventHandler {
     return this.keyState.get(key)!.isPressed;
   }
 
-  public getPointerPositionClient(pointerType: PointerType): Float32Vector2 {
+  public getPointerPositionClient(pointerType: PointerType): Vector2 {
     const index = pointerTypeToIndex(pointerType);
     return this.pointerState[index].client;
   }
 
-  public getPointerPositionLayer(pointerType: PointerType): Float32Vector2 {
+  public getPointerPositionLayer(pointerType: PointerType): Vector2 {
     const index = pointerTypeToIndex(pointerType);
     return this.pointerState[index].layer;
   }
 
-  public getPointerPositionPage(pointerType: PointerType): Float32Vector2 {
+  public getPointerPositionPage(pointerType: PointerType): Vector2 {
     const index = pointerTypeToIndex(pointerType);
     return this.pointerState[index].page;
   }
 
-  public getPointerPositionOffset(pointerType: PointerType): Float32Vector2 {
+  public getPointerPositionOffset(pointerType: PointerType): Vector2 {
     const index = pointerTypeToIndex(pointerType);
     return this.pointerState[index].offset;
   }
 
-  public getPointerPositionScreen(pointerType: PointerType): Float32Vector2 {
+  public getPointerPositionScreen(pointerType: PointerType): Vector2 {
     const index = pointerTypeToIndex(pointerType);
     return this.pointerState[index].screen;
   }
 
-  public getMousePositionClient(): Float32Vector2 {
+  public getMousePositionClient(): Vector2 {
     return this.mousePositionState.client;
   }
 
-  public getMousePositionLayer(): Float32Vector2 {
+  public getMousePositionLayer(): Vector2 {
     return this.mousePositionState.layer;
   }
 
-  public getMousePositionPage(): Float32Vector2 {
+  public getMousePositionPage(): Vector2 {
     return this.mousePositionState.page;
   }
 
-  public getMousePositionOffset(): Float32Vector2 {
+  public getMousePositionOffset(): Vector2 {
     return this.mousePositionState.offset;
   }
 
-  public getMousePositionScreen(): Float32Vector2 {
+  public getMousePositionScreen(): Vector2 {
     return this.mousePositionState.screen;
   }
 
-  public getMouseWheelScrollDelta(): Float32Vector3 {
+  public getMouseWheelScrollDelta(): Vector3 {
     return this.scrollWheelState.delta;
   }
 
-  public getMouseWheelScrollClient(): Float32Vector2 {
+  public getMouseWheelScrollClient(): Vector2 {
     return this.scrollWheelState.client;
   }
 
-  public getMouseWheelScrollLayer(): Float32Vector2 {
+  public getMouseWheelScrollLayer(): Vector2 {
     return this.scrollWheelState.layer;
   }
 
-  public getMouseWheelScrollPage(): Float32Vector2 {
+  public getMouseWheelScrollPage(): Vector2 {
     return this.scrollWheelState.page;
   }
 
-  public getMouseWheelScrollOffset(): Float32Vector2 {
+  public getMouseWheelScrollOffset(): Vector2 {
     return this.scrollWheelState.offset;
   }
 
-  public getMouseWheelScrollScreen(): Float32Vector2 {
+  public getMouseWheelScrollScreen(): Vector2 {
     return this.scrollWheelState.screen;
   }
 
@@ -287,23 +283,23 @@ export default class InputState extends NoContextEventHandler {
 
   protected mouseMove(event: MouseEvent): void {
     this.mousePositionState.previousClient = this.mousePositionState.client;
-    this.mousePositionState.client = new Float32Vector2(event.clientX, event.clientY);
-    this.mousePositionState.layer = new Float32Vector2(event.layerX, event.layerY);
-    this.mousePositionState.page = new Float32Vector2(event.pageX, event.pageY);
-    this.mousePositionState.offset = new Float32Vector2(event.offsetX, event.offsetY);
-    this.mousePositionState.screen = new Float32Vector2(event.screenX, event.screenY);
+    this.mousePositionState.client = new Vector2(event.clientX, event.clientY);
+    this.mousePositionState.layer = new Vector2(event.layerX, event.layerY);
+    this.mousePositionState.page = new Vector2(event.pageX, event.pageY);
+    this.mousePositionState.offset = new Vector2(event.offsetX, event.offsetY);
+    this.mousePositionState.screen = new Vector2(event.screenX, event.screenY);
   }
 
   protected pointerMove(event: PointerEvent): void {
     const index = pointerTypeToIndex(event.pointerType);
     const state = this.pointerState[index];
     state.previousClient = state.client;
-    state.client = new Float32Vector2(event.clientX, event.clientY);
-    state.client = new Float32Vector2(event.clientX, event.clientY);
-    state.layer = new Float32Vector2(event.layerX, event.layerY);
-    state.page = new Float32Vector2(event.pageX, event.pageY);
-    state.offset = new Float32Vector2(event.offsetX, event.offsetY);
-    state.screen = new Float32Vector2(event.screenX, event.screenY);
+    state.client = new Vector2(event.clientX, event.clientY);
+    state.client = new Vector2(event.clientX, event.clientY);
+    state.layer = new Vector2(event.layerX, event.layerY);
+    state.page = new Vector2(event.pageX, event.pageY);
+    state.offset = new Vector2(event.offsetX, event.offsetY);
+    state.screen = new Vector2(event.screenX, event.screenY);
   }
 
   protected pointerDown(event: PointerEvent): void {
@@ -359,11 +355,11 @@ export default class InputState extends NoContextEventHandler {
   }
 
   protected wheel(event: WheelEvent): void {
-    this.scrollWheelState.delta = new Float32Vector3(event.deltaX, event.deltaY, event.deltaZ);
-    this.scrollWheelState.client = new Float32Vector2(event.clientX, event.clientY);
-    this.scrollWheelState.layer = new Float32Vector2(event.layerX, event.layerY);
-    this.scrollWheelState.page = new Float32Vector2(event.pageX, event.pageY);
-    this.scrollWheelState.offset = new Float32Vector2(event.offsetX, event.offsetY);
-    this.scrollWheelState.screen = new Float32Vector2(event.screenX, event.screenY);
+    this.scrollWheelState.delta = new Vector3(event.deltaX, event.deltaY, event.deltaZ);
+    this.scrollWheelState.client = new Vector2(event.clientX, event.clientY);
+    this.scrollWheelState.layer = new Vector2(event.layerX, event.layerY);
+    this.scrollWheelState.page = new Vector2(event.pageX, event.pageY);
+    this.scrollWheelState.offset = new Vector2(event.offsetX, event.offsetY);
+    this.scrollWheelState.screen = new Vector2(event.screenX, event.screenY);
   }
 }

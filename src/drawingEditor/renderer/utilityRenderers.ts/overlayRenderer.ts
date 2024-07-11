@@ -6,7 +6,6 @@ import {
 import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
 import type Shader from '~/util/webglWrapper/shader';
 import Buffer from '~/util/webglWrapper/buffer';
-import { Float32Vector2 } from 'matrixgl';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { QuadilateralFactory } from '../geometry/quadFactory';
 import { QuadTransform } from '../geometry/transform';
@@ -15,6 +14,7 @@ import { QuadRotator } from '../geometry/rotator';
 import type AssetManager from '../util/assetManager';
 import { gl } from '~/drawingEditor/application';
 import type Texture from '~/util/webglWrapper/texture';
+import { Vector2 } from 'matrixgl_fork';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ import type Texture from '~/util/webglWrapper/texture';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const SCREEN_ORIGIN = new Float32Vector2(0, 0);
+const SCREEN_ORIGIN = new Vector2(0, 0);
 const SCREEN_WIDTH = 1;
 const SCREEN_HEIGHT = 1;
 

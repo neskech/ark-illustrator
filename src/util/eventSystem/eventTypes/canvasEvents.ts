@@ -1,7 +1,8 @@
-import { type Float32Vector3, type Float32Vector2 } from 'matrixgl';
+
 import { type Option } from '~/util/general/option';
 import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import type { Func } from '~/util/general/utilTypes';
+import { type Vector2, type Vector3 } from 'matrixgl_fork';
 
 interface ClearCanvas {
   clearCanvas: Func<void>;
@@ -10,14 +11,14 @@ interface ClearCanvas {
 export interface EyeDropperArgs {
   canvas: HTMLCanvasElement;
   canvasFramebuffer: FrameBuffer;
-  originPosition: Option<Float32Vector2>;
+  originPosition: Option<Vector2>;
 }
 interface ToggleEyeDropper {
   toggleEyeDropper: Func<EyeDropperArgs>;
 }
 
 interface ColorChanged {
-  colorChanged: Func<Float32Vector3>;
+  colorChanged: Func<Vector3>;
 }
 
 interface Undo {
