@@ -73,7 +73,7 @@ export abstract class BaseBrushSettings {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const DEFAULT_TEXTURE =
-  'https://cdn.discordapp.com/attachments/1163516296609144982/1256427273943515246/Red-Circle-Logo-PNG-Photo.png?ex=66875215&is=66860095&hm=a1d5af7cc364cccb99951540559a452f1e94564b70b5e167297b9a99d46f19a3&';
+'textures/circle.png'
 interface StampBrushSettingsArgs extends BaseBrushSettingsArgs {
   flow: number;
   stabilization: number;

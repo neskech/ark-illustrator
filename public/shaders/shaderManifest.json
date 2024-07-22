@@ -1,6 +1,8 @@
 {
   "shaders": [
     "blit",
+    "line",
+    "overlay",
     "rectangle",
     "stroke",
     "world"
