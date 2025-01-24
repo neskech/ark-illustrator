@@ -1,9 +1,9 @@
 import BezierFunction from '~/util/general/bezierFunction';
 import type Texture from '~/util/webglWrapper/texture';
-import { TextureCreator } from '~/util/webglWrapper/texture';
 import { type Option, Some } from '~/util/general/option';
 import EventManager from '~/util/eventSystem/eventManager';
 import { Vector3 } from 'matrixgl_fork';
+import type AssetManager from '../../../renderer/util/assetManager';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +72,6 @@ export abstract class BaseBrushSettings {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const DEFAULT_TEXTURE =
-  'https://cdn.discordapp.com/attachments/1163516296609144982/1256427273943515246/Red-Circle-Logo-PNG-Photo.png?ex=66875215&is=66860095&hm=a1d5af7cc364cccb99951540559a452f1e94564b70b5e167297b9a99d46f19a3&';
 interface StampBrushSettingsArgs extends BaseBrushSettingsArgs {
   flow: number;
   stabilization: number;
@@ -102,17 +100,9 @@ export class StampBrushSettings extends BaseBrushSettings {
     });
   }
 
-  static async default(): Promise<StampBrushSettings> {
-    const brushTexture = await TextureCreator.allocateFromImageUrlAsync({
-      url: DEFAULT_TEXTURE,
-      texureOptions: {
-        wrapX: 'Repeat',
-        wrapY: 'Repeat',
-        magFilter: 'Linear',
-        minFilter: 'Linear',
-        format: 'RGBA',
-      },
-    });
+  static default(assetManager: AssetManager): StampBrushSettings {
+    console.log("FUCK", assetManager.toString())
+    const brushTexture = assetManager.getTexture('Red-Circle');
 
     return new StampBrushSettings({
       size: 0.025,
@@ -127,7 +117,7 @@ export class StampBrushSettings extends BaseBrushSettings {
       pressureOpacitySettings: BezierFunction.getLinearBezier(),
       color: new Vector3(0, 0, 0),
       isEraser: false,
-      texture: Some(brushTexture.unwrap()),
+      texture: Some(brushTexture),
     });
   }
 }

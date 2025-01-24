@@ -107,10 +107,6 @@ export default class GLBuffer {
     Size in Bytes: ${this.sizeBytes}`;
   }
 
-  log(logger: (s: string) => void) {
-    logger(this.toString());
-  }
-
   destroy() {
     this.id.destroy((id) => {
       gl.deleteBuffer(id);

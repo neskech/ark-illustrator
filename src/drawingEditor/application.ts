@@ -55,7 +55,7 @@ export default class EditorApplication {
     if (resTexture.isErr()) return Err(resTexture.unwrapErr());
 
     const layerManager = new LayerManager(canvas);
-    const inputManager = new InputManager(await getDefaultSettings());
+    const inputManager = new InputManager(getDefaultSettings(assetManager));
     const renderer = new Renderer(canvas, inputManager.getSettings(), assetManager);
     instance.appState = {
       layerManager,

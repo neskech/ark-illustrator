@@ -115,10 +115,6 @@ export class Option<T> {
     return 'None';
   }
 
-  log(): void {
-    console.log(this.toString());
-  }
-
   logWith(logger: (s: string) => void): void {
     logger(this.toString());
   }

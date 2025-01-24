@@ -396,7 +396,7 @@ Array.prototype.filterInPlace = function (fn) {
 
 Array.prototype.mapInPlace = function (fn) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return filterInPlace(this, fn);
+  return mapInPlace(this, fn);
 };
 
 Array.prototype.chunks = function (chunkSize, fn) {
@@ -414,7 +414,7 @@ Array.prototype.mapChunksIdx = function (chunkSize, fn) {
 
 Array.prototype.mapInPlace = function (fn) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return filterInPlace(this, fn);
+  return mapInPlace(this, fn);
 };
 
 Array.prototype.scan = function (fn, baseCase) {

@@ -3,7 +3,14 @@ import { Err, Ok, Result, unit, type Unit } from '../general/result';
 import { GLObject } from './glUtils';
 import type Texture from './texture';
 import { gl } from '../../drawingEditor/application';
-import { type Matrix2x2, type Matrix3x3, type Matrix4x4, type Vector2, type Vector3, type Vector4 } from 'matrixgl_fork';
+import {
+  type Matrix2x2,
+  type Matrix3x3,
+  type Matrix4x4,
+  type Vector2,
+  type Vector3,
+  type Vector4,
+} from 'matrixgl_fork';
 
 export default class Shader {
   private vertexShaderId: GLObject<WebGLShader>;
@@ -34,14 +41,14 @@ export default class Shader {
   async compileFromFile(shaderName: string): Promise<Result<Unit, string>> {
     try {
       this.name = shaderName;
-      const vert = await Result.fromErrorAsync(fetch(`shaders/${shaderName}.vert`));
+      const vert = await Result.fromExceptionAsync(fetch(`shaders/${shaderName}.vert`));
       if (vert.isErr()) return Err(vert.unwrapErr().message);
-      const vertText = await Result.fromErrorAsync(vert.unwrap().text());
+      const vertText = await Result.fromExceptionAsync(vert.unwrap().text());
       if (vertText.isErr()) return Err(vertText.unwrapErr().message);
 
-      const frag = await Result.fromErrorAsync(fetch(`shaders/${shaderName}.frag`));
+      const frag = await Result.fromExceptionAsync(fetch(`shaders/${shaderName}.frag`));
       if (frag.isErr()) return Err(frag.unwrapErr().message);
-      const fragText = await Result.fromErrorAsync(frag.unwrap().text());
+      const fragText = await Result.fromExceptionAsync(frag.unwrap().text());
       if (fragText.isErr()) return Err(fragText.unwrapErr().message);
 
       this.compileFromSource(vertText.unwrap(), fragText.unwrap());

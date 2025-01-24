@@ -238,9 +238,6 @@ export default class Texture {
     `;
   }
 
-  log(logger: (s: string) => void = console.log) {
-    logger(this.toString());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -355,7 +352,7 @@ export class TextureCreator {
     }
 
     const img = new Image();
-    const res = await Result.fromErrorAsync(asyncImgLoad(img, options.url));
+    const res = await Result.fromExceptionAsync(asyncImgLoad(img, options.url));
     if (res.isErr()) return Err(res.unwrapErr().message);
 
     const texture = new Texture({ width: img.width, height: img.height, ...options.texureOptions });

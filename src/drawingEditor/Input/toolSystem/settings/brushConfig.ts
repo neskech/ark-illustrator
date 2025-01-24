@@ -2,6 +2,7 @@ import StabilizerFactory, {
   type StabilizerSettings,
 } from '../tools/brushTool/stabilizing/stabilizerFactory';
 import { StampBrushSettings, type LineBrushSettings } from './brushSettings';
+import type AssetManager from '../../../renderer/util/assetManager';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -14,10 +15,10 @@ import { StampBrushSettings, type LineBrushSettings } from './brushSettings';
 export type BrushConfiguration = StampBrushConfiguration | LineBrushConfiguration;
 export type BrushConfigType = BrushConfiguration['type'];
 
-export async function getDefaultBrushConfig(): Promise<BrushConfiguration> {
+export function getDefaultBrushConfig(assetManager: AssetManager): BrushConfiguration {
   return {
     type: 'stamp',
-    brushSettings: await StampBrushSettings.default(),
+    brushSettings: StampBrushSettings.default(assetManager),
     stabilizerSettings: StabilizerFactory.default(),
   };
 }

@@ -50,16 +50,7 @@ export class Result<T, E> {
     return Err(unit);
   }
 
-  static fromException<T>(fn: () => T): Result<T, unknown> {
-    try {
-      const val: T = fn();
-      return Ok(val);
-    } catch (err) {
-      return Err(err);
-    }
-  }
-
-  static fromError<T, E>(fn: () => T): Result<T, E> {
+  static fromException<T, E>(fn: () => T): Result<T, E> {
     try {
       const val: T = fn();
       return Ok(val);
@@ -68,16 +59,7 @@ export class Result<T, E> {
     }
   }
 
-  static async fromExceptionAsync<T>(p: Promise<T>): Promise<Result<T, unknown>> {
-    try {
-      const val = await p;
-      return Ok(val);
-    } catch (err) {
-      return Err(err);
-    }
-  }
-
-  static async fromErrorAsync<T>(p: Promise<T>): Promise<Result<T, Error>> {
+  static async fromExceptionAsync<T>(p: Promise<T>): Promise<Result<T, Error>> {
     try {
       const val = await p;
       return Ok(val);
@@ -87,19 +69,10 @@ export class Result<T, E> {
     }
   }
 
-  static async multipleExceptionAsync<T>(promises: Promise<T>[]): Promise<Result<T[], unknown>> {
+  static async multipleExceptionsAsync<T>(promises: Promise<T>[]): Promise<Result<T[], Error>> {
     try {
-      const result = await Promise.all(promises)
-      return Ok(result)
-    } catch (err) {
-      return Err(err);
-    }
-  }
-
-  static async multipleErrorAsync<T>(promises: Promise<T>[]): Promise<Result<T[], Error>> {
-    try {
-      const result = await Promise.all(promises)
-      return Ok(result)
+      const result = await Promise.all(promises);
+      return Ok(result);
     } catch (err) {
       assertIsError(err);
       return Err(err);
@@ -136,10 +109,6 @@ export class Result<T, E> {
     if (isOk_(this.data)) return `Ok(${this.data.value})`;
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `Err(${this.data.value})`;
-  }
-
-  log(): void {
-    console.log(this.toString());
   }
 
   logWith(logger: (s: string) => void): void {

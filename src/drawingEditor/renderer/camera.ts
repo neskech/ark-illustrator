@@ -155,10 +155,6 @@ export default class Camera {
     `;
   }
 
-  log(logger: (s: string) => void = console.log) {
-    logger(this.toString());
-  }
-
   mouseToWorld(position: Vector2, canvas: HTMLCanvasElement): Vector2 {
     const p = Camera.mouseToNDC(position, canvas);
 

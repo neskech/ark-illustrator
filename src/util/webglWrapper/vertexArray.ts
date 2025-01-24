@@ -38,7 +38,7 @@ export class VertexArrayObject<T extends AttributesObject> {
     }
   }
 
-  log(logger: (s: string) => void = console.log): void {
+  toString(): string {
     let string = '';
 
     for (const { name, attribute } of this.attributes.orderedAttributes()) {
@@ -52,7 +52,7 @@ export class VertexArrayObject<T extends AttributesObject> {
       }`;
     }
 
-    logger(string);
+    return string
   }
 
   bind() {
