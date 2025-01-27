@@ -1,6 +1,7 @@
-import { Box, Slider, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useState } from 'react';
-import { StampBrushSettings} from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
+import Slider from '~/components/util/Slider';
+import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
 export interface BrushSettingsProps {
   brushSettings: StampBrushSettings;
@@ -9,161 +10,90 @@ export interface BrushSettingsProps {
 
 function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
   const [size, setSize_] = useState<number>(brushSettings.size);
-  const setSize = (e: Event, val: number) => {
+  const setSize = (val: number) => {
     brushSettings.size = val;
     setSize_(val);
   };
 
   const [minSize, setMinSize_] = useState<number>(brushSettings.minSize);
-  const setMinSize = (e: Event, val: number) => {
+  const setMinSize = (val: number) => {
     brushSettings.minSize = val;
     setMinSize_(val);
   };
 
   const [maxSize, setMaxSize_] = useState<number>(brushSettings.maxSize);
-  const setMaxSize = (e: Event, val: number) => {
+  const setMaxSize = (val: number) => {
     brushSettings.maxSize = val;
     setMaxSize_(val);
   };
 
   const [opacity, setOpacity_] = useState<number>(brushSettings.opacity);
-  const setOpacity = (e: Event, val: number) => {
+  const setOpacity = (val: number) => {
     brushSettings.opacity = val;
     setOpacity_(val);
   };
 
   const [minOpacity, setMinOpacity_] = useState<number>(brushSettings.minOpacity);
-  const setMinOpacity = (e: Event, val: number) => {
+  const setMinOpacity = (val: number) => {
     brushSettings.minOpacity = val;
     setMinOpacity_(val);
   };
 
   const [maxOpacity, setMaxOpacity_] = useState<number>(brushSettings.maxOpacity);
-  const setMaxOpacity = (e: Event, val: number) => {
+  const setMaxOpacity = (val: number) => {
     brushSettings.maxOpacity = val;
     setMaxOpacity_(val);
   };
 
   const [flow, setFlow_] = useState<number>(0.01);
-  const setFlow = (e: Event, val: number) => {
+  const setFlow = (val: number) => {
     brushSettings.flow = val;
     setFlow_(val);
   };
 
+  const normalize = (val: number, min: number, max: number) => {
+    const v = (val - min) / (max - min)
+    return Math.round(100 * v)
+  }
+
   return (
-    <Box className="flex h-full w-[90%] flex-col items-center justify-center gap-4">
-      <Box className="ml-0 mr-auto grid grid-cols-2">
-        <Typography fontSize={15} className="ml-0 mr-auto" sx={{ color: '#dfe0eb' }}>
-          Brush Size
-        </Typography>
-        <Slider
-          aria-label="Brush Size"
-          value={size}
-          min={0.005}
-          max={0.1}
-          step={0.001}
-          className="absolute left-3"
-          sx={{ width: '90%', color: '#3c69cf' }}
-          onChange={(e, val) => setSize(e, val as number)}
-        />
-      </Box>
+    <div className="w-full bg-neutral-800 pl-3 font-mono text-sm text-neutral-200">
+      <Slider
+        label="Size"
+        rawValue={size}
+        displayValue={normalize(size, 0.05, 0.1)}
+        setValue={setSize}
+        min={0.05}
+        max={0.1}
+        units={'px'}
+        round={false}
+        width="95%"
+      />
 
-      <Box className="ml-0 mr-auto grid grid-cols-2">
-        <Typography fontSize={15} sx={{ color: '#dfe0eb' }}>
-          Min Brush Size
-        </Typography>
-        <Slider
-          aria-label="Min Brush Size"
-          value={minSize}
-          min={0}
-          max={1}
-          step={0.01}
-          className="absolute left-3"
-          sx={{ width: '90%', color: '#3c69cf' }}
-          onChange={(e, val) => setMinSize(e, val as number)}
-        />
-      </Box>
+      <Slider
+        label="Opacity"
+        rawValue={opacity}
+        displayValue={normalize(opacity, 0.005, 0.3)}
+        setValue={setOpacity}
+        min={0.005}
+        max={0.3}
+        units={'%'}
+        round={false}
+        width="95%"
+      />
 
-      <Box className="ml-0 mr-auto grid grid-cols-2">
-        <Typography fontSize={15} sx={{ color: '#dfe0eb' }}>
-          Max Brush Size
-        </Typography>
-        <Slider
-          aria-label="Max Brush Size"
-          value={maxSize}
-          min={0}
-          max={1}
-          step={0.01}
-          className="absolute left-3"
-          sx={{ width: '90%', color: '#3c69cf' }}
-          onChange={(e, val) => setMaxSize(e, val as number)}
-        />
-      </Box>
-
-      <Box className="ml-0 mr-auto grid grid-cols-2">
-        <Typography fontSize={15} sx={{ color: '#dfe0eb' }}>
-          Opacity
-        </Typography>
-        <Slider
-          aria-label="Opacity"
-          value={opacity}
-          min={0.005}
-          max={0.3}
-          step={0.01}
-          className="absolute left-3"
-          sx={{ width: '90%', color: '#3c69cf' }}
-          onChange={(e, val) => setOpacity(e, val as number)}
-        />
-      </Box>
-
-      <Box className="ml-0 mr-auto grid grid-cols-2">
-        <Typography fontSize={15} sx={{ color: '#dfe0eb' }}>
-          Min Opacity
-        </Typography>
-        <Slider
-          aria-label="Min Opacity"
-          value={minOpacity}
-          min={0}
-          max={1}
-          step={0.01}
-          className="absolute left-3"
-          sx={{ width: '90%', color: '#3c69cf' }}
-          onChange={(e, val) => setMinOpacity(e, val as number)}
-        />
-      </Box>
-
-      <Box className="ml-0 mr-auto grid grid-cols-2">
-        <Typography fontSize={15} sx={{ color: '#dfe0eb' }}>
-          Max Opacity
-        </Typography>
-        <Slider
-          aria-label="Max Opacity"
-          value={maxOpacity}
-          min={0}
-          max={1}
-          step={0.01}
-          className="absolute left-3"
-          sx={{ width: '90%', color: '#3c69cf' }}
-          onChange={(e, val) => setMaxOpacity(e, val as number)}
-        />
-      </Box>
-
-      <Box className="ml-0 mr-auto grid grid-cols-2">
-        <Typography fontSize={15} sx={{ color: '#dfe0eb' }}>
-          Flow
-        </Typography>
-        <Slider
-          aria-label="Flow"
-          value={flow}
-          min={0.005}
-          max={0.3}
-          step={0.001}
-          className="absolute left-11"
-          sx={{ color: '#3c69cf', width: '100%' }}
-          onChange={(e, val) => setFlow(e, val as number)}
-        />
-      </Box>
-    </Box>
+      <Slider
+        label="Flow"
+        rawValue={flow}
+        displayValue={normalize(flow, 0.005, 0.3)}
+        setValue={setFlow}
+        min={0.005}
+        max={0.3}
+        units={'%'}
+        round={false}
+        width="95%"
+      />
+    </div>
   );
 }
 

@@ -19,23 +19,19 @@ export function BasicEditor({ inputManager }: EditorProps) {
 
   return (
     <Box className="pointer-events-none z-30 h-[100%] w-[100%]">
-      <Box className="pointer-events-auto z-20 float-left flex h-full w-[80px] flex-col justify-center">
-        <Box className="z-20 float-left h-[100%] w-[80px] rounded-lg border-slate-800 bg-slate-800 p-6">
-          <LeftBar inputManager={inputManager} />
-        </Box>
-      </Box>
+      <LeftBar inputManager={inputManager} />
 
-      <Box className="pointer-events-auto z-20 ml-auto mr-0 flex h-full w-[150px] flex-col justify-center">
-        <RightBar inputManager={inputManager} />
-      </Box>
+      <RightBar inputManager={inputManager} />
 
-      <EyeDropper
-      />
+      <EyeDropper />
 
       {showSettings ? (
         <SettingsDialog
           open={showSettings}
-          brushSettings={inputManager.getSettings().brushConfigurations.getCurrentPreset().brushSettings as StampBrushSettings}
+          brushSettings={
+            inputManager.getSettings().brushConfigurations.getCurrentPreset()
+              .brushSettings as StampBrushSettings
+          }
           onClose={() => setShowSettings(false)}
         />
       ) : (

@@ -15,7 +15,7 @@ export interface LeftBarProps {
 }
 type ToolType = ToolTypeName | 'Eraser';
 
-const SELECTED_OPACITY = 0.3;
+const SELECTED_OPACITY = 0.35;
 
 function LeftBar({ inputManager }: LeftBarProps) {
   const [toolType, setToolType] = useState<ToolType>(inputManager.getCurrentTool());
@@ -35,23 +35,37 @@ function LeftBar({ inputManager }: LeftBarProps) {
   }
 
   return (
-    <Box className="flex h-full w-full flex-col items-center justify-center gap-5">
+    <Box className=" pointer-events-auto fixed  left-0 right-0 z-20 flex h-full w-[80px] flex-col items-center justify-center gap-5 bg-neutral-800 p-4 font-mono text-neutral-200 ">
       <Button
         variant="contained"
+        disableRipple
         sx={{
-          color: '#1c3e8a',
+          minWidth: '95%',
+          maxWidth: '95%',
+          color: '#fffffff',
+          background: '#3f3f3f',
           filter: `brightness(${toolType == 'brush' ? SELECTED_OPACITY : 1})`,
+          '&:hover': {
+            backgroundColor: '#3f3f3f', // Set background color on hover
+          },
+          '&:focus': {
+            backgroundColor: '#3f3f3f', // Set background color on focus (highlight)
+          },
         }}
-        className="m-auto h-10 w-10 border-4 border-solid border-slate-200"
         onClick={(_) => setType('brush')}
+        className="m-auto h-10"
       >
-        <BrushIcon className="h-full w-full"> </BrushIcon>
+        <BrushIcon className='text-[20px]'> </BrushIcon>
       </Button>
 
       <Button
         variant="contained"
+        disableRipple
         sx={{
-          color: '#1c3e8a',
+          minWidth: '95%',
+          maxWidth: '95%',
+          color: '#fffffff',
+          background: '#3f3f3f',
           filter: `brightness(${
             (
               inputManager.getSettings().brushConfigurations.getCurrentPreset()
@@ -60,47 +74,83 @@ function LeftBar({ inputManager }: LeftBarProps) {
               ? SELECTED_OPACITY
               : 1
           })`,
+          '&:hover': {
+            backgroundColor: '#3f3f3f', // Set background color on hover
+          },
+          '&:focus': {
+            backgroundColor: '#3f3f3f', // Set background color on focus (highlight)
+          },
         }}
-        className="m-auto h-10 w-10 border-4 border-solid border-slate-200"
+        className="m-auto h-10"
         onClick={(_) => setType('Eraser')}
       >
-        <FontAwesomeIcon icon={faEraser} className="h-full w-full" />
+        <FontAwesomeIcon icon={faEraser} className='text-[20px]' />
       </Button>
 
       <Button
         variant="contained"
+        disableRipple
         sx={{
-          color: '#1c3e8a',
+          minWidth: '95%',
+          maxWidth: '95%',
+          color: '#fffffff',
+          background: '#3f3f3f',
           filter: `brightness(${toolType == 'fillBucket' ? SELECTED_OPACITY : 1})`,
+          '&:hover': {
+            backgroundColor: '#3f3f3f', // Set background color on hover
+          },
+          '&:focus': {
+            backgroundColor: '#3f3f3f', // Set background color on focus (highlight)
+          },
         }}
-        className="m-auto h-10 w-10 border-4 border-solid border-slate-200"
+        className="m-auto h-10"
         onClick={(_) => setType('fillBucket')}
       >
-        <FormatColorFillIcon className="h-full w-full"> </FormatColorFillIcon>
+        <FormatColorFillIcon className='text-[20px]'> </FormatColorFillIcon>
       </Button>
 
       <Button
         variant="contained"
+        disableRipple
         sx={{
-          color: '#1c3e8a',
+          minWidth: '95%',
+          maxWidth: '95%',
+          color: '#fffffff',
+          background: '#3f3f3f',
           filter: `brightness(${toolType == 'square' ? SELECTED_OPACITY : 1})`,
+          '&:hover': {
+            backgroundColor: '#3f3f3f', // Set background color on hover
+          },
+          '&:focus': {
+            backgroundColor: '#3f3f3f', // Set background color on focus (highlight)
+          },
         }}
-        className="m-auto h-10 w-10 border-4 border-solid border-slate-200"
+        className="m-auto h-10"
         onClick={(_) => setType('square')}
       >
-        <CropSquareIcon className="h-full w-full"> </CropSquareIcon>
+        <CropSquareIcon className='text-[20px]'> </CropSquareIcon>
       </Button>
 
       <Button
         variant="contained"
+        disableRipple
         sx={{
-          color: '#1c3e8a',
+          minWidth: '95%',
+          maxWidth: '95%',
+          color: '#fffffff',
+          background: '#3f3f3f',
           filter: `brightness(${toolType == 'circle' ? SELECTED_OPACITY : 1})`,
+          '&:hover': {
+            backgroundColor: '#3f3f3f', // Set background color on hover
+          },
+          '&:focus': {
+            backgroundColor: '#3f3f3f', // Set background color on focus (highlight)
+          },
         }}
-        className="m-auto h-10 w-10 border-4 border-solid border-slate-200"
+        className="m-auto h-10"
         onClick={(_) => setType('circle')}
       >
-        <PanoramaFishEyeIcon className="h-full w-full"> </PanoramaFishEyeIcon>
+        <PanoramaFishEyeIcon className='text-[20px]'> </PanoramaFishEyeIcon>
       </Button>
     </Box>
   );

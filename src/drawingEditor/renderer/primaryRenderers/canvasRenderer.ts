@@ -117,7 +117,7 @@ export default class CanvasRenderer {
 
     const canvasTexture = context.canvasFramebuffer.getTextureAttachment();
 
-    clearScreen(0, 0, 0, 1);
+    clearScreen(25 / 255, 25 / 255, 25 / 255, 1);
     gl.blendFunc(gl.ONE, gl.ZERO);
 
     this.shader.bind();
