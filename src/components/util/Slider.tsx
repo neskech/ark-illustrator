@@ -22,7 +22,6 @@ function Slider({ label, rawValue, displayValue, setValue, min, max, units, roun
   const [isDragging, setDragging] = useState(false);
   const [percentage, setPercentage] = useState(normalize(rawValue, min, max));
   const sliderRef = useRef<HTMLDivElement>(null);
-  console.log("DEFAULT PERCENT", percentage)
 
   useEffect(() => {
 

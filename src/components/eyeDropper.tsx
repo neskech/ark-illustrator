@@ -32,7 +32,6 @@ function EyeDropper() {
       obj.originPosition.map((p) => setPosition(p));
     };
     EventManager.subscribe('toggleEyeDropper', toggle);
-
     pointerMove = (e: MouseEvent) => {
       setPosition(new Vector2(e.clientX, e.clientY));
     };
