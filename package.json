@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "curve-interpolator": "^3.1.1",
+    "framer-motion": "^12.0.6",
     "fs-promise": "^2.0.3",
     "jimp": "^0.22.8",
     "lucide-react": "^0.474.0",

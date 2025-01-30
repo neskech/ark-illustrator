@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
 export interface SliderProps {
-  label: string;
   rawValue: number;
   displayValue: number;
   setValue: (n: number) => void;
@@ -18,7 +17,7 @@ const normalize = (val: number, min: number, max: number) => {
     return v
   }
 
-function Slider({ label, rawValue, displayValue, setValue, min, max, units, round, width }: SliderProps) {
+function Slider({ rawValue, displayValue, setValue, min, max, units, round, width }: SliderProps) {
   const [isDragging, setDragging] = useState(false);
   const [percentage, setPercentage] = useState(normalize(rawValue, min, max));
   const sliderRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,6 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { EditorContext } from '~/components/editorWrapper';
-import Layer from '~/drawingEditor/canvas/layer';
+import type Layer from '~/drawingEditor/canvas/layer';
 import LayerComponent from './layerComponent';
 import { Button } from '~/components/ui/button';
 import { ArrowDown, Layers, Lock, Minus, Move, Plus, Search, Trash2 } from 'lucide-react';
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import Slider from '~/components/ui/Slider';
-import LayerManager from '~/drawingEditor/canvas/layerManager';
+import { Reorder } from 'framer-motion';
 
 export interface LayerHandle {
   name: string;
@@ -30,95 +30,112 @@ function layerToLayerHandle(layer: Layer): LayerHandle {
   };
 }
 
-function syncHandleToLayer(manager: LayerManager, handle: LayerHandle, layerIndex: number) {
-  const layer = manager.getLayers()[layerIndex]
-  layer.setName(handle.name)
-  layer.setVisibility(handle.isVisible)
-  layer.setLocked(handle.isLocked)
-  layer.setOpacity(handle.opacity)
+// Always returns a positive result
+function mod(n: number, m: number) {
+  return ((n % m) + m) % m;
 }
 
-// function uniqueNameFromHandles(name: string, handles: LayerHandle[]) {
-//   const names = handles.map((h) => h.name);
-//   while (names.includes(name)) {
-//     name += ` {}`;
-//   }
-
-//   return '';
-// }
-
 function LayerEditor() {
-  const context = useContext(EditorContext);
-  const handles = context.layerManager.getLayers().map(layerToLayerHandle);
+  const layerManager = useContext(EditorContext).layerManager;
+  const handles = layerManager.getLayers().map(layerToLayerHandle);
   const [layers, setLayers] = useState<LayerHandle[]>(handles);
   const [selection, setSelection] = useState(0);
 
-  function swapLayers(fromIndex: number, toIndex: number) {
-    const layersCopy = [...layers];
-    fromIndex = Math.min(fromIndex, toIndex);
-    toIndex = Math.max(fromIndex, toIndex);
+  useEffect(() => {
+    console.log(layers.map((h) => h.name));
+  }, [layers, selection]);
 
-    const fromLayer = layersCopy[fromIndex];
-    const toLayer = layersCopy[toIndex];
-    layersCopy.splice(toIndex, 1, fromLayer);
-    layersCopy.splice(fromIndex, 1, toLayer);
-    setLayers(layersCopy);
+  function reverseIndex(n: number) {
+    return layers.length - 1 - n;
+  }
 
-    context.layerManager.swapLayers(fromIndex, toIndex);
+  function swapLayers(indices: number[]) {
+    return
+    if (handles.length != layers.length) return
 
-    if (selection == fromIndex)
-      setSelection(toIndex)
-    else if (selection == toIndex)
-      setSelection(fromIndex)
+    layerManager.reorderLayersOnIndices(indices)
+    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+
+    setSelection(indices[selection])
   }
 
   function insertLayer(insertionIndex: number) {
     const name = `Layer #${layers.length + 1}`;
-    context.layerManager.insertNewLayer(name, insertionIndex);
-    console.log('YEAHHHHH', context.layerManager.getLayers().length);
-    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
+    layerManager.insertNewLayer(name, insertionIndex);
+    setLayers(layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function deleteLayer(index: number) {
     if (layers.length == 1) return;
-    context.layerManager.deleteLayer(index);
+    layerManager.deleteLayer(index);
 
     const layersCopy = [...layers];
-    layersCopy.splice(index, 1)
-    setLayers(layersCopy)
+    layersCopy.splice(index, 1);
+    setLayers(layersCopy);
+
+    if (selection == index) {
+      setSelection(mod(selection - 1, layersCopy.length));
+    }
+  }
+
+  function duplicateLayer(index: number) {
+    const name = layers[index].name;
+    let newName = name + ' copy';
+
+    if (handles.some((h) => h.name == newName)) newName += ' #2';
+
+    const filterRegex = new RegExp(`^${name} copy #\\d+$`);
+    const matches = handles.filter((h) => filterRegex.test(h.name));
+    if (matches.length > 0) {
+      const maxCopy = matches.reduce((prev, curr) => {
+        const split = curr.name.split(' ');
+        const num = Number.parseInt(split[split.length - 1].slice(1));
+        return Math.max(prev, num);
+      }, -Infinity);
+      newName = `${name} copy #${maxCopy + 1}`;
+    }
+
+    const insertionIndex = Math.max(index - 1, 0);
+    layerManager.duplicateLayer(newName, insertionIndex, index + 1);
+    setLayers(layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function changeVisibility(index: number, val: boolean) {
-    context.layerManager.getLayers()[index].setVisibility(val);
-    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
+    layerManager.getLayers()[index].setVisibility(val);
+    setLayers(layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function changeSelection(index: number) {
-    context.layerManager.switchToLayer(index);
+    layerManager.switchToLayer(index);
     setSelection(index);
   }
 
   function changeOpacity(index: number, val: number) {
-    context.layerManager.getLayers()[index].setOpacity(val)
+    layerManager.getLayers()[index].setOpacity(val);
+    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+  }
+
+  function changeLocked(index: number) {
+    const layer = layerManager.getLayers()[index];
+    layer.setLocked(!layer.getLocked());
+    setLayers(layerManager.getLayers().map(layerToLayerHandle));
   }
 
   return (
     <div className="w-full overflow-hidden rounded-lg bg-[#2A2A2A] pl-2 pr-2 text-white shadow-xl">
       {/* Top Controls */}
       <div className="flex items-center justify-between">
-          <span className="text-white">flow</span>
-          <Slider
-            label="Opacity"
-            rawValue={layers[selection].opacity}
-            displayValue={Math.round(layers[selection].opacity * 100)}
-            setValue={() => }
-            min={0}
-            max={1}
-            units={'%'}
-            round={false}
-            width="160px"
-          />
-        </div>
+        <span className="pl-1 text-[0.90rem] text-white">opacity</span>
+        <Slider
+          rawValue={layers[selection].opacity}
+          displayValue={Math.round(layers[selection].opacity * 100)}
+          setValue={(o) => changeOpacity(selection, o)}
+          min={0}
+          max={1}
+          units={'%'}
+          round={false}
+          width="160px"
+        />
       </div>
 
       {/* Toolbar */}
@@ -134,7 +151,12 @@ function LayerEditor() {
             <SelectItem value="overlay">overlay</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="ghost" size="icon" className="bg-[#3A3A3A]">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="bg-[#3A3A3A]"
+          onClick={() => duplicateLayer(selection)}
+        >
           <Layers className="h-4 w-4" />
         </Button>
         <Button
@@ -149,7 +171,12 @@ function LayerEditor() {
 
       {/* Tools Grid */}
       <div className="grid grid-cols-7 gap-1 border-b border-[#3A3A3A] p-2">
-        <Button variant="ghost" size="icon" className="bg-[#3A3A3A]">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="bg-[#3A3A3A]"
+          onClick={() => changeLocked(selection)}
+        >
           <Lock className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="icon" className="bg-[#3A3A3A]">
@@ -178,17 +205,31 @@ function LayerEditor() {
       </div>
 
       {/* Layers List */}
-      <div className="max-h-[160px] overflow-y-scroll">
-        {layers.map((handle, index) => (
-          <LayerComponent
+      <Reorder.Group
+        axis="y"
+        values={layers.map((_, idx) => idx)}
+        onReorder={swapLayers}
+        layoutScroll
+        style={{ overflowY: 'scroll' }}
+      >
+        {layers.toReversed().map((handle, index) => (
+          <Reorder.Item
             key={index}
-            handle={handle}
-            isSelected={selection == index}
-            onLayerSelect={() => changeSelection(index)}
-            onVisibilityChange={(v) => changeVisibility(index, v)}
-          />
+            value={reverseIndex(index)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <LayerComponent
+              key={index}
+              handle={handle}
+              isSelected={selection == reverseIndex(index)}
+              onLayerSelect={() => changeSelection(reverseIndex(index))}
+              onVisibilityChange={(v) => changeVisibility(reverseIndex(index), v)}
+            />
+          </Reorder.Item>
         ))}
-      </div>
+      </Reorder.Group>
     </div>
   );
 }

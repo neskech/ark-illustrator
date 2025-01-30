@@ -1,4 +1,4 @@
-import { requires } from '~/util/general/contracts';
+import { assert, requires } from '~/util/general/contracts';
 import Layer from './layer';
 import FrameBuffer from '~/util/webglWrapper/frameBuffer';
 import { clearFramebuffer } from '../renderer/util/renderUtils';
@@ -59,25 +59,34 @@ export default class LayerManager {
   public swapLayers(fromIndex: number, toIndex: number) {
     requires(0 <= fromIndex && fromIndex < this.layerStack.length);
     requires(0 <= toIndex && toIndex < this.layerStack.length);
-    requires(fromIndex != toIndex);
-
-    fromIndex = Math.min(fromIndex, toIndex);
-    toIndex = Math.max(fromIndex, toIndex);
-
-    const fromLayer = this.layerStack[fromIndex];
-    const toLayer = this.layerStack[toIndex];
-    this.layerStack.splice(toIndex, 1, fromLayer);
-    this.layerStack.splice(fromIndex, 1, toLayer);
+    const tmp = this.layerStack[fromIndex]
+    this.layerStack[fromIndex] = this.layerStack[toIndex]
+    this.layerStack[toIndex] = tmp
 
     if (this.currentLayer == fromIndex) this.switchToLayer(toIndex);
     else if (this.currentLayer == toIndex) this.switchToLayer(fromIndex);
+  }
+
+  public reorderLayersOnIndices(indices: number[]) {
+    requires(this.layerStack.length == indices.length)
+    const newStack = new Array<Layer>(this.layerStack.length)
+    for (let i = 0; i < this.layerStack.length; i++) {
+      assert(0 <= indices[i] && indices[i] < this.layerStack.length)
+      newStack[i] = this.layerStack[indices[i]]
+    }
+    this.layerStack = newStack
   }
 
   public addNewLayer(name: string) {
     this.layerStack.push(new Layer(name, this.canvasWidth, this.canvasHeight));
   }
 
-  public duplicateLayer(fromIndex: number, toIndex: number) {}
+  public duplicateLayer(name: string, fromIndex: number, toIndex: number) {
+    requires(0 <= fromIndex && fromIndex < this.layerStack.length);
+    requires(0 <= toIndex && toIndex <= this.layerStack.length);
+    const targetLayer = this.layerStack[fromIndex]
+    this.layerStack.splice(toIndex, 0, targetLayer.duplicate(name))
+  }
 
   deleteLayer(index: number) {
     requires(0 <= index && index < this.layerStack.length);

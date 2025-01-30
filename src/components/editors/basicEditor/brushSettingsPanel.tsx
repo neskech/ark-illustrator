@@ -37,7 +37,6 @@ function BrushSettingsPanel() {
         <div className="flex items-center justify-between">
           <span className="text-white">size</span>
           <Slider
-            label="Size"
             rawValue={size}
             displayValue={normalize(size, 0.05, 0.1)}
             setValue={setSize}
@@ -52,7 +51,6 @@ function BrushSettingsPanel() {
         <div className="flex items-center justify-between">
           <span className="text-white">opacity</span>
           <Slider
-            label="Opacity"
             rawValue={opacity}
             displayValue={normalize(opacity, 0.005, 0.3)}
             setValue={setOpacity}
@@ -67,7 +65,6 @@ function BrushSettingsPanel() {
         <div className="flex items-center justify-between">
           <span className="text-white">flow</span>
           <Slider
-            label="Flow"
             rawValue={flow}
             displayValue={normalize(flow, 0.005, 0.3)}
             setValue={setFlow}
