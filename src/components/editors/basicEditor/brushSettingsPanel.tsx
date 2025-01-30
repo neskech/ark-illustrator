@@ -27,47 +27,58 @@ function BrushSettingsPanel() {
   };
 
   const normalize = (val: number, min: number, max: number) => {
-    const v = (val - min) / (max - min)
-    return Math.round(100 * v)
-  }
+    const v = (val - min) / (max - min);
+    return Math.round(100 * v);
+  };
 
   return (
     <div className="w-full bg-neutral-800 pl-3 pr-1 font-mono text-sm text-neutral-200">
-      <Slider
-        label="Size"
-        rawValue={size}
-        displayValue={normalize(size, 0.05, 0.1)}
-        setValue={setSize}
-        min={0.05}
-        max={0.1}
-        units={'px'}
-        round={false}
-        width="95%"
-      />
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-white">size</span>
+          <Slider
+            label="Size"
+            rawValue={size}
+            displayValue={normalize(size, 0.05, 0.1)}
+            setValue={setSize}
+            min={0.05}
+            max={0.1}
+            units={'px'}
+            round={false}
+            width="160px"
+          />
+        </div>
 
-      <Slider
-        label="Opacity"
-        rawValue={opacity}
-        displayValue={normalize(opacity, 0.005, 0.3)}
-        setValue={setOpacity}
-        min={0.005}
-        max={0.3}
-        units={'%'}
-        round={false}
-        width="95%"
-      />
+        <div className="flex items-center justify-between">
+          <span className="text-white">opacity</span>
+          <Slider
+            label="Opacity"
+            rawValue={opacity}
+            displayValue={normalize(opacity, 0.005, 0.3)}
+            setValue={setOpacity}
+            min={0.005}
+            max={0.3}
+            units={'%'}
+            round={false}
+            width="160px"
+          />
+        </div>
 
-      <Slider
-        label="Flow"
-        rawValue={flow}
-        displayValue={normalize(flow, 0.005, 0.3)}
-        setValue={setFlow}
-        min={0.005}
-        max={0.3}
-        units={'%'}
-        round={false}
-        width="95%"
-      />
+        <div className="flex items-center justify-between">
+          <span className="text-white">flow</span>
+          <Slider
+            label="Flow"
+            rawValue={flow}
+            displayValue={normalize(flow, 0.005, 0.3)}
+            setValue={setFlow}
+            min={0.005}
+            max={0.3}
+            units={'%'}
+            round={false}
+            width="160px"
+          />
+        </div>
+      </div>
     </div>
   );
 }

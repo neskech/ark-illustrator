@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import Slider from '~/components/ui/Slider';
+import LayerManager from '~/drawingEditor/canvas/layerManager';
 
 export interface LayerHandle {
   name: string;
@@ -27,6 +28,14 @@ function layerToLayerHandle(layer: Layer): LayerHandle {
     isLocked: layer.getLocked(),
     opacity: layer.getOpacity(),
   };
+}
+
+function syncHandleToLayer(manager: LayerManager, handle: LayerHandle, layerIndex: number) {
+  const layer = manager.getLayers()[layerIndex]
+  layer.setName(handle.name)
+  layer.setVisibility(handle.isVisible)
+  layer.setLocked(handle.isLocked)
+  layer.setOpacity(handle.opacity)
 }
 
 // function uniqueNameFromHandles(name: string, handles: LayerHandle[]) {
@@ -89,15 +98,27 @@ function LayerEditor() {
     setSelection(index);
   }
 
+  function changeOpacity(index: number, val: number) {
+    context.layerManager.getLayers()[index].setOpacity(val)
+  }
+
   return (
     <div className="w-full overflow-hidden rounded-lg bg-[#2A2A2A] pl-2 pr-2 text-white shadow-xl">
       {/* Top Controls */}
-      <div className="flex items-center gap-2 border-b border-[#3A3A3A] p-2">
-        <span className="text-sm">opacity</span>
-        <div className="flex-1">
-          {/* <Slider defaultValue={[100]} max={100} step={1} className="w-full" /> */}
+      <div className="flex items-center justify-between">
+          <span className="text-white">flow</span>
+          <Slider
+            label="Opacity"
+            rawValue={layers[selection].opacity}
+            displayValue={Math.round(layers[selection].opacity * 100)}
+            setValue={() => }
+            min={0}
+            max={1}
+            units={'%'}
+            round={false}
+            width="160px"
+          />
         </div>
-        <span className="text-sm">100%</span>
       </div>
 
       {/* Toolbar */}
@@ -157,7 +178,7 @@ function LayerEditor() {
       </div>
 
       {/* Layers List */}
-      <div className="max-h-[80px] overflow-y-scroll">
+      <div className="max-h-[160px] overflow-y-scroll">
         {layers.map((handle, index) => (
           <LayerComponent
             key={index}

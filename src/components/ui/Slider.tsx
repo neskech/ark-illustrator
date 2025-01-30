@@ -55,10 +55,6 @@ function Slider({ label, rawValue, displayValue, setValue, min, max, units, roun
   }, [isDragging, max, min, round, setValue]);
 
   return (
-    <div className="mb-4">
-      <div className="mb-1">
-        <span>{label}</span>
-      </div>
       <div className="relative h-6 overflow-hidden rounded bg-neutral-700" style={{ width: width }}>
         <div
           className="absolute inset-0 bg-neutral-600"
@@ -76,7 +72,6 @@ function Slider({ label, rawValue, displayValue, setValue, min, max, units, roun
           className="absolute inset-0 cursor-pointer opacity-0"
         ></div>
       </div>
-    </div>
   );
 }
 
