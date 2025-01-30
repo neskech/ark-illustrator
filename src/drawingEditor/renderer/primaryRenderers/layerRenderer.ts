@@ -29,7 +29,7 @@ export default class LayerRenderer {
     const overlayRenderer = context.utilityRenderers.getOverlayRenderer();
     clearFramebuffer(this.cacheFramebuffer, 1, 1, 1, 1);
 
-    if (context.layerManager.hasLayerBeenMutated() || true) {
+    if (context.layerManager.hasCurrentLayerBeenMutated() || true) {
       for (const layer of context.layerManager.getLayers()) {
         overlayRenderer.renderTextureOntoFramebuffer(layer.getTexture(), this.cacheFramebuffer);
       }

@@ -133,7 +133,7 @@ const ColorPicker: React.FC = () => {
   };
 
   return (
-    <div className="mb-2 mr-1 mt-7 w-full bg-neutral-800 p-3 font-mono text-sm text-neutral-200">
+    <div className="mt-7 w-full bg-neutral-800 p-3 font-mono text-sm text-neutral-200">
       <div className="mb-4 flex items-center space-x-4">
         <div className="flex-1">
           <div

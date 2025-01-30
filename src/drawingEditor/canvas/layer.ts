@@ -3,8 +3,12 @@ import { TextureCreator } from '../../util/webglWrapper/texture';
 export default class Layer {
   private imageData: Texture;
   private history: Texture[];
+  private opacity: number
+  private isVisible: boolean;
+  private isLocked: boolean;
+  private name: string;
 
-  constructor(canvasWidth: number, canvasHeight: number) {
+  constructor(name: string, canvasWidth: number, canvasHeight: number) {
     this.imageData = TextureCreator.allocateEmpty({
       width: canvasWidth,
       height: canvasHeight,
@@ -15,6 +19,10 @@ export default class Layer {
       format: 'RGBA',
     });
     this.history = [];
+    this.opacity = 1
+    this.isVisible = true
+    this.isLocked = false
+    this.name = name
   }
 
   registerMutation() {
@@ -41,5 +49,37 @@ export default class Layer {
 
   getTexture() {
     return this.imageData;
+  }
+
+  getName() {
+    return this.name
+  }
+
+  setName(name: string) {
+    this.name = name
+  }
+
+  getOpacity() {
+    return this.opacity
+  }
+
+  setOpacity(opacity: number) {
+    this.opacity = opacity
+  }
+
+  getVisibility() {
+    return this.isVisible
+  }
+
+  setVisibility(visibility: boolean) {
+    this.isVisible = visibility
+  }
+
+  getLocked() {
+    return this.isLocked
+  }
+
+  setLocked(locked: boolean) {
+    this.isLocked = locked
   }
 }

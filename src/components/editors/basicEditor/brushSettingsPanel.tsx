@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 import { EditorContext } from '~/components/editorWrapper';
-import Slider from '~/components/util/Slider';
+import Slider from '~/components/ui/Slider';
 import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
 function BrushSettingsPanel() {
@@ -32,7 +32,7 @@ function BrushSettingsPanel() {
   }
 
   return (
-    <div className="w-full bg-neutral-800 pl-3 font-mono text-sm text-neutral-200">
+    <div className="w-full bg-neutral-800 pl-3 pr-1 font-mono text-sm text-neutral-200">
       <Slider
         label="Size"
         rawValue={size}
