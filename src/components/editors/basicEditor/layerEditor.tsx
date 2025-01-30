@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import Slider from '~/components/ui/Slider';
-import { Reorder } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface LayerHandle {
   name: string;
@@ -49,14 +49,17 @@ function LayerEditor() {
     return layers.length - 1 - n;
   }
 
-  function swapLayers(indices: number[]) {
-    return
-    if (handles.length != layers.length) return
+  function swapLayers(fromIndex: number, toIndex: number) {
+    const layersCopy = [...layers];
+    const tmp = layersCopy[fromIndex];
+    layersCopy[fromIndex] = layersCopy[toIndex];
+    layersCopy[toIndex] = tmp;
+    setLayers(layersCopy);
 
-    layerManager.reorderLayersOnIndices(indices)
-    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+    layerManager.swapLayers(fromIndex, toIndex);
 
-    setSelection(indices[selection])
+    if (selection == fromIndex) setSelection(toIndex);
+    else if (selection == toIndex) setSelection(fromIndex);
   }
 
   function insertLayer(insertionIndex: number) {
@@ -205,31 +208,25 @@ function LayerEditor() {
       </div>
 
       {/* Layers List */}
-      <Reorder.Group
-        axis="y"
-        values={layers.map((_, idx) => idx)}
-        onReorder={swapLayers}
-        layoutScroll
-        style={{ overflowY: 'scroll' }}
-      >
-        {layers.toReversed().map((handle, index) => (
-          <Reorder.Item
-            key={index}
-            value={reverseIndex(index)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <LayerComponent
+        <AnimatePresence initial={false}>
+          {layers.toReversed().map((handle, index) => (
+            <motion.ol
               key={index}
-              handle={handle}
-              isSelected={selection == reverseIndex(index)}
-              onLayerSelect={() => changeSelection(reverseIndex(index))}
-              onVisibilityChange={(v) => changeVisibility(reverseIndex(index), v)}
-            />
-          </Reorder.Item>
-        ))}
-      </Reorder.Group>
+              initial={{ height: 0 }}
+              animate={{ height: 'auto' }}
+              exit={{ height: 0 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <LayerComponent
+                key={index}
+                handle={handle}
+                isSelected={selection == reverseIndex(index)}
+                onLayerSelect={() => changeSelection(reverseIndex(index))}
+                onVisibilityChange={(v) => changeVisibility(reverseIndex(index), v)}
+              />
+            </motion.ol>
+          ))}
+        </AnimatePresence>
     </div>
   );
 }
