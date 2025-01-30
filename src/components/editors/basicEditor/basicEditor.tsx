@@ -5,10 +5,8 @@ import LeftBar from './leftBar';
 import { SettingsDialog } from './settings';
 import RightBar from './rightBar';
 import EyeDropper from '~/components/eyeDropper';
-import { type EditorProps } from '~/components/editorWrapper';
-import { StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
-export function BasicEditor({ inputManager }: EditorProps) {
+export function BasicEditor() {
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
@@ -19,23 +17,11 @@ export function BasicEditor({ inputManager }: EditorProps) {
 
   return (
     <Box className="pointer-events-none z-30 h-[100%] w-[100%]">
-      <LeftBar inputManager={inputManager} />
-
-      <RightBar inputManager={inputManager} />
-
+      <LeftBar />
+      <RightBar />
       <EyeDropper />
-
-      {showSettings ? (
-        <SettingsDialog
-          open={showSettings}
-          brushSettings={
-            inputManager.getSettings().brushConfigurations.getCurrentPreset()
-              .brushSettings as StampBrushSettings
-          }
-          onClose={() => setShowSettings(false)}
-        />
-      ) : (
-        <div> </div>
+      {showSettings && (
+        <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
       )}
     </Box>
   );

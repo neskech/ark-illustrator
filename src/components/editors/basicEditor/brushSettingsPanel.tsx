@@ -1,48 +1,23 @@
-import { Box, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { EditorContext } from '~/components/editorWrapper';
 import Slider from '~/components/util/Slider';
 import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 
-export interface BrushSettingsProps {
-  brushSettings: StampBrushSettings;
-  height: number;
-}
+function BrushSettingsPanel() {
+  const context = useContext(EditorContext);
+  const brushSettings = context.inputManager.getSettings().brushConfigurations.getCurrentPreset()
+    .brushSettings as StampBrushSettings;
 
-function BrushSettingsPanel({ brushSettings, height }: BrushSettingsProps) {
   const [size, setSize_] = useState<number>(brushSettings.size);
   const setSize = (val: number) => {
     brushSettings.size = val;
     setSize_(val);
   };
 
-  const [minSize, setMinSize_] = useState<number>(brushSettings.minSize);
-  const setMinSize = (val: number) => {
-    brushSettings.minSize = val;
-    setMinSize_(val);
-  };
-
-  const [maxSize, setMaxSize_] = useState<number>(brushSettings.maxSize);
-  const setMaxSize = (val: number) => {
-    brushSettings.maxSize = val;
-    setMaxSize_(val);
-  };
-
   const [opacity, setOpacity_] = useState<number>(brushSettings.opacity);
   const setOpacity = (val: number) => {
     brushSettings.opacity = val;
     setOpacity_(val);
-  };
-
-  const [minOpacity, setMinOpacity_] = useState<number>(brushSettings.minOpacity);
-  const setMinOpacity = (val: number) => {
-    brushSettings.minOpacity = val;
-    setMinOpacity_(val);
-  };
-
-  const [maxOpacity, setMaxOpacity_] = useState<number>(brushSettings.maxOpacity);
-  const setMaxOpacity = (val: number) => {
-    brushSettings.maxOpacity = val;
-    setMaxOpacity_(val);
   };
 
   const [flow, setFlow_] = useState<number>(0.01);

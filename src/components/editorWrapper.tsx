@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import { Box, Typography } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { createContext, useEffect, useRef, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
-import EditorApplication from '../drawingEditor/application';
-import { type InputManager } from '~/drawingEditor/Input/toolSystem/inputManager';
+import EditorApplication, { type AppState } from '../drawingEditor/application';
 
-export interface EditorProps {
-  inputManager: InputManager;
-}
+export const EditorContext = createContext<AppState>(null as unknown as AppState);
+
 interface EditorWrapperProps {
-  EditorComponent: React.ComponentType<EditorProps>;
+  EditorComponent: React.ComponentType;
 }
 
 type State = { type: 'loading' } | { type: 'error'; errorMsg: string } | { type: 'finished' };
@@ -36,7 +34,7 @@ function ErrorFallback({ error }: { error: string }): React.JSX.Element {
 
 function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
   const [state, setState] = useState<State>({ type: 'loading' });
-  const [settings, setSettings] = useState<InputManager | null>(null);
+  const [appState, setAppState] = useState<AppState | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -45,7 +43,7 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
         .then((result) => {
           result.match(
             (app) => {
-              setSettings(app.inputManager);
+              setAppState(app);
               setState({ type: 'finished' });
             },
             (e) => setState({ type: 'error', errorMsg: e })
@@ -70,7 +68,11 @@ function EditorWrapper({ EditorComponent }: EditorWrapperProps) {
         <></>
       )}
 
-      {settings && <EditorComponent inputManager={settings} />}
+      {appState && (
+        <EditorContext.Provider value={appState}>
+          <EditorComponent />
+        </EditorContext.Provider>
+      )}
       <canvas
         ref={canvasRef}
         width={1000}

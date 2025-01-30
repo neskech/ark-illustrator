@@ -10,11 +10,12 @@ import {
   Typography,
   Button,
 } from '@mui/material';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Draggable from 'react-draggable';
 import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
 import CheckIcon from '@mui/icons-material/Check';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { EditorContext } from '~/components/editorWrapper';
 
 const PaperComponent = (props: PaperProps) => {
   return (
@@ -26,14 +27,17 @@ const PaperComponent = (props: PaperProps) => {
 
 interface Props {
   open: boolean;
-  brushSettings: StampBrushSettings;
   onClose: () => void;
 }
 
 /* This is nasty I KNOW!!!! */
 export let allowLimitedStrokeLength = true;
 
-export const SettingsDialog = ({ open, brushSettings, onClose }: Props) => {
+export const SettingsDialog = ({ open, onClose }: Props) => {
+  const context = useContext(EditorContext);
+  const brushSettings = context.inputManager.getSettings().brushConfigurations.getCurrentPreset()
+    .brushSettings as StampBrushSettings;
+
   const [size, setSize_] = useState<number>(brushSettings.size);
   const setSize = (e: Event, val: number) => {
     brushSettings.size = val;

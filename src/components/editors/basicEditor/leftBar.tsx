@@ -5,22 +5,21 @@ import CropSquareIcon from '@mui/icons-material/CropSquare';
 import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import { Box, Button } from '@mui/material';
-import { useState } from 'react';
-import { type InputManager } from '../../../drawingEditor/Input/toolSystem/inputManager';
+import { useContext, useState } from 'react';
 import { type ToolTypeName } from '~/drawingEditor/Input/toolSystem/tool';
 import { type StampBrushSettings } from '~/drawingEditor/Input/toolSystem/settings/brushSettings';
+import { EditorContext } from '~/components/editorWrapper';
 
-export interface LeftBarProps {
-  inputManager: InputManager;
-}
 type ToolType = ToolTypeName | 'Eraser';
 
 const SELECTED_OPACITY = 0.35;
 
-function LeftBar({ inputManager }: LeftBarProps) {
-  const [toolType, setToolType] = useState<ToolType>(inputManager.getCurrentTool());
-  const brushSettings = inputManager.getSettings().brushConfigurations.getCurrentPreset()
+function LeftBar() {
+  const context = useContext(EditorContext);
+  const brushSettings = context.inputManager.getSettings().brushConfigurations.getCurrentPreset()
     .brushSettings as StampBrushSettings;
+
+  const [toolType, setToolType] = useState<ToolType>(context.inputManager.getCurrentTool());
 
   function setType(type: ToolType) {
     if (type == 'Eraser') {
@@ -29,7 +28,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
       return;
     }
 
-    inputManager.setCurrentTool(type);
+    context.inputManager.setCurrentTool(type);
     setToolType(type);
     brushSettings.isEraser = false;
   }
@@ -55,7 +54,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
         onClick={(_) => setType('brush')}
         className="m-auto h-10"
       >
-        <BrushIcon className='text-[20px]'> </BrushIcon>
+        <BrushIcon className="text-[20px]"> </BrushIcon>
       </Button>
 
       <Button
@@ -67,10 +66,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
           color: '#fffffff',
           background: '#3f3f3f',
           filter: `brightness(${
-            (
-              inputManager.getSettings().brushConfigurations.getCurrentPreset()
-                .brushSettings as StampBrushSettings
-            ).isEraser
+            brushSettings.isEraser
               ? SELECTED_OPACITY
               : 1
           })`,
@@ -84,7 +80,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
         className="m-auto h-10"
         onClick={(_) => setType('Eraser')}
       >
-        <FontAwesomeIcon icon={faEraser} className='text-[20px]' />
+        <FontAwesomeIcon icon={faEraser} className="text-[20px]" />
       </Button>
 
       <Button
@@ -106,7 +102,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
         className="m-auto h-10"
         onClick={(_) => setType('fillBucket')}
       >
-        <FormatColorFillIcon className='text-[20px]'> </FormatColorFillIcon>
+        <FormatColorFillIcon className="text-[20px]"> </FormatColorFillIcon>
       </Button>
 
       <Button
@@ -128,7 +124,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
         className="m-auto h-10"
         onClick={(_) => setType('square')}
       >
-        <CropSquareIcon className='text-[20px]'> </CropSquareIcon>
+        <CropSquareIcon className="text-[20px]"> </CropSquareIcon>
       </Button>
 
       <Button
@@ -150,7 +146,7 @@ function LeftBar({ inputManager }: LeftBarProps) {
         className="m-auto h-10"
         onClick={(_) => setType('circle')}
       >
-        <PanoramaFishEyeIcon className='text-[20px]'> </PanoramaFishEyeIcon>
+        <PanoramaFishEyeIcon className="text-[20px]"> </PanoramaFishEyeIcon>
       </Button>
     </Box>
   );
