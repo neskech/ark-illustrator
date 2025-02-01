@@ -1,6 +1,7 @@
 import { type RenderContext } from '~/drawingEditor/renderer/renderer';
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
 import { Tool, ToolUpdateContext } from '../tool';
+import { clearFramebuffer } from '~/drawingEditor/renderer/util/renderUtils';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -16,7 +17,8 @@ export class FillTool extends Tool {
   }
 
   updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void {
-    return
+    const tolerance = context.settings.fillSettings.tolerance;
+    toolRenderers.getFillToolRenderer().render({ tolerance, ...context });
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

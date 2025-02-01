@@ -1,0 +1,61 @@
+import {
+  type GetAttributesType,
+  VertexAttributes,
+  VertexAttributeType,
+} from '~/util/webglWrapper/vertexAttributes';
+import Buffer from '~/util/webglWrapper/buffer';
+import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
+import type Shader from '~/util/webglWrapper/shader';
+import EventManager from '~/util/eventSystem/eventManager';
+import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
+import type AssetManager from '../util/assetManager';
+import { QuadTransform } from '../geometry/transform';
+import { QuadPositioner } from '../geometry/positioner';
+import { QuadRotator } from '../geometry/rotator';
+import { clearFramebuffer } from '../util/renderUtils';
+import { gl } from '~/drawingEditor/application';
+import { QuadilateralFactory } from '../geometry/quadFactory';
+import { type RenderContext } from '../renderer';
+import { Vector2, Vector3 } from 'matrixgl_fork';
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! TYPE DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export type FillRendererContext = {
+  tolerance: number;
+} & RenderContext;
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//! MAIN CLASS
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export default class FillToolRenderer {
+  private color: Vector3;
+
+  constructor() {
+    this.color = new Vector3(0, 0, 0);
+    this.setupEvents();
+  }
+
+  public render(context: FillRendererContext) {
+    const framebuffer = context.layerManager.getCanvasFramebufferForMutation();
+    framebuffer.bind();
+    clearFramebuffer(framebuffer, this.color.x, this.color.y, this.color.z);
+    framebuffer.unBind();
+  }
+
+  private setupEvents() {
+    EventManager.subscribe('colorChanged', (color) => {
+      this.color = color;
+    });
+  }
+}
