@@ -15,6 +15,8 @@ import type AssetManager from '../util/assetManager';
 import { gl } from '~/drawingEditor/application';
 import type Texture from '~/util/webglWrapper/texture';
 import { Vector2 } from 'matrixgl_fork';
+import { BlendMode, BlendModeUtils } from '~/drawingEditor/canvas/blendMode';
+import { TextureCreator } from '../../../util/webglWrapper/texture';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +82,39 @@ export default class OverlayRenderer {
     gl.activeTexture(gl.TEXTURE0);
     texture.bind();
     this.shader.uploadTexture('canvas', texture, 0);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    texture.unBind();
+    this.shader.unBind();
+    this.vertexArray.unBind();
+    this.vertexBuffer.unBind();
+    framebuffer.unBind();
+  }
+
+  renderTextureOntoFramebufferAdvanced(
+    texture: Texture,
+    framebuffer: FrameBuffer,
+    blendMode: BlendMode,
+    opacity: number
+  ) {
+    framebuffer.bind();
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+
+    this.vertexArray.bind();
+    this.vertexBuffer.bind();
+    this.shader.bind();
+
+    gl.activeTexture(gl.TEXTURE0);
+    texture.bind();
+    this.shader.uploadTexture('overlay', texture, 0);
+
+    gl.activeTexture(gl.TEXTURE1);
+    const canvasTexture = TextureCreator.duplicate(framebuffer.getTextureAttachment());
+    this.shader.uploadTexture('canvas', canvasTexture, 1);
+
+    this.shader.uploadInt('blendMode', BlendModeUtils.blendModeToInt(blendMode));
+    this.shader.uploadFloat('opacity', opacity);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 

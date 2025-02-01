@@ -1,44 +1,42 @@
 import type Texture from '../../util/webglWrapper/texture';
 import { TextureCreator } from '../../util/webglWrapper/texture';
+import { type BlendMode } from './blendMode';
 export default class Layer {
   private imageData: Texture;
   private history: Texture[];
-  private opacity: number
-  private isVisible: boolean;
-  private isLocked: boolean;
+  private opacity: number;
+  private visibility: boolean;
+  private locked: boolean;
+  private blendMode: BlendMode;
   private name: string;
 
-  constructor(name: string, canvasWidth: number, canvasHeight: number, defaultTexture: Texture | null = null) {
-    this.imageData = defaultTexture ?? TextureCreator.allocateEmpty({
-      width: canvasWidth,
-      height: canvasHeight,
-      wrapX: 'Repeat',
-      wrapY: 'Repeat',
-      magFilter: 'Nearest',
-      minFilter: 'Nearest',
-      format: 'RGBA',
-    });
+  constructor(
+    name: string,
+    canvasWidth: number,
+    canvasHeight: number,
+    defaultTexture: Texture | null = null
+  ) {
+    this.imageData =
+      defaultTexture ??
+      TextureCreator.allocateEmpty({
+        width: canvasWidth,
+        height: canvasHeight,
+        wrapX: 'Repeat',
+        wrapY: 'Repeat',
+        magFilter: 'Nearest',
+        minFilter: 'Nearest',
+        format: 'RGBA',
+      });
     this.history = [];
-    this.opacity = 1
-    this.isVisible = true
-    this.isLocked = false
-    this.name = name
+    this.opacity = 1;
+    this.visibility = true;
+    this.locked = false;
+    this.blendMode = 'Normal';
+    this.name = name;
   }
 
   registerMutation() {
-    const buffer = new Uint8Array(this.imageData.getWidth() * this.imageData.getHeight() * 4);
-    this.imageData.writePixelsToBuffer({
-      lowerLeftX: 0,
-      lowerLeftY: 0,
-      width: this.imageData.getWidth(),
-      format: this.imageData.getOptions().format,
-      height: this.imageData.getHeight(),
-      pixelBuffer: buffer,
-    });
-    const copy = TextureCreator.allocateFromPixels({
-      data: buffer,
-      textureOptions: this.imageData.getOptions(),
-    });
+    const copy = TextureCreator.duplicate(this.imageData);
     this.history.push(copy);
   }
 
@@ -48,22 +46,10 @@ export default class Layer {
   }
 
   duplicate(name: string) {
-    const buffer = new Uint8Array(this.imageData.getWidth() * this.imageData.getHeight() * 4);
-    this.imageData.writePixelsToBuffer({
-      lowerLeftX: 0,
-      lowerLeftY: 0,
-      width: this.imageData.getWidth(),
-      format: this.imageData.getOptions().format,
-      height: this.imageData.getHeight(),
-      pixelBuffer: buffer,
-    });
-    const copy = TextureCreator.allocateFromPixels({
-      data: buffer,
-      textureOptions: this.imageData.getOptions(),
-    });
-    const layer = new Layer(name, this.imageData.getWidth(), this.imageData.getHeight(), copy)
-    layer.setOpacity(this.opacity)
-    return layer
+    const copy = TextureCreator.duplicate(this.imageData);
+    const layer = new Layer(name, this.imageData.getWidth(), this.imageData.getHeight(), copy);
+    layer.setOpacity(this.opacity);
+    return layer;
   }
 
   getTexture() {
@@ -71,34 +57,42 @@ export default class Layer {
   }
 
   getName() {
-    return this.name
+    return this.name;
   }
 
   setName(name: string) {
-    this.name = name
+    this.name = name;
   }
 
   getOpacity() {
-    return this.opacity
+    return this.opacity;
   }
 
   setOpacity(opacity: number) {
-    this.opacity = opacity
+    this.opacity = opacity;
   }
 
-  getVisibility() {
-    return this.isVisible
+  isVisible() {
+    return this.visibility;
   }
 
   setVisibility(visibility: boolean) {
-    this.isVisible = visibility
+    this.visibility = visibility;
   }
 
-  getLocked() {
-    return this.isLocked
+  isLocked() {
+    return this.locked;
   }
 
   setLocked(locked: boolean) {
-    this.isLocked = locked
+    this.locked = locked;
+  }
+
+  getBlendMode() {
+    return this.blendMode;
+  }
+
+  setBlendMode(mode: BlendMode) {
+    this.blendMode = mode;
   }
 }

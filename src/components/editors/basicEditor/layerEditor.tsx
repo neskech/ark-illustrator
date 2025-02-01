@@ -13,20 +13,23 @@ import {
 } from '~/components/ui/select';
 import Slider from '~/components/ui/Slider';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BlendMode } from '~/drawingEditor/canvas/blendMode';
 
 export interface LayerHandle {
   name: string;
   isVisible: boolean;
   isLocked: boolean;
   opacity: number;
+  blendMode: BlendMode;
 }
 
 function layerToLayerHandle(layer: Layer): LayerHandle {
   return {
     name: layer.getName(),
-    isVisible: layer.getVisibility(),
-    isLocked: layer.getLocked(),
+    isVisible: layer.isVisible(),
+    isLocked: layer.isLocked(),
     opacity: layer.getOpacity(),
+    blendMode: layer.getBlendMode(),
   };
 }
 
@@ -120,7 +123,12 @@ function LayerEditor() {
 
   function changeLocked(index: number) {
     const layer = layerManager.getLayers()[index];
-    layer.setLocked(!layer.getLocked());
+    layer.setLocked(!layer.isLocked());
+    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+  }
+
+  function changeBlendMode(index: number, val: BlendMode) {
+    layerManager.getLayers()[index].setBlendMode(val);
     setLayers(layerManager.getLayers().map(layerToLayerHandle));
   }
 
@@ -143,7 +151,10 @@ function LayerEditor() {
 
       {/* Toolbar */}
       <div className="flex items-center gap-2 border-b border-[#3A3A3A] p-2">
-        <Select defaultValue="normal">
+        <Select
+          defaultValue={layers[selection].blendMode}
+          onValueChange={(v) => changeBlendMode(selection, v as BlendMode)}
+        >
           <SelectTrigger className="w-[100px] border-0 bg-[#3A3A3A]">
             <SelectValue placeholder="Blend" />
           </SelectTrigger>
@@ -208,25 +219,25 @@ function LayerEditor() {
       </div>
 
       {/* Layers List */}
-        <AnimatePresence initial={false}>
-          {layers.toReversed().map((handle, index) => (
-            <motion.ol
+      <AnimatePresence initial={false}>
+        {layers.toReversed().map((handle, index) => (
+          <motion.ol
+            key={index}
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <LayerComponent
               key={index}
-              initial={{ height: 0 }}
-              animate={{ height: 'auto' }}
-              exit={{ height: 0 }}
-              style={{ overflow: 'hidden' }}
-            >
-              <LayerComponent
-                key={index}
-                handle={handle}
-                isSelected={selection == reverseIndex(index)}
-                onLayerSelect={() => changeSelection(reverseIndex(index))}
-                onVisibilityChange={(v) => changeVisibility(reverseIndex(index), v)}
-              />
-            </motion.ol>
-          ))}
-        </AnimatePresence>
+              handle={handle}
+              isSelected={selection == reverseIndex(index)}
+              onLayerSelect={() => changeSelection(reverseIndex(index))}
+              onVisibilityChange={(v) => changeVisibility(reverseIndex(index), v)}
+            />
+          </motion.ol>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

@@ -48,9 +48,7 @@ export default class FillToolRenderer {
 
   public render(context: FillRendererContext) {
     const framebuffer = context.layerManager.getCanvasFramebufferForMutation();
-    framebuffer.bind();
     clearFramebuffer(framebuffer, this.color.x, this.color.y, this.color.z);
-    framebuffer.unBind();
   }
 
   private setupEvents() {

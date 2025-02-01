@@ -237,7 +237,6 @@ export default class Texture {
             Format: ${this.options.format}
     `;
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -366,6 +365,37 @@ export class TextureCreator {
 
     texture.unBind();
     return Ok(texture);
+  }
+
+  static duplicate(texture: Texture) {
+    let dataPerTexel;
+    switch (texture.getOptions().format) {
+      case 'RGBA':
+        dataPerTexel = 4;
+        break;
+      case 'RGB':
+        dataPerTexel = 3;
+        break;
+      case 'ALPHA':
+        dataPerTexel = 1;
+        break;
+    }
+
+    const bufSize = dataPerTexel * texture.getWidth() * texture.getHeight();
+    const buffer = new Uint8Array(bufSize);
+    texture.writePixelsToBuffer({
+      lowerLeftX: 0,
+      lowerLeftY: 0,
+      width: texture.getWidth(),
+      format: texture.getOptions().format,
+      height: texture.getHeight(),
+      pixelBuffer: buffer,
+    });
+    const copy = TextureCreator.allocateFromPixels({
+      data: buffer,
+      textureOptions: texture.getOptions(),
+    });
+    return copy;
   }
 }
 
