@@ -41,10 +41,6 @@ function LayerEditor() {
   const [layers, setLayers] = useState<LayerHandle[]>(handles);
   const [selection, setSelection] = useState(0);
 
-  useEffect(() => {
-    console.log(layers.map((h) => h.name));
-  }, [layers, selection]);
-
   function reverseIndex(n: number) {
     return layers.length - 1 - n;
   }
