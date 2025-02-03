@@ -15,7 +15,7 @@ import type AssetManager from '../util/assetManager';
 import { gl } from '~/drawingEditor/application';
 import type Texture from '~/util/webglWrapper/texture';
 import { Vector2 } from 'matrixgl_fork';
-import { BlendMode, BlendModeUtils } from '~/drawingEditor/canvas/blendMode';
+import { type BlendMode, BlendModeUtils } from '~/drawingEditor/canvas/blendMode';
 import { TextureCreator } from '../../../util/webglWrapper/texture';
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,8 @@ export default class OverlayRenderer {
   private vertexArray: VertexArrayObject<AttribsType>;
   private vertexBuffer: Buffer;
   private quadFactory: QuadilateralFactory<AttribsType>;
-  private shader: Shader;
+  private blitShader: Shader;
+  private blendShader: Shader;
 
   constructor(assetManager: AssetManager) {
     this.vertexArray = new VertexArrayObject(vertexAttributes);
@@ -67,26 +68,29 @@ export default class OverlayRenderer {
       usage: 'Static Draw',
     });
     this.quadFactory = new QuadilateralFactory(vertexAttributes);
-    this.shader = assetManager.getShader('blit');
+    this.blitShader = assetManager.getShader('blit');
+    this.blendShader = assetManager.getShader('blend');
     this.initBuffers();
   }
 
-  renderTextureOntoFramebuffer(texture: Texture, framebuffer: FrameBuffer) {
+  renderTextureOntoFramebuffer(texture: Texture, framebuffer: FrameBuffer, enableBlending = true) {
     framebuffer.bind();
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+
+    if (enableBlending) gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+    else gl.blendFunc(gl.ONE, gl.ZERO);
 
     this.vertexArray.bind();
     this.vertexBuffer.bind();
-    this.shader.bind();
+    this.blitShader.bind();
 
     gl.activeTexture(gl.TEXTURE0);
     texture.bind();
-    this.shader.uploadTexture('canvas', texture, 0);
+    this.blitShader.uploadTexture('canvas', 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
     texture.unBind();
-    this.shader.unBind();
+    this.blitShader.unBind();
     this.vertexArray.unBind();
     this.vertexBuffer.unBind();
     framebuffer.unBind();
@@ -98,31 +102,33 @@ export default class OverlayRenderer {
     blendMode: BlendMode,
     opacity: number
   ) {
+    const canvasTexture = TextureCreator.duplicateGPU(framebuffer.getTextureAttachment(), this);
     framebuffer.bind();
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+    gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.ONE, gl.ZERO);
 
     this.vertexArray.bind();
     this.vertexBuffer.bind();
-    this.shader.bind();
+    this.blendShader.bind();
 
     gl.activeTexture(gl.TEXTURE0);
     texture.bind();
-    this.shader.uploadTexture('overlay', texture, 0);
+    this.blendShader.uploadTexture('overlay', 0);
 
     gl.activeTexture(gl.TEXTURE1);
-    const canvasTexture = TextureCreator.duplicate(framebuffer.getTextureAttachment());
-    this.shader.uploadTexture('canvas', canvasTexture, 1);
+    canvasTexture.bind()
+    this.blendShader.uploadTexture('canvas', 1);
 
-    this.shader.uploadInt('blendMode', BlendModeUtils.blendModeToInt(blendMode));
-    this.shader.uploadFloat('opacity', opacity);
+    this.blendShader.uploadInt('blendMode', BlendModeUtils.blendModeToInt(blendMode));
+    this.blendShader.uploadFloat('opacity', opacity);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
     texture.unBind();
-    this.shader.unBind();
+    this.blendShader.unBind();
     this.vertexArray.unBind();
     this.vertexBuffer.unBind();
     framebuffer.unBind();
+    canvasTexture.destroy();
   }
 
   private initBuffers() {

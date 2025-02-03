@@ -8,6 +8,7 @@ import { type ReadPixelOptions } from './frameBuffer';
 import { BindHandle, GLObject, checkError } from './glUtils';
 import { Err, Ok, Result, type Unit, unit } from '../general/result';
 import { gl } from '../../drawingEditor/application';
+import type OverlayRenderer from '~/drawingEditor/renderer/utilityRenderers.ts/overlayRenderer';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -214,6 +215,10 @@ export default class Texture {
     return this.id;
   }
 
+  destroy() {
+    this.id.destroy((id) => gl.deleteTexture(id));
+  }
+
   getOptions(): TextureOptions {
     return this.options;
   }
@@ -396,6 +401,18 @@ export class TextureCreator {
       textureOptions: texture.getOptions(),
     });
     return copy;
+  }
+
+  static duplicateGPU(texture: Texture, overlayRenderer: OverlayRenderer) {
+    const copyTexture = TextureCreator.allocateEmpty(texture.getOptions());
+    const framebuffer = new FrameBuffer({
+      type: 'with texture',
+      target: 'Regular',
+      texture: copyTexture,
+    });
+    overlayRenderer.renderTextureOntoFramebuffer(texture, framebuffer, false);
+    framebuffer.destroy();
+    return copyTexture;
   }
 }
 

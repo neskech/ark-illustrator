@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { EditorContext } from '~/components/editorWrapper';
 import type Layer from '~/drawingEditor/canvas/layer';
 import LayerComponent from './layerComponent';
@@ -13,7 +13,7 @@ import {
 } from '~/components/ui/select';
 import Slider from '~/components/ui/Slider';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BlendMode } from '~/drawingEditor/canvas/blendMode';
+import { type BlendMode, BlendModeUtils } from '~/drawingEditor/canvas/blendMode';
 
 export interface LayerHandle {
   name: string;
@@ -39,14 +39,10 @@ function mod(n: number, m: number) {
 }
 
 function LayerEditor() {
-  const layerManager = useContext(EditorContext).layerManager;
-  const handles = layerManager.getLayers().map(layerToLayerHandle);
+  const context = useContext(EditorContext);
+  const handles = context.layerManager.getLayers().map(layerToLayerHandle);
   const [layers, setLayers] = useState<LayerHandle[]>(handles);
   const [selection, setSelection] = useState(0);
-
-  useEffect(() => {
-    console.log(layers.map((h) => h.name));
-  }, [layers, selection]);
 
   function reverseIndex(n: number) {
     return layers.length - 1 - n;
@@ -59,7 +55,7 @@ function LayerEditor() {
     layersCopy[toIndex] = tmp;
     setLayers(layersCopy);
 
-    layerManager.swapLayers(fromIndex, toIndex);
+    context.layerManager.swapLayers(fromIndex, toIndex);
 
     if (selection == fromIndex) setSelection(toIndex);
     else if (selection == toIndex) setSelection(fromIndex);
@@ -67,13 +63,13 @@ function LayerEditor() {
 
   function insertLayer(insertionIndex: number) {
     const name = `Layer #${layers.length + 1}`;
-    layerManager.insertNewLayer(name, insertionIndex);
-    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+    context.layerManager.insertNewLayer(name, insertionIndex);
+    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function deleteLayer(index: number) {
     if (layers.length == 1) return;
-    layerManager.deleteLayer(index);
+    context.layerManager.deleteLayer(index);
 
     const layersCopy = [...layers];
     layersCopy.splice(index, 1);
@@ -102,34 +98,39 @@ function LayerEditor() {
     }
 
     const insertionIndex = Math.max(index - 1, 0);
-    layerManager.duplicateLayer(newName, insertionIndex, index + 1);
-    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+    context.layerManager.duplicateLayer(
+      newName,
+      insertionIndex,
+      index + 1,
+      context.renderer.getUtilityRenderers().getOverlayRenderer()
+    );
+    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function changeVisibility(index: number, val: boolean) {
-    layerManager.getLayers()[index].setVisibility(val);
-    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+    context.layerManager.getLayers()[index].setVisibility(val);
+    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function changeSelection(index: number) {
-    layerManager.switchToLayer(index);
+    context.layerManager.switchToLayer(index);
     setSelection(index);
   }
 
   function changeOpacity(index: number, val: number) {
-    layerManager.getLayers()[index].setOpacity(val);
-    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+    context.layerManager.getLayers()[index].setOpacity(val);
+    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function changeLocked(index: number) {
-    const layer = layerManager.getLayers()[index];
+    const layer = context.layerManager.getLayers()[index];
     layer.setLocked(!layer.isLocked());
-    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
   }
 
   function changeBlendMode(index: number, val: BlendMode) {
-    layerManager.getLayers()[index].setBlendMode(val);
-    setLayers(layerManager.getLayers().map(layerToLayerHandle));
+    context.layerManager.getLayers()[index].setBlendMode(val);
+    setLayers(context.layerManager.getLayers().map(layerToLayerHandle));
   }
 
   return (
@@ -153,16 +154,17 @@ function LayerEditor() {
       <div className="flex items-center gap-2 border-b border-[#3A3A3A] p-2">
         <Select
           defaultValue={layers[selection].blendMode}
-          onValueChange={(v) => changeBlendMode(selection, v as BlendMode)}
+          onValueChange={(v) => changeBlendMode(selection, BlendModeUtils.stringToBlendMode(v))}
         >
           <SelectTrigger className="w-[100px] border-0 bg-[#3A3A3A]">
             <SelectValue placeholder="Blend" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="normal">normal</SelectItem>
-            <SelectItem value="multiply">multiply</SelectItem>
-            <SelectItem value="screen">screen</SelectItem>
-            <SelectItem value="overlay">overlay</SelectItem>
+            <SelectItem value="Normal">normal</SelectItem>
+            <SelectItem value="Multiply">multiply</SelectItem>
+            <SelectItem value="Overwrite">overwrite</SelectItem>
+            <SelectItem value="Screen">screen</SelectItem>
+            <SelectItem value="Overlay">overlay</SelectItem>
           </SelectContent>
         </Select>
         <Button

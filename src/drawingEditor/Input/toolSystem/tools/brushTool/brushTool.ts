@@ -165,7 +165,7 @@ export class BrushTool extends Tool {
     );
 
     this.strokeState = 'drawing';
-    context.layerManager.registerMutation();
+    context.layerManager.registerMutation(context.utilityRenderers.getOverlayRenderer());
   }
 
   private setAppropiateStabilizer(brushConfig: BrushConfiguration) {

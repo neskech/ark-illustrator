@@ -31,14 +31,26 @@ export default class LayerRenderer {
 
     if (context.layerManager.hasCurrentLayerBeenMutated() || true) {
       for (const layer of context.layerManager.getLayers()) {
-        overlayRenderer.renderTextureOntoFramebuffer(layer.getTexture(), this.cacheFramebuffer);
+        // if (layer.isVisible()) {
+        //   overlayRenderer.renderTextureOntoFramebuffer(layer.getTexture(), this.cacheFramebuffer);
+        // }
+
+       if (layer.isVisible()) {
+          overlayRenderer.renderTextureOntoFramebufferAdvanced(
+            layer.getTexture(),
+            this.cacheFramebuffer,
+            layer.getBlendMode(),
+            layer.getOpacity()
+          );
+          layer.modified = false;
+        }
       }
     }
 
-    overlayRenderer.renderTextureOntoFramebuffer(
-      context.overlayFramebuffer.getTextureAttachment(),
-      this.cacheFramebuffer
-    );
+    // overlayRenderer.renderTextureOntoFramebuffer(
+    //   context.overlayFramebuffer.getTextureAttachment(),
+    //   this.cacheFramebuffer
+    // );
 
     return this.cacheFramebuffer;
   }

@@ -126,7 +126,7 @@ export default class CanvasRenderer {
 
     gl.activeTexture(gl.TEXTURE0);
     canvasTexture.bind();
-    this.shader.uploadTexture('canvas', canvasTexture, 0);
+    this.shader.uploadTexture('canvas', 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTEX_QUAD);
 

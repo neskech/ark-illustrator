@@ -20,6 +20,7 @@ import type Camera from '~/drawingEditor/renderer/camera';
 import type LayerManager from '../../canvas/layerManager';
 import { type GestureContext } from '../gesturesAndShortcuts/gestures/gesture';
 import InputState from './inputState';
+import type UtilityRenderers from '~/drawingEditor/renderer/utilityRenderers.ts/utilityRenderers';
 
 export class InputManager {
   private toolMap: ToolMap;
@@ -50,6 +51,7 @@ export class InputManager {
     eventType: EventTypeName,
     camera: Camera,
     layerManager: LayerManager,
+    utilityRenderers: UtilityRenderers,
     canvas: HTMLCanvasElement
   ) {
     const tool = this.toolMap[this.currentTool];
@@ -62,6 +64,7 @@ export class InputManager {
       settings: this.settings,
       inputState: this.inputState,
       layerManager,
+      utilityRenderers,
       eventType,
       canvas,
     };

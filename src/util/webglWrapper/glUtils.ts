@@ -39,6 +39,18 @@ export class GLObject<T> {
   }
 }
 
+export class GLUtils {
+  static ext: unknown;
+
+  static initialize() {
+    GLUtils.ext = gl.getExtension('GMAN_webgl_memory');
+  }
+
+  static getMemoryExtension() {
+    return GLUtils.ext;
+  }
+}
+
 type BindFunc = () => void;
 type UnbindFunc = () => void;
 export class BindHandle implements Disposable {
@@ -58,6 +70,7 @@ export function fetchWebGLContext(canvas: HTMLCanvasElement, debug = false): Opt
   const context = Option.fromNull(
     canvas.getContext('webgl2', {
       preserveDrawingBuffer: true,
+      premultipliedAlpha: false,
     })
   );
 

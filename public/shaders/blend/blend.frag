@@ -1,6 +1,8 @@
+#version 300 es
 precision highp float;
 
-varying highp vec2 vTextureCoord;
+in highp vec2 vTextureCoord;
+out vec4 fragColor;
 
 uniform sampler2D canvas;    
 uniform sampler2D overlay;  
@@ -12,8 +14,10 @@ uniform int blendMode;
 #define MULTIPLY 2
 
 vec4 normal(vec4 canv, vec4 over) {
-    float alpha = canv.w;
-    return alpha * canv + (1.0 - alpha) * over;
+    float alpha = over.w * opacity;
+    vec4 res = alpha * over + (1.0 - alpha) * canv;
+    res.w = canv.w + over.w;
+    return res;
 }
 
 vec4 overwrite(vec4 canv, vec4 over) {
@@ -21,13 +25,13 @@ vec4 overwrite(vec4 canv, vec4 over) {
 }
 
 vec4 multiply(vec4 canv, vec4 over) {
-    return canv * over;
+    vec4 dst = canv * over;
+    return normal(canv, dst);
 }
 
 vec4 blend() {
     vec4 canvasColor = texelFetch(canvas, ivec2(gl_FragCoord.xy), 0);
     vec4 overlayColor = texelFetch(overlay, ivec2(gl_FragCoord.xy), 0);
-
     switch (blendMode) {
         case NORMAL:
             return normal(canvasColor, overlayColor);
@@ -37,9 +41,10 @@ vec4 blend() {
             return multiply(canvasColor, overlayColor);
     }
 
-    return vec4(0, 0, 0, 0);
+    return vec4(0.9451, 0.4275, 0.4275, 1.0);
 }
 
 void main() {
-    gl_FragColor = blend();
+    vec4 color = blend();
+    fragColor = color;
 }

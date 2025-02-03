@@ -2,7 +2,7 @@ import { Err, Ok, type Result } from '../util/general/result';
 import { InputManager } from './Input/toolSystem/inputManager';
 import AssetManager from './renderer/util/assetManager';
 import Renderer from './renderer/renderer';
-import { fetchWebGLContext, type GL } from '../util/webglWrapper/glUtils';
+import { fetchWebGLContext, GLUtils, type GL } from '../util/webglWrapper/glUtils';
 import LayerManager from './canvas/layerManager';
 import { getDefaultSettings } from './Input/toolSystem/settings';
 import { type EventTypeName } from './Input/toolSystem/tool';
@@ -44,6 +44,7 @@ export default class EditorApplication {
     const context = fetchWebGLContext(canvas, debug);
     if (context.isNone()) return Err('Could not intialize webgl2. Your browser may not support it');
     gl = context.unwrap();
+    GLUtils.initialize()
 
     canvas.width = canvas.clientWidth * 2;
     canvas.height = canvas.clientHeight * 2;
@@ -54,9 +55,12 @@ export default class EditorApplication {
     const resTexture = await assetManager.initTextures();
     if (resTexture.isErr()) return Err(resTexture.unwrapErr());
 
-    const layerManager = new LayerManager(canvas);
     const inputManager = new InputManager(getDefaultSettings(assetManager));
     const renderer = new Renderer(canvas, inputManager.getSettings(), assetManager);
+    const layerManager = new LayerManager(
+      canvas,
+      renderer.getUtilityRenderers().getOverlayRenderer()
+    );
     instance.appState = {
       layerManager,
       inputManager,
@@ -98,6 +102,7 @@ export default class EditorApplication {
           e,
           this.appState.renderer.getCamera(),
           this.appState.layerManager,
+          this.appState.renderer.getUtilityRenderers(),
           this.appState.canvas
         );
       });
@@ -112,6 +117,7 @@ export default class EditorApplication {
           e,
           this.appState.renderer.getCamera(),
           this.appState.layerManager,
+          this.appState.renderer.getUtilityRenderers(),
           this.appState.canvas
         );
       });

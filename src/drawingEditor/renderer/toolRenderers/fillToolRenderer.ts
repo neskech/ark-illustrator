@@ -1,22 +1,7 @@
-import {
-  type GetAttributesType,
-  VertexAttributes,
-  VertexAttributeType,
-} from '~/util/webglWrapper/vertexAttributes';
-import Buffer from '~/util/webglWrapper/buffer';
-import { VertexArrayObject } from '~/util/webglWrapper/vertexArray';
-import type Shader from '~/util/webglWrapper/shader';
 import EventManager from '~/util/eventSystem/eventManager';
-import type FrameBuffer from '~/util/webglWrapper/frameBuffer';
-import type AssetManager from '../util/assetManager';
-import { QuadTransform } from '../geometry/transform';
-import { QuadPositioner } from '../geometry/positioner';
-import { QuadRotator } from '../geometry/rotator';
 import { clearFramebuffer } from '../util/renderUtils';
-import { gl } from '~/drawingEditor/application';
-import { QuadilateralFactory } from '../geometry/quadFactory';
 import { type RenderContext } from '../renderer';
-import { Vector2, Vector3 } from 'matrixgl_fork';
+import {  Vector3 } from 'matrixgl_fork';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +33,7 @@ export default class FillToolRenderer {
 
   public render(context: FillRendererContext) {
     const framebuffer = context.layerManager.getCanvasFramebufferForMutation();
-    clearFramebuffer(framebuffer, this.color.x, this.color.y, this.color.z);
+    clearFramebuffer(framebuffer, this.color.x, this.color.y, this.color.z, 1);
   }
 
   private setupEvents() {

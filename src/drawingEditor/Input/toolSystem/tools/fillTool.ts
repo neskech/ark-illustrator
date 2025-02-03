@@ -1,7 +1,5 @@
-import { type RenderContext } from '~/drawingEditor/renderer/renderer';
 import type ToolRenderers from '~/drawingEditor/renderer/toolRenderers/toolRendererList';
-import { Tool, ToolContext, ToolUpdateContext } from '../tool';
-import { clearFramebuffer } from '~/drawingEditor/renderer/util/renderUtils';
+import { Tool, type ToolUpdateContext } from '../tool';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -12,33 +10,22 @@ import { clearFramebuffer } from '~/drawingEditor/renderer/util/renderUtils';
 ////////////////////////////////////////////////////////////////////////////////////////
 
 export class FillTool extends Tool {
-  isDown: boolean
-  hasClicked: boolean
-
+  isDown: boolean;
   constructor() {
     super();
-    this.isDown = false
-    this.hasClicked = false
+    this.isDown = false;
   }
 
   updateAndRender(context: ToolUpdateContext, toolRenderers: ToolRenderers): void {
-    if (this.hasClicked) {
-      console.log("FUCK")
-      this.hasClicked = false
+    if (this.isDown) {
       const tolerance = context.settings.fillSettings.tolerance;
       toolRenderers.getFillToolRenderer().render({ tolerance, ...context });
+      this.isDown = false;
     }
   }
 
-  protected pointerDown(context: ToolContext, event: PointerEvent): void {
-      this.isDown = true
-  }
-
-  protected pointerUp(context: ToolContext, event: PointerEvent): void {
-      if (this.isDown) {
-        this.hasClicked = true
-        this.isDown = false
-      }
+  protected pointerDown(): void {
+    this.isDown = true;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////

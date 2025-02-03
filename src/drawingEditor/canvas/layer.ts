@@ -1,5 +1,6 @@
 import type Texture from '../../util/webglWrapper/texture';
 import { TextureCreator } from '../../util/webglWrapper/texture';
+import type OverlayRenderer from '../renderer/utilityRenderers.ts/overlayRenderer';
 import { type BlendMode } from './blendMode';
 export default class Layer {
   private imageData: Texture;
@@ -9,6 +10,7 @@ export default class Layer {
   private locked: boolean;
   private blendMode: BlendMode;
   private name: string;
+  public modified: boolean;
 
   constructor(
     name: string,
@@ -33,20 +35,23 @@ export default class Layer {
     this.locked = false;
     this.blendMode = 'Normal';
     this.name = name;
+    this.modified = false;
   }
 
-  registerMutation() {
-    const copy = TextureCreator.duplicate(this.imageData);
+  registerMutation(overlayRenderer: OverlayRenderer) {
+    const copy = TextureCreator.duplicateGPU(this.imageData, overlayRenderer);
     this.history.push(copy);
+    this.modified = true;
   }
 
   revertToPreviousState() {
+    this.imageData.destroy();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.history.length > 0) this.imageData = this.history.pop()!;
   }
 
-  duplicate(name: string) {
-    const copy = TextureCreator.duplicate(this.imageData);
+  duplicate(name: string, overlayRenderer: OverlayRenderer) {
+    const copy = TextureCreator.duplicateGPU(this.imageData, overlayRenderer);
     const layer = new Layer(name, this.imageData.getWidth(), this.imageData.getHeight(), copy);
     layer.setOpacity(this.opacity);
     return layer;
@@ -77,6 +82,7 @@ export default class Layer {
   }
 
   setVisibility(visibility: boolean) {
+    this.modified = true;
     this.visibility = visibility;
   }
 

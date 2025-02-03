@@ -34,7 +34,7 @@ function LayerComponent({ handle,  isSelected,  onLayerSelect, onVisibilityChang
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm">{handle.name}</div>
         <div className="truncate text-xs text-gray-400">
-          {"Normal"} {Math.round(handle.opacity * 100)}%
+          {handle.blendMode} {Math.round(handle.opacity * 100)}%
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
-attribute vec2 a_position;
-varying highp vec2 vTextureCoord;
+#version 300 es
+
+layout(location = 0) in vec2 a_position;
+out highp vec2 vTextureCoord;
 
 const vec2 scale = vec2(0.5, 0.5);
 

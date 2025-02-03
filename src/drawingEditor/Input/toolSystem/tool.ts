@@ -10,7 +10,8 @@ import { type RenderContext } from '~/drawingEditor/renderer/renderer';
 import type Camera from '~/drawingEditor/renderer/camera';
 import type InputState from './inputState';
 import { EventHandler } from './eventHandler';
-import LayerManager from '~/drawingEditor/canvas/layerManager';
+import type LayerManager from '~/drawingEditor/canvas/layerManager';
+import type UtilityRenderers from '~/drawingEditor/renderer/utilityRenderers.ts/utilityRenderers';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +49,7 @@ export type ToolContext = {
   eventType: EventTypeName;
   layerManager: LayerManager;
   canvas: HTMLCanvasElement;
+  utilityRenderers: UtilityRenderers
 };
 
 export type ToolUpdateContext = {

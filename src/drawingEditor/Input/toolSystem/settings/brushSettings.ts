@@ -101,7 +101,6 @@ export class StampBrushSettings extends BaseBrushSettings {
   }
 
   static default(assetManager: AssetManager): StampBrushSettings {
-    console.log("FUCK", assetManager.toString())
     const brushTexture = assetManager.getTexture('Red-Circle');
 
     return new StampBrushSettings({

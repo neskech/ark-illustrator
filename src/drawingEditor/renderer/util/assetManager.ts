@@ -45,7 +45,8 @@ export default class AssetManager {
       const floored = Math.floor(idx / 2);
       shaders[floored].compileFromSource(vert, frag);
     });
-    shaders.forEach((shader) => shader.link());
+    const result = shaders.reduce((prev, curr) => prev.and(curr.link()), Ok<Unit, string>(unit));
+    if (result.isErr()) return Err(result.unwrapErr());
 
     shaderNames.forEach((name, idx) => this.shaderMap.set(name, shaders[idx]));
     return Ok(unit);
@@ -81,18 +82,18 @@ export default class AssetManager {
 
     // Remove the extension name
     textureNames.mapInPlace((name) => {
-        let j = -1
+      let j = -1;
 
-        for (let i = name.length; i >= 0; i--) {
-          if (name[i] == '.') {
-            j = i
-            break
-          }
+      for (let i = name.length; i >= 0; i--) {
+        if (name[i] == '.') {
+          j = i;
+          break;
         }
+      }
 
-        assert(j != -1, `Invalid file name for ${name}, requires a '.' extension`)
-        return name.slice(0, j)
-    })
+      assert(j != -1, `Invalid file name for ${name}, requires a '.' extension`);
+      return name.slice(0, j);
+    });
 
     textureNames.forEach((name, i) => this.textureMap.set(name, textures[i]));
     return Ok(unit);
@@ -111,18 +112,18 @@ export default class AssetManager {
   }
 
   toString(): string {
-    let string = ''
+    let string = '';
 
-    string += 'SHADERS:\n'
+    string += 'SHADERS:\n';
     for (const shader of this.shaderMap.keys()) {
-      string += `\t${shader}\n`
+      string += `\t${shader}\n`;
     }
 
-    string += 'TEXTURES:\n'
+    string += 'TEXTURES:\n';
     for (const texture of this.textureMap.keys()) {
-      string += `\t${texture}\n`
+      string += `\t${texture}\n`;
     }
 
-    return string
+    return string;
   }
 }
